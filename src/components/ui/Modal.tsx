@@ -19,11 +19,21 @@ interface Props {
 export function Modal({ open, onClose, title, subtitle, icon, children, widthClass = 'max-w-md', dark }: Props) {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
+  // Where the current press began. A press that began inside the panel and ended on the backdrop (a text-selection
+  // drag) must not close the dialog. null = no mousedown seen (keyboard / assistive-tech click), which still closes.
+  const pressOnBackdrop = useRef<boolean | null>(null);
   useDialog(open, onClose, panelRef);
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+      onMouseDown={(e) => { pressOnBackdrop.current = e.target === e.currentTarget; }}
+      onClick={(e) => {
+        const closes = e.target === e.currentTarget && pressOnBackdrop.current !== false;
+        pressOnBackdrop.current = null;
+        if (closes) onClose();
+      }}
+    >
       <div
         ref={panelRef}
         role="dialog"
