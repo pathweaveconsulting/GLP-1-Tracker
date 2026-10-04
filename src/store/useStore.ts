@@ -4,15 +4,23 @@ import { AppState, PersistedData } from '../types';
 import { newId } from '../lib/id';
 import { emptyData, migrateStore, STORE_VERSION } from './migrate';
 import { CORRUPT_KEY, STORAGE_KEY } from './keys';
-import { createSafeStorage, storageReport } from './storage';
+import { createSafeStorage, storageEvents, storageReport } from './storage';
 
 export { STORAGE_KEY, CORRUPT_KEY };
+
+// After the user dismisses the banner it stays away until the page is reloaded, even if later writes also fail.
+let storageErrorDismissed = false;
 
 export const useStore = create<AppState>()(
   persist(
     (set) => ({
       ...emptyData(),
       skippedEntries: 0,
+      storageError: false,
+      dismissStorageError: () => {
+        storageErrorDismissed = true;
+        set({ storageError: false });
+      },
       dismissSkippedNotice: () => set({ skippedEntries: 0 }),
 
       completeOnboarding: (settings, opts) =>
@@ -76,3 +84,11 @@ export const useStore = create<AppState>()(
     },
   ),
 );
+
+// Writes that fail (quota / blocked storage) raise a flag instead of throwing; a later success clears it.
+storageEvents.onWriteError = () => {
+  if (!storageErrorDismissed && !useStore.getState().storageError) useStore.setState({ storageError: true });
+};
+storageEvents.onWriteOk = () => {
+  if (useStore.getState().storageError) useStore.setState({ storageError: false });
+};

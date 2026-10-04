@@ -6,6 +6,9 @@ import { sanitizePersistedState } from './sanitize';
 /** What the last read of storage found; consumed by the store when it hydrates. */
 export const storageReport = { skipped: 0 };
 
+/** Hooks the store installs so the adapter can report write failures without importing the store. */
+export const storageEvents: { onWriteError?: () => void; onWriteOk?: () => void } = {};
+
 function copyToCorrupt(raw: string): void {
   try {
     localStorage.setItem(CORRUPT_KEY, raw);
@@ -47,11 +50,22 @@ export function createSafeStorage<S>(): PersistStorage<S> {
       storageReport.skipped = clean.dropped;
       return { ...parsed, state: clean.state } as unknown as StorageValue<S>;
     },
+    // Writes can fail (quota exceeded, storage blocked). The app keeps working in memory and the store is told,
+    // so it can warn the user and offer a backup. Nothing here may throw into a click handler.
     setItem: (name, value) => {
-      localStorage.setItem(name, JSON.stringify(value));
+      try {
+        localStorage.setItem(name, JSON.stringify(value));
+        storageEvents.onWriteOk?.();
+      } catch {
+        storageEvents.onWriteError?.();
+      }
     },
     removeItem: (name) => {
-      localStorage.removeItem(name);
+      try {
+        localStorage.removeItem(name);
+      } catch {
+        // ignore: nothing to remove or storage is blocked
+      }
     },
   };
 }

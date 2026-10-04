@@ -211,3 +211,105 @@ describe('F2: ErrorBoundary', () => {
     err.mockRestore();
   });
 });
+
+// ---------------------------------------------------------------- F4
+import { within } from '@testing-library/react';
+import { seedStore } from './fixtures';
+import { open } from './helpers';
+
+describe('F4: storage failures never throw out of handlers', () => {
+  const quota = () => new DOMException('The quota has been exceeded.', 'QuotaExceededError');
+  let blobs: Blob[] = [];
+  const readBlob = (b: Blob) => new Promise<string>((res) => { const r = new FileReader(); r.onload = () => res(String(r.result)); r.readAsText(b); });
+
+  function breakStorage(predicate: (v: string) => boolean = () => true) {
+    blobs = [];
+    URL.createObjectURL = vi.fn((b: Blob | MediaSource) => { blobs.push(b as Blob); return 'blob:x'; });
+    URL.revokeObjectURL = vi.fn();
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    const real = Storage.prototype.setItem;
+    return vi.spyOn(Storage.prototype, 'setItem').mockImplementation(function (this: Storage, k: string, v: string) {
+      if (predicate(v)) throw quota();
+      return real.call(this, k, v);
+    });
+  }
+
+  it('addWeight, addDose and addEffect do not throw and keep working in memory; the flag is raised', () => {
+    seedStore('empty', 'lbs');
+    useStore.setState({ storageError: false });
+    const spy = breakStorage();
+    expect(() => useStore.getState().addWeight({ date: new Date().toISOString(), weightLbs: 200 })).not.toThrow();
+    expect(() => useStore.getState().addDose({ medication: 'Tirzepatide', amountMg: 5, date: new Date().toISOString(), site: 'x', painLevel: 0, notes: '' })).not.toThrow();
+    expect(useStore.getState().weights).toHaveLength(1);
+    expect(useStore.getState().doses).toHaveLength(1);
+    expect(useStore.getState().storageError).toBe(true);
+    spy.mockRestore();
+  });
+
+  it('a large restore does not throw, and the banner offers a working backup button', async () => {
+    seedStore('empty', 'lbs');
+    useStore.setState({ storageError: false });
+    const spy = breakStorage((v) => v.length > 2000);
+    const big = Array.from({ length: 300 }, (_, i) => ({ id: `w${i}`, weightLbs: 200, date: '2026-02-02T12:00:00.000Z' }));
+    expect(() => useStore.getState().replaceAllData({ settings: useStore.getState().settings, doses: [], effects: [], weights: big })).not.toThrow();
+    expect(useStore.getState().weights).toHaveLength(300);
+
+    const user = userEvent.setup();
+    await open('/settings');
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveTextContent(/can.t be saved on this device/i);
+    await user.click(within(alert).getByRole('button', { name: /download a backup/i }));
+    const json = JSON.parse(await readBlob(blobs[0]));
+    expect(json.format).toBe('glp1-tracker-backup');
+    expect(json.data.weights).toHaveLength(300);
+    spy.mockRestore();
+  });
+
+  it('the log-weight modal still closes normally when saving fails', async () => {
+    seedStore('empty', 'lbs');
+    useStore.setState({ storageError: false });
+    const spy = breakStorage();
+    const user = userEvent.setup();
+    await open('/weight');
+    await user.click(screen.getByRole('button', { name: /record weight/i }));
+    const dialog = screen.getByRole('dialog', { name: /log weight/i });
+    const input = within(dialog).getByLabelText(/weight \(lbs\)/i);
+    await user.clear(input);
+    await user.type(input, '200');
+    await user.click(within(dialog).getByRole('button', { name: /save weight/i }));
+    expect(screen.queryByRole('dialog', { name: /log weight/i })).not.toBeInTheDocument();
+    expect(useStore.getState().weights).toHaveLength(1);
+    expect(screen.getByRole('alert')).toHaveTextContent(/can.t be saved/i);
+    spy.mockRestore();
+  });
+
+  it('blocked storage on read or remove does not throw', async () => {
+    const g = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('SecurityError'); });
+    await expect(useStore.persist.rehydrate()).resolves.not.toThrow();
+    g.mockRestore();
+    const r = vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => { throw new Error('SecurityError'); });
+    expect(() => useStore.getState().resetAllData()).not.toThrow();
+    r.mockRestore();
+  });
+
+  it('the flag clears when a later write succeeds, and dismissing hides the banner', async () => {
+    seedStore('empty', 'lbs');
+    useStore.setState({ storageError: false });
+    const spy = breakStorage();
+    useStore.getState().addWeight({ date: new Date().toISOString(), weightLbs: 200 });
+    expect(useStore.getState().storageError).toBe(true);
+    spy.mockRestore();
+    useStore.getState().addWeight({ date: new Date().toISOString(), weightLbs: 201 });
+    expect(useStore.getState().storageError).toBe(false);
+
+    const spy2 = breakStorage();
+    useStore.getState().addWeight({ date: new Date().toISOString(), weightLbs: 202 });
+    const user = userEvent.setup();
+    await open('/settings');
+    await user.click(screen.getByRole('button', { name: /dismiss storage warning/i }));
+    expect(screen.queryByText(/can.t be saved on this device/i)).not.toBeInTheDocument();
+    useStore.getState().addWeight({ date: new Date().toISOString(), weightLbs: 203 });
+    expect(useStore.getState().storageError).toBe(false); // dismissed for this session
+    spy2.mockRestore();
+  });
+});

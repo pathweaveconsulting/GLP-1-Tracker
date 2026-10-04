@@ -66,6 +66,9 @@ export interface AppState extends PersistedData {
   /** Rows that could not be read when the stored data was loaded (not persisted). */
   skippedEntries: number;
   dismissSkippedNotice: () => void;
+  /** True while the browser refuses to save (storage full or blocked); data then lives in memory only. Not persisted. */
+  storageError: boolean;
+  dismissStorageError: () => void;
   /** Saves the profile, flags onboarding done and seeds the starting weight as the first weight entry. */
   completeOnboarding: (settings: UserSettings, opts?: { seedStartingWeight?: boolean }) => void;
   /** Wipes every log and the profile and returns the app to first-run state. */
