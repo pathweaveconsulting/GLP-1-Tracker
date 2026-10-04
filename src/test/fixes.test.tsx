@@ -17,10 +17,10 @@ export const oldBlob = (state: object) => ({ state, version: 0 });
 
 describe('F1: welcome-back onboarding after an upgrade', () => {
   const real = {
-    doses: [{ id: UUID, medication: 'Zepbound', amountMg: 5, date: '2026-09-10T12:00:00.000Z', site: 'Left Thigh', painLevel: 1, notes: '' }],
+    doses: [{ id: UUID, medication: 'Zepbound', amountMg: 5, date: new Date(2026, 8, 10, 12).toISOString(), site: 'Left Thigh', painLevel: 1, notes: '' }],
     weights: [
-      { id: UUID + 'a', weightLbs: 205.5, date: '2026-09-12T12:00:00.000Z' },
-      { id: UUID + 'b', weightLbs: 203, date: '2026-09-20T12:00:00.000Z' },
+      { id: UUID + 'a', weightLbs: 205.5, date: new Date(2026, 8, 12, 12).toISOString() },
+      { id: UUID + 'b', weightLbs: 203, date: new Date(2026, 8, 20, 12).toISOString() },
     ],
     effects: [],
   };
