@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { render, screen, cleanup, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../App';
@@ -160,6 +160,11 @@ describe('F2/F12: unreadable stored rows never crash the app', () => {
 });
 
 describe('F2: ErrorBoundary', () => {
+  const realLocation = Object.getOwnPropertyDescriptor(window, 'location')!;
+  afterEach(() => {
+    Object.defineProperty(window, 'location', realLocation); // the tests below stub location.reload
+    vi.restoreAllMocks();
+  });
   function Boom(): never { throw new Error('kaboom'); }
 
   it('renders without the store and its Download raw data button downloads the stored string', async () => {
