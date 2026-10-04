@@ -12,7 +12,7 @@ import { sortByDate } from '../lib/insights';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { useToast } from '../components/ui/Toast';
 import { readFileAsText } from '../lib/dataTransfer';
-import { importWeightsCsv, WeightImportResult } from '../lib/weightImport';
+import { importWeightsCsv, MAX_IMPORT_BYTES, WeightImportResult } from '../lib/weightImport';
 
 export function Weight() {
   const { weights, deleteWeight, settings, addWeights } = useStore();
@@ -37,6 +37,10 @@ export function Weight() {
     e.target.value = '';
     if (!file) return;
     setImportError(null);
+    if (file.size > MAX_IMPORT_BYTES) {
+      setImportError('This file is too large to import (the limit is 5 MB). Split it into smaller files.');
+      return;
+    }
     const result = importWeightsCsv(await readFileAsText(file), { existing: weights, defaultUnit: unit });
     if (result.errors.length > 0) setImportError(result.errors[0]);
     else if (result.rows.length === 0) setImportError(`Nothing to import: ${result.duplicates} already in your log, ${result.skipped} rows couldn’t be read.`);

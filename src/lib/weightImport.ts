@@ -22,6 +22,18 @@ export interface WeightImportResult {
   errors: string[];
 }
 
+/** Hard limits, checked before the file is parsed. */
+export const MAX_IMPORT_BYTES = 5 * 1024 * 1024;
+export const MAX_IMPORT_ROWS = 50_000;
+/** Two weights on the same day closer than this (lb) count as the same reading. */
+const DUPLICATE_TOLERANCE_LBS = 0.1;
+
+function countLines(text: string): number {
+  let n = 0;
+  for (let i = text.indexOf('\n'); i !== -1; i = text.indexOf('\n', i + 1)) n++;
+  return text.length > 0 && text[text.length - 1] !== '\n' ? n + 1 : n;
+}
+
 const pad = (n: number) => String(n).padStart(2, '0');
 
 /** Parse ISO (date or date-time) and day-first (DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY) dates into a local 'YYYY-MM-DD'. */
@@ -75,6 +87,12 @@ const hasUnit = (h: string): WeightUnit | null =>
  */
 export function importWeightsCsv(text: string, opts: { existing: WeightEntry[]; defaultUnit: WeightUnit }): WeightImportResult {
   const base: WeightImportResult = { rows: [], skipped: 0, duplicates: 0, unit: opts.defaultUnit, unitSource: 'default', errors: [] };
+  if (text.length > MAX_IMPORT_BYTES) {
+    return { ...base, errors: [`This file is too large to import (the limit is 5 MB). Split it into smaller files.`] };
+  }
+  if (countLines(text) - 1 > MAX_IMPORT_ROWS) {
+    return { ...base, errors: [`This file has more than 50,000 rows, which is the most that can be imported at once. Split it into smaller files.`] };
+  }
   const table = parseCsv(text);
   if (table.length < 2) return { ...base, errors: ['The file needs a header row and at least one data row.'] };
 
@@ -120,8 +138,26 @@ export function importWeightsCsv(text: string, opts: { existing: WeightEntry[]; 
     }
   }
 
-  const existingKeys = opts.existing.map((w) => ({ day: isoToLocalDateString(w.date), lbs: w.weightLbs }));
-  const accepted: Array<{ day: string; lbs: number }> = [];
+  // Duplicate lookup in O(1) per row: weights seen per local day, bucketed by tolerance so that only the
+  // neighbouring buckets can contain a match.
+  const seen = new Map<string, number[]>();
+  const bucket = (lbs: number) => Math.round(lbs / DUPLICATE_TOLERANCE_LBS);
+  const remember = (day: string, lbs: number) => {
+    const key = `${day}|${bucket(lbs)}`;
+    const list = seen.get(key);
+    if (list) list.push(lbs);
+    else seen.set(key, [lbs]);
+  };
+  const isDuplicate = (day: string, lbs: number) => {
+    const b = bucket(lbs);
+    for (let k = b - 1; k <= b + 1; k++) {
+      const list = seen.get(`${day}|${k}`);
+      if (list && list.some((w) => Math.abs(w - lbs) < DUPLICATE_TOLERANCE_LBS)) return true;
+    }
+    return false;
+  };
+  for (const w of opts.existing) remember(isoToLocalDateString(w.date), w.weightLbs);
+
   let duplicates = 0;
   const rows: ImportedWeight[] = [];
   for (const p of parsed) {
@@ -129,9 +165,8 @@ export function importWeightsCsv(text: string, opts: { existing: WeightEntry[]; 
     const { min, max } = WEIGHT_BOUNDS[u];
     if (p.value < min || p.value > max) { skipped++; continue; }
     const lbs = u === 'kg' ? p.value * LBS_PER_KG : p.value;
-    const dup = [...existingKeys, ...accepted].some((e) => e.day === p.day && Math.abs(e.lbs - lbs) < 0.1);
-    if (dup) { duplicates++; continue; }
-    accepted.push({ day: p.day, lbs });
+    if (isDuplicate(p.day, lbs)) { duplicates++; continue; }
+    remember(p.day, lbs);
     rows.push({ date: dateOnlyToIso(p.day), weightLbs: lbs });
   }
   return { rows, skipped, duplicates, unit, unitSource, errors: [] };
