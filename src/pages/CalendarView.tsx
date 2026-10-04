@@ -1,0 +1,105 @@
+import React, { useState } from 'react';
+import { useStore } from '../store/useStore';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, subMonths, addMonths } from 'date-fns';
+import { ChevronLeft, ChevronRight, Syringe, Scale, Activity } from 'lucide-react';
+
+export function CalendarView() {
+  const { doses, weights, effects } = useStore();
+  const [currentDate, setCurrentDate] = useState(new Date());
+
+  const monthStart = startOfMonth(currentDate);
+  const monthEnd = endOfMonth(monthStart);
+  const startDate = monthStart;
+  const endDate = monthEnd;
+
+  const dateFormat = "d";
+  const days = eachDayOfInterval({
+      start: startDate,
+      end: endDate
+  });
+
+  const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
+  const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
+
+  return (
+    <div className="space-y-6">
+      <header className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight text-[#111827]">Calendar Log</h1>
+          <p className="text-[#667085] text-sm mt-0.5">View your doses, weight logs, and symptoms on a monthly grid</p>
+        </div>
+        <div className="flex items-center gap-3 bg-white p-1.5 rounded-[14px] border border-[#E5E7EB] shadow-xs">
+          <Button variant="outline" size="icon" onClick={prevMonth} className="rounded-[10px] border-0 h-8 w-8">
+            <ChevronLeft className="w-4 h-4 text-[#667085]" />
+          </Button>
+          <span className="font-semibold text-sm min-w-[110px] text-center text-[#111827]">
+            {format(currentDate, "MMMM yyyy")}
+          </span>
+          <Button variant="outline" size="icon" onClick={nextMonth} className="rounded-[10px] border-0 h-8 w-8">
+            <ChevronRight className="w-4 h-4 text-[#667085]" />
+          </Button>
+        </div>
+      </header>
+
+      <Card className="rounded-[24px] border-[#E5E7EB] bg-white shadow-xs">
+        <CardContent className="p-6">
+          <div className="grid grid-cols-7 gap-px mb-3">
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+              <div key={day} className="text-center text-xs font-semibold text-[#667085] py-2">
+                {day}
+              </div>
+            ))}
+          </div>
+          <div className="grid grid-cols-7 gap-2">
+            {/* Pad empty days for the start of the month */}
+            {Array.from({ length: monthStart.getDay() }).map((_, i) => (
+              <div key={`empty-${i}`} className="min-h-[85px] p-2" />
+            ))}
+            
+            {days.map((day) => {
+              const dayDose = doses.find(d => isSameDay(new Date(d.date), day));
+              const dayWeight = weights.find(w => isSameDay(new Date(w.date), day));
+              const dayEffect = effects.find(e => isSameDay(new Date(e.date), day));
+              
+              const isToday = isSameDay(day, new Date());
+
+              return (
+                <div 
+                  key={day.toISOString()} 
+                  className={`min-h-[85px] p-2.5 border rounded-[16px] flex flex-col gap-1 transition-all hover:bg-[#F8F9FC] cursor-pointer ${isToday ? 'border-[#6D4AFF] bg-[#F3F0FF]/30' : 'border-[#E5E7EB] bg-white'}`}
+                >
+                  <span className={`text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full ${isToday ? 'bg-[#6D4AFF] text-white' : 'text-[#667085]'}`}>
+                    {format(day, dateFormat)}
+                  </span>
+                  
+                  <div className="flex flex-col gap-1 mt-1">
+                    {dayDose && (
+                      <div className="flex items-center gap-1 text-[10px] bg-[#F3F0FF] text-[#6D4AFF] px-2 py-0.5 rounded-[6px] font-semibold truncate">
+                        <Syringe className="w-3 h-3 shrink-0" />
+                        <span className="truncate">{dayDose.amountMg}mg</span>
+                      </div>
+                    )}
+                    {dayWeight && (
+                      <div className="flex items-center gap-1 text-[10px] bg-emerald-50 text-[#16A34A] px-2 py-0.5 rounded-[6px] font-semibold truncate">
+                        <Scale className="w-3 h-3 shrink-0" />
+                        <span className="truncate">{dayWeight.weightLbs.toFixed(1)}</span>
+                      </div>
+                    )}
+                    {dayEffect && dayEffect.nausea !== 'none' && (
+                      <div className="flex items-center gap-1 text-[10px] bg-amber-50 text-amber-700 px-2 py-0.5 rounded-[6px] font-semibold truncate">
+                        <Activity className="w-3 h-3 shrink-0" />
+                        <span className="truncate">Symptom</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
