@@ -47,7 +47,9 @@ export function weeklyRate(weights: WeightEntry[], now: Date = new Date()): Week
     .filter((p) => Number.isFinite(p.t) && Number.isFinite(p.y) && p.t >= nowMs - RATE_WINDOW_DAYS * DAY_MS && p.t <= nowMs + DAY_MS);
   if (pts.length < MIN_RATE_POINTS) return null;
   const t0 = pts[0].t;
-  const xs = pts.map((p) => (p.t - t0) / DAY_MS);
+  // Days on the local calendar: a clock change in between must not turn 14 calendar days into 13.96 or 14.04.
+  const off0 = new Date(t0).getTimezoneOffset();
+  const xs = pts.map((p) => (p.t - t0) / DAY_MS - (new Date(p.t).getTimezoneOffset() - off0) / 1440);
   const spanDays = xs[xs.length - 1];
   if (spanDays < MIN_RATE_SPAN_DAYS) return null;
   const n = pts.length;

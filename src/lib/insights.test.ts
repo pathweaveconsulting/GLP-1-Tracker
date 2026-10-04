@@ -180,3 +180,25 @@ describe('counts', () => {
     expect(dosesBySite(ds)).toEqual([{ site: 'Abdomen: Lower Mid', count: 3 }]);
   });
 });
+
+describe('weeklyRate across a daylight-saving change', () => {
+  // Finds the first local day in 2026 whose UTC offset differs from the previous day (if this timezone has DST).
+  function dstDay(): Date | null {
+    for (let d = new Date(2026, 0, 2, 12); d.getFullYear() === 2026; d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1, 12)) {
+      const prev = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1, 12);
+      if (prev.getTimezoneOffset() !== d.getTimezoneOffset()) return d;
+    }
+    return null;
+  }
+  it('entries exactly 14 calendar days apart count as a 14-day span even when the clocks change in between', () => {
+    const t = dstDay();
+    if (!t) return; // no DST in this timezone: nothing to check (the NY / Auckland / LA CI runs do)
+    const at = (offsetDays: number, lbs: number): WeightEntry => ({ id: `d${offsetDays}`, weightLbs: lbs, date: new Date(t.getFullYear(), t.getMonth(), t.getDate() + offsetDays, 12).toISOString() });
+    const weights = [at(-7, 204), at(0, 202), at(7, 200)];
+    const now = new Date(t.getFullYear(), t.getMonth(), t.getDate() + 8, 10);
+    const r = weeklyRate(weights, now);
+    expect(r).not.toBeNull();
+    expect(r!.spanDays).toBe(14);
+    expect(r!.lbsPerWeek).toBeCloseTo(-2, 1); // -4 lb over 14 days, even though the real elapsed time is 13.96 or 14.04 days
+  });
+});
