@@ -407,3 +407,84 @@ describe('F9: one weigh-in and one dose never produce a projection', () => {
     expect(document.querySelector('main')!.textContent).toMatch(/Goal Date–Needs 3\+ weigh-ins over 2\+ weeks/);
   });
 });
+
+// ---------------------------------------------------------------- F10
+import { useState } from 'react';
+import { Modal } from '../components/ui/Modal';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
+
+describe('F10: dialog focus and stacked Escape', () => {
+  it.each([
+    ['/weight', /record weight/i, /log weight/i, /weight \(lbs\)/i],
+    ['/doses', /record injection/i, /log shot/i, /^medication/i],
+    ['/effects', /record symptoms/i, /log how you feel/i, /^date/i],
+    ['/settings', /edit profile/i, /edit profile/i, /primary medication/i],
+  ])('%s: opening the form dialog focuses its first field, not the Close button', async (path, opener, name, firstField) => {
+    seed7('empty', 'lbs');
+    const user = userEvent.setup();
+    await open7(path);
+    const trigger = screen.getAllByRole('button', { name: opener })[0];
+    await user.click(trigger);
+    const dialog = screen.getByRole('dialog', { name });
+    expect(within(dialog).getByLabelText(firstField)).toHaveFocus();
+    expect(within(dialog).getByRole('button', { name: /close dialog/i })).not.toHaveFocus();
+    await user.keyboard('{Escape}');
+    expect(trigger).toHaveFocus(); // focus returns to the trigger
+  });
+
+  it('confirm dialogs still focus Cancel', async () => {
+    seed7('empty', 'lbs');
+    const user = userEvent.setup();
+    await open7('/settings');
+    await user.click(screen.getByRole('button', { name: /erase local data/i }));
+    expect(within(screen.getByRole('alertdialog')).getByRole('button', { name: /cancel/i })).toHaveFocus();
+  });
+
+  function Stack() {
+    const [a, setA] = useState(true);
+    const [b, setB] = useState(false);
+    const [c, setC] = useState(false);
+    return (
+      <>
+        <button type="button">outside</button>
+        <Modal open={a} onClose={() => setA(false)} title="Dialog A"><button type="button" onClick={() => setB(true)}>Open B</button></Modal>
+        <Modal open={b} onClose={() => setB(false)} title="Dialog B"><button type="button" onClick={() => setC(true)}>Open C</button></Modal>
+        <ConfirmDialog open={c} title="Dialog C" description="sure?" confirmLabel="Yes" onConfirm={() => setC(false)} onCancel={() => setC(false)} />
+      </>
+    );
+  }
+
+  it('Escape closes only the topmost dialog, one at a time, and focus returns to each trigger', async () => {
+    const user = userEvent.setup();
+    render(<Stack />);
+    await user.click(screen.getByRole('button', { name: 'Open B' }));
+    const openC = screen.getByRole('button', { name: 'Open C' });
+    await user.click(openC);
+    expect(screen.getAllByRole('dialog').length + screen.getAllByRole('alertdialog').length).toBe(3);
+
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Dialog B' })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Dialog A' })).toBeInTheDocument();
+    expect(openC).toHaveFocus();
+
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog', { name: 'Dialog B' })).not.toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Dialog A' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open B' })).toHaveFocus();
+
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('Tab stays inside the top dialog only', async () => {
+    const user = userEvent.setup();
+    render(<Stack />);
+    await user.click(screen.getByRole('button', { name: 'Open B' }));
+    const top = screen.getByRole('dialog', { name: 'Dialog B' });
+    for (let i = 0; i < 6; i++) {
+      await user.tab();
+      expect(top.contains(document.activeElement)).toBe(true);
+    }
+  });
+});

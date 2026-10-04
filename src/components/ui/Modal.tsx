@@ -37,6 +37,7 @@ export function Modal({ open, onClose, title, subtitle, icon, children, widthCla
           type="button"
           onClick={onClose}
           aria-label="Close dialog"
+          data-dialog-close
           className={`absolute top-5 right-5 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${dark ? 'bg-slate-800 hover:bg-slate-700 text-[#D0D5DD]' : 'bg-[#F1F5F9] hover:bg-[#E5E7EB] text-[#667085]'}`}
         >
           <X className="w-4 h-4" aria-hidden="true" />
