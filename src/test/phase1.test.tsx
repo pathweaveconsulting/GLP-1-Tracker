@@ -25,11 +25,12 @@ describe('first run', () => {
     expect(screen.getAllByRole('alert').length).toBeGreaterThanOrEqual(4);
     expect(useStore.getState().hasOnboarded).toBe(false);
 
+    // Choose kg first: since R4 the unit toggle converts a number that is already typed (it no longer reinterprets it).
+    await user.click(screen.getByRole('button', { name: 'kg' }));
     await user.type(screen.getByLabelText(/starting weight/i), '90');
     await user.type(screen.getByLabelText(/goal weight/i), '75');
     await user.type(screen.getByLabelText(/height \(feet\)/i), '5');
     await user.type(screen.getByLabelText(/height \(inches\)/i), '8');
-    await user.click(screen.getByRole('button', { name: 'kg' }));
     await user.click(screen.getByRole('button', { name: /start my journey/i }));
     expect(screen.getByText(/please confirm/i)).toBeInTheDocument();
     expect(useStore.getState().hasOnboarded).toBe(false);
