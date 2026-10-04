@@ -3,6 +3,7 @@ import { useStore } from '../store/useStore';
 import { MEDICATION_OPTIONS } from '../lib/medications';
 import { ProfileField, ProfileFormInput, validateProfile } from '../lib/profile';
 import { todayLocalDateString } from '../lib/dates';
+import { SafetyNotice } from '../components/SafetyNotice';
 import type { Medication } from '../types';
 import type { WeightUnit } from '../lib/units';
 
@@ -170,14 +171,7 @@ export function Onboarding() {
             <FieldError id={id('startDate-err')} message={errors.startDate} />
           </div>
 
-          <div className="rounded-[16px] border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900 leading-relaxed" data-testid="onboarding-safety">
-            <p className="font-semibold mb-1">Before you start</p>
-            <p>
-              This app is a personal log and a simplified explainer. It is not medical advice and cannot replace your prescriber or pharmacist.
-              Follow your prescription and your care team's guidance for dosing, missed doses and side effects.
-              If you have severe or persistent abdominal pain, repeated vomiting, signs of an allergic reaction or any symptom that worries you, contact a clinician or emergency services.
-            </p>
-          </div>
+          <SafetyNotice variant="full" medication={form.medication} />
 
           <div>
             <label className="flex items-start gap-2.5 text-sm text-[#344054]">

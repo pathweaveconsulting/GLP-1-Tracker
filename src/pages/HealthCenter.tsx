@@ -8,6 +8,7 @@ import { generatePKCurve } from '../lib/glp1Utils';
 import { formatWeightChange, getWeightUnit } from '../lib/units';
 import { NEEDS_MORE_WEIGHT_DATA, latestWeight, nextDoseInfo, projectGoal, weeklyRate, weightMilestones } from '../lib/insights';
 import { recentSymptomSummary, severityLabel } from '../lib/symptoms';
+import { SafetyNotice } from '../components/SafetyNotice';
 
 export function HealthCenter() {
   const { doses, weights, effects, settings } = useStore();
@@ -167,6 +168,8 @@ export function HealthCenter() {
           </div>
         </CardContent>
       </Card>
+    
+      <SafetyNotice variant="full" />
     </div>
   );
 }

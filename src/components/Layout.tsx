@@ -4,6 +4,7 @@ import { Home, Syringe, Activity, FileText, Settings, Calendar, Scale, Database,
 import { format } from 'date-fns';
 import { useStore } from '../store/useStore';
 import { cn } from '../lib/utils';
+import { SafetyNotice } from './SafetyNotice';
 import { MobileMenuDrawer } from './modals/MobileMenuDrawer';
 
 const navSections = [
@@ -110,6 +111,9 @@ export function Layout() {
       <main className="flex-1 overflow-y-auto print:overflow-visible pb-24 md:pb-8">
         <div className="max-w-6xl mx-auto p-4 md:p-8">
           <Outlet />
+          <footer className="mt-10 pt-4 border-t border-[#E5E7EB] print:hidden">
+            <SafetyNotice variant="compact" />
+          </footer>
         </div>
       </main>
 

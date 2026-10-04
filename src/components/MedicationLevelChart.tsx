@@ -24,9 +24,7 @@ export function MedicationLevelChart({ className = '', onOpenSources }: Props) {
     semaglutide: { stroke: '#6D4AFF', fill: '#6D4AFF', dot: '#6D4AFF' }
   };
 
-  const activeMeds = pkData.medicationsList && pkData.medicationsList.length > 0
-    ? pkData.medicationsList
-    : ['retatrutide', 'tirzepatide'];
+  const activeMeds = pkData.medicationsList;
 
   return (
     <div className={`bg-white rounded-[24px] p-6 shadow-xs border border-[#E5E7EB] ${className}`}>
@@ -38,17 +36,29 @@ export function MedicationLevelChart({ className = '', onOpenSources }: Props) {
             {onOpenSources && (
               <button
                 onClick={onOpenSources}
+                aria-label="About the estimated level"
                 className="cursor-pointer text-[#98A2B3] hover:text-[#6D4AFF] transition-colors p-1 rounded-full hover:bg-[#F1F5F9]"
-                title="View clinical PK research sources"
               >
-                <Info className="w-4 h-4" />
+                <Info className="w-4 h-4" aria-hidden="true" />
               </button>
             )}
           </div>
           <p className="text-xs text-[#667085] mt-0.5">
-            Current level: <strong className="text-[#111827] font-semibold">{pkData.currentLevel} mg</strong>{' '}
-            <span className="text-[#98A2B3]">({pkData.percentOfPeak}%)</span>
+            {doses.length === 0 ? (
+              'Log a dose to see an estimate.'
+            ) : pkData.modelled ? (
+              <>
+                Estimated {pkData.medicationName} level now: <strong className="text-[#111827] font-semibold">{pkData.currentLevel} mg</strong>{' '}
+                <span className="text-[#98A2B3]">({pkData.percentOfPeak}% of your modelled peak)</span>
+              </>
+            ) : (
+              'No estimate is available for this medication.'
+            )}
           </p>
+          {pkData.mixedMedications && (
+            <p className="text-[11px] text-amber-800 mt-1">You’ve logged more than one medication. Each is drawn separately and never added together; the number above is for {pkData.medicationName}, your most recent.</p>
+          )}
+          {doses.length > 0 && <p className="text-[11px] text-[#98A2B3] mt-0.5">Simplified model, not a blood test. The right-hand side shows how the estimate would fall if no further doses were taken.</p>}
         </div>
 
         {/* LEGEND */}
@@ -134,6 +144,7 @@ export function MedicationLevelChart({ className = '', onOpenSources }: Props) {
           {(['2 weeks', '1 month', '3 months', 'All time'] as const).map((t) => (
             <button
               key={t}
+              aria-pressed={pkTimeline === t}
               onClick={() => setPkTimeline(t)}
               className={`px-3.5 py-1.5 rounded-[10px] transition-all cursor-pointer ${
                 pkTimeline === t 

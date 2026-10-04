@@ -2,6 +2,7 @@ import React, { useId, useState } from 'react';
 import { Card, CardContent } from '../components/ui/card';
 import { Lightbulb, Syringe, Scale, PauseCircle, Activity, Droplets, HeartPulse, Smile, ChevronDown } from 'lucide-react';
 import { useStore } from '../store/useStore';
+import { SafetyNotice } from '../components/SafetyNotice';
 import { buildRecommendations, Tip, TipIcon } from '../lib/recommendations';
 
 const ICONS: Record<TipIcon, typeof Lightbulb> = {
@@ -73,6 +74,8 @@ export function Recommendations() {
           {general.map((t) => <TipCard key={t.id} tip={t} />)}
         </div>
       </section>
+
+      <SafetyNotice variant="full" />
     </div>
   );
 }

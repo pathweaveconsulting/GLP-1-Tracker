@@ -5,6 +5,7 @@ import { Button } from '../components/ui/button';
 import { Lock, Download, Trash2, Shield, User, Sparkles } from 'lucide-react';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { formatHeight, formatWeight, getWeightUnit } from '../lib/units';
+import { SafetyNotice } from '../components/SafetyNotice';
 import { EditProfileModal } from '../components/modals/EditProfileModal';
 
 export function Settings() {
@@ -119,9 +120,11 @@ export function Settings() {
         </CardContent>
       </Card>
       
+      <SafetyNotice variant="full" />
+
       <div className="text-center pb-8 pt-4">
          <p className="text-[11px] text-[#98A2B3] font-medium">
-           GLP-1 Intelligence v2.0 • Medical Disclaimer: Always consult your physician.
+           GLP-1 Companion • Not medical advice. Always consult your care team.
          </p>
       </div>
 
