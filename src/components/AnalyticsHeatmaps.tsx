@@ -136,7 +136,7 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
   const getWeightChangeColor = (type?: string, hasLog?: boolean) => {
     switch (type) {
       case 'loss-high':
-        return 'bg-[#22C55E]'; // Dark green
+        return 'bg-[#15803d]'; // Dark green
       case 'loss-low':
         return 'bg-emerald-400'; // Light green
       case 'gain':
@@ -154,7 +154,7 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
     if (count === 0) return 'bg-[#F1F5F9]';
     if (count === 1) return 'bg-emerald-200';
     if (count === 2) return 'bg-emerald-400';
-    if (count === 3) return 'bg-[#22C55E]';
+    if (count === 3) return 'bg-[#15803d]';
     return 'bg-emerald-800';
   };
 
@@ -221,7 +221,7 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
             <div className="mt-6 flex items-center gap-3 text-xs font-semibold text-muted select-none">
               <span>Loss</span>
               <div className="flex items-center gap-1.5">
-                <span className="w-4 h-4 rounded-sm bg-[#22C55E] inline-block" title="Significant Loss" />
+                <span className="w-4 h-4 rounded-sm bg-[#15803d] inline-block" title="Significant Loss" />
                 <span className="w-4 h-4 rounded-sm bg-emerald-400 inline-block" title="Moderate Loss" />
                 <span className="w-4 h-4 rounded-sm bg-slate-300 inline-block" title="No Change / Logged" />
                 <span className="w-4 h-4 rounded-sm bg-red-500 inline-block" title="Weight Gain (Red)" />
@@ -290,7 +290,7 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
                 <span className="w-4 h-4 rounded-sm bg-[#F1F5F9] border border-[#E5E7EB] inline-block" title="0 logs" />
                 <span className="w-4 h-4 rounded-sm bg-emerald-200 inline-block" title="1 log" />
                 <span className="w-4 h-4 rounded-sm bg-emerald-400 inline-block" title="2 logs" />
-                <span className="w-4 h-4 rounded-sm bg-[#22C55E] inline-block" title="3 logs" />
+                <span className="w-4 h-4 rounded-sm bg-[#15803d] inline-block" title="3 logs" />
                 <span className="w-4 h-4 rounded-sm bg-emerald-800 inline-block" title="4+ logs" />
               </div>
               <span>More</span>

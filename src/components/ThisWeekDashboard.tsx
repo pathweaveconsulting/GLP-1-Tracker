@@ -165,8 +165,8 @@ export function ThisWeekDashboard({ className = '' }: Props) {
                 <YAxis domain={[0, 100]} ticks={[0, 50, 100]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#475569' }} />
                 <Tooltip formatter={(v) => `${v} (relative)`} />
                 <Line type="monotone" dataKey="medication" name="Medication level" stroke="#8b5cf6" strokeWidth={2.5} dot={false} />
-                <Line type="monotone" dataKey="appetite" name="Appetite" stroke="#f97316" strokeWidth={2.5} dot={false} />
-                <Line type="monotone" dataKey="foodNoise" name="Food noise" stroke="#10b981" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="appetite" name="Appetite" stroke="#c2410c" strokeWidth={2.5} strokeDasharray="7 4" dot={false} />
+                <Line type="monotone" dataKey="foodNoise" name="Food noise" stroke="#047857" strokeWidth={2} strokeDasharray="2 3" dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>

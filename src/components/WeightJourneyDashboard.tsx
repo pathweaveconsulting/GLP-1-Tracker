@@ -141,7 +141,7 @@ export function WeightJourneyDashboard({ className = '' }: Props) {
           <div className="my-3">
             <div className="text-3xl font-semibold text-[#111827] tracking-tight">{progressPercent == null ? '–' : `${progressPercent}%`}</div>
             {progressPercent != null && (
-              <div className="w-full bg-[#F1F5F9] h-2 rounded-full overflow-hidden mt-2"><div className="bg-[#22C55E] h-full rounded-full" style={{ width: `${progressPercent}%` }} /></div>
+              <div className="w-full bg-[#F1F5F9] h-2 rounded-full overflow-hidden mt-2"><div className="bg-[#15803d] h-full rounded-full" style={{ width: `${progressPercent}%` }} /></div>
             )}
           </div>
           <div className="text-xs font-normal text-subtle flex justify-between">
@@ -282,8 +282,8 @@ export function WeightJourneyDashboard({ className = '' }: Props) {
                     <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#475569' }} domain={['auto', 'auto']} width={44} />
                     <Tooltip labelFormatter={(t) => format(new Date(t as number), 'MMM d, yyyy')} />
                     <Line type="monotone" dataKey="actual" name="Logged" stroke="#6d4aff" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
-                    <Line type="linear" dataKey="projected" name="If pace continues" stroke="#94a3b8" strokeWidth={2} strokeDasharray="5 5" dot={false} connectNulls />
-                    {targetLbs != null && <ReferenceLine y={toDisplay(targetLbs)} stroke="#22c55e" strokeDasharray="2 4" />}
+                    <Line type="linear" dataKey="projected" name="If pace continues" stroke="#475569" strokeWidth={2} strokeDasharray="5 5" dot={false} connectNulls />
+                    {targetLbs != null && <ReferenceLine y={toDisplay(targetLbs)} stroke="#15803d" strokeDasharray="2 4" />}
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -303,7 +303,7 @@ export function WeightJourneyDashboard({ className = '' }: Props) {
                   <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#475569' }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#475569' }} />
                   <Tooltip />
-                  <Bar dataKey="change" name={`Change (${unit})`} fill="#22c55e" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="change" name={`Change (${unit})`} fill="#15803d" radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

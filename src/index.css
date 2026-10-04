@@ -13,3 +13,15 @@
   --color-accent: #5b3fe0;   /* brand text on tinted bg   6.50:1 on white */
   --color-info: #1d4ed8;     /* informational blue        6.70:1 on white (was blue-500, 3.36:1) */
 }
+
+/*
+ * Tailwind's default placeholder colour is the text colour at 50% opacity (about 3.4:1 on the input surfaces).
+ * Use the muted text token instead: 4.5:1 or better on white, #f8f9fc and #f1f5f9 (checked by scripts/contrast.mjs).
+ */
+@layer base {
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-muted);
+    opacity: 1;
+  }
+}

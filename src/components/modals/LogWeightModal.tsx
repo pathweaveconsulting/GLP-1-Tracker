@@ -59,7 +59,7 @@ function WeightForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
             onChange={(e) => setValue(e.target.value)}
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? `${uid}-w-err` : undefined}
-            className="w-full px-4 py-3 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-lg font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+            className="w-full px-4 py-3 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-lg font-semibold focus:ring-2 focus:ring-emerald-700 focus:outline-none"
           />
           <span className="absolute right-4 top-3.5 text-sm font-semibold text-subtle" aria-hidden="true">{unit}</span>
         </div>
@@ -76,7 +76,7 @@ function WeightForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
           onChange={(e) => setDate(e.target.value)}
           aria-invalid={dateError ? true : undefined}
           aria-describedby={dateError ? `${uid}-d-err` : undefined}
-          className="w-full px-3.5 py-2.5 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+          className="w-full px-3.5 py-2.5 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-sm font-medium focus:ring-2 focus:ring-emerald-700 focus:outline-none"
         />
         {dateError && <p id={`${uid}-d-err`} role="alert" className="text-xs text-danger mt-1">{dateError}</p>}
       </div>

@@ -17,7 +17,7 @@ interface Props {
 const card = 'bg-white p-6 rounded-[24px] border border-[#E5E7EB] shadow-xs';
 const SEV_TICKS = [0, 1, 2, 3];
 const sevTick = (v: number) => ['None', 'Mild', 'Mod', 'Severe'][v] ?? '';
-const DOSE_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#0d9488'];
+const DOSE_COLORS = ['#047857', '#3b82f6', '#b45309', '#ef4444', '#8b5cf6', '#0d9488'];
 
 const CELL: Record<Severity | 'empty', string> = {
   severe: 'bg-rose-700 text-white',
@@ -115,7 +115,7 @@ export function SideEffectsAnalyticsDashboard({ className = '' }: Props) {
                   <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#475569' }} />
                   <YAxis domain={[0, 3]} ticks={SEV_TICKS} tickFormatter={sevTick} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#475569' }} width={48} />
                   <Tooltip formatter={(v, _n, item) => [`${Number(v).toFixed(2)} (${(item.payload as { logs: number }).logs} logs)`, 'Average']} />
-                  <Bar dataKey="avg" name="Average severity" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="avg" name="Average severity" fill="#b45309" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -133,8 +133,8 @@ export function SideEffectsAnalyticsDashboard({ className = '' }: Props) {
                 <YAxis domain={[0, 3]} ticks={SEV_TICKS} tickFormatter={sevTick} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#475569' }} width={48} />
                 <Tooltip formatter={(v) => Number(v).toFixed(2)} />
                 <Legend />
-                <Line type="monotone" dataKey="hunger" name="Hunger" stroke="#f59e0b" strokeWidth={2.5} dot={{ r: 3 }} />
-                <Line type="monotone" dataKey="foodNoise" name="Food noise" stroke="#8b5cf6" strokeWidth={2.5} dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="hunger" name="Hunger" stroke="#b45309" strokeWidth={2.5} dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="foodNoise" name="Food noise" stroke="#8b5cf6" strokeWidth={2.5} strokeDasharray="7 4" dot={{ r: 3 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>

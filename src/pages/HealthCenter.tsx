@@ -42,13 +42,13 @@ export function HealthCenter() {
         <Card className="bg-[#111827] text-white rounded-[20px] border-0 shadow-xs">
           <CardContent className="p-5 flex flex-col justify-between h-full min-h-[140px]">
             <div className="flex justify-between items-start">
-              <Clock className="w-5 h-5 text-subtle" aria-hidden="true" />
+              <Clock className="w-5 h-5 text-slate-400" aria-hidden="true" />
               {next.daysUntil != null && next.daysUntil < 0 && (
                 <span className="px-2.5 py-0.5 bg-white/10 text-[11px] rounded-full font-medium">Past usual interval</span>
               )}
             </div>
             <div>
-              <span className="text-xs font-medium text-subtle block mb-1">Next shot (if weekly)</span>
+              <span className="text-xs font-medium text-slate-400 block mb-1">Next shot (if weekly)</span>
               <span className="text-xl font-semibold tracking-tight">{nextLabel}</span>
             </div>
           </CardContent>

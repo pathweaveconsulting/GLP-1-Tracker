@@ -27,7 +27,7 @@ const TRIAL_CURVES: Record<DrugOption, {
   Retatrutide: {
     name: 'TRIUMPH Phase 2 Trial (12mg)',
     type: 'band',
-    color: '#34d399', // Mint / teal shaded band
+    color: '#047857', // Mint / teal shaded band
     getExpectedPercentLoss: (days: number) => {
       // 24.2% mean loss at 48 weeks (336 days)
       const t = Math.min(days / 336, 1.2);
@@ -40,7 +40,7 @@ const TRIAL_CURVES: Record<DrugOption, {
   Tirzepatide: {
     name: 'SURMOUNT-1 Trial (15mg)',
     type: 'line',
-    color: '#38bdf8', // Bright blue curve
+    color: '#0369a1', // Bright blue curve
     getExpectedPercentLoss: (days: number) => {
       // 20.9% mean loss at 72 weeks (504 days)
       const t = Math.min(days / 504, 1.1);
@@ -51,7 +51,7 @@ const TRIAL_CURVES: Record<DrugOption, {
   Semaglutide: {
     name: 'STEP 1 Trial (2.4mg)',
     type: 'line',
-    color: '#38bdf8', // Bright blue curve
+    color: '#0369a1', // Bright blue curve
     getExpectedPercentLoss: (days: number) => {
       // 14.9% mean loss at 68 weeks (476 days)
       const t = Math.min(days / 476, 1.1);
@@ -248,7 +248,7 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
         <div className="flex items-center gap-1.5">
           <span 
             className="w-3 h-3 rounded-xs inline-block" 
-            style={{ backgroundColor: drugConfig.type === 'band' ? '#34d399' : '#38bdf8' }} 
+            style={{ backgroundColor: drugConfig.type === 'band' ? '#047857' : '#0369a1' }} 
           />
           <span>Clinical trial avg. loss ({selectedDrug})</span>
         </div>
@@ -268,8 +268,8 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
           <ComposedChart data={chartData} margin={{ top: 15, right: 20, left: -10, bottom: 5 }}>
             <defs>
               <linearGradient id="trialBandGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#34d399" stopOpacity={0.65}/>
-                <stop offset="95%" stopColor="#34d399" stopOpacity={0.25}/>
+                <stop offset="5%" stopColor="#047857" stopOpacity={0.65}/>
+                <stop offset="95%" stopColor="#047857" stopOpacity={0.25}/>
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />

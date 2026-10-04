@@ -43,7 +43,7 @@ export function Results() {
   const goalRemaining = currentWeight != null && settings.targetWeight > 0 ? Math.max(0, currentWeight - settings.targetWeight) : null;
   const doseCounts = doseCountsByAmount(doses);
   const siteCounts = dosesBySite(doses);
-  const DOSE_COLORS = ['#cbd5e1', '#8b5cf6', '#582967', '#0d9488', '#f43f5e', '#059669'];
+  const DOSE_COLORS = ['#475569', '#8b5cf6', '#582967', '#0d9488', '#f43f5e', '#059669'];
 
   return (
     <div className="space-y-6">
@@ -171,8 +171,8 @@ export function Results() {
                       <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#475569' }} dy={10} minTickGap={20} />
                       <YAxis domain={[0, 3]} ticks={[0, 1, 2, 3]} tickFormatter={(val) => ['None', 'Mild', 'Mod', 'Sev'][val]} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#475569' }} width={45} />
                       <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                      <Line type="monotone" dataKey="hunger" name="Hunger" stroke="#f59e0b" strokeWidth={2.5} dot={false} />
-                      <Line type="monotone" dataKey="foodNoise" name="Food Noise" stroke="#8b5cf6" strokeWidth={2.5} dot={false} />
+                      <Line type="monotone" dataKey="hunger" name="Hunger" stroke="#b45309" strokeWidth={2.5} dot={false} />
+                      <Line type="monotone" dataKey="foodNoise" name="Food Noise" stroke="#8b5cf6" strokeWidth={2.5} strokeDasharray="7 4" dot={false} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -192,7 +192,7 @@ export function Results() {
                       <YAxis domain={[0, 3]} ticks={[0, 1, 2, 3]} tickFormatter={(val) => ['None', 'Mild', 'Mod', 'Sev'][val]} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#475569' }} width={45} />
                       <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
                       <Line type="monotone" dataKey="nausea" name="Nausea" stroke="#ef4444" strokeWidth={2.5} dot={false} />
-                      <Line type="monotone" dataKey="fatigue" name="Fatigue" stroke="#3b82f6" strokeWidth={2.5} dot={false} />
+                      <Line type="monotone" dataKey="fatigue" name="Fatigue" stroke="#3b82f6" strokeWidth={2.5} strokeDasharray="7 4" dot={false} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>

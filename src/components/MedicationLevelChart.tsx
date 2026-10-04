@@ -18,9 +18,11 @@ export function MedicationLevelChart({ className = '', onOpenSources }: Props) {
   const pkData = generatePKCurve(doses, pkTimeline);
 
   // Medication colors
+  // A line pattern per medication, so the curves can be told apart without relying on colour.
+  const medDash: Record<string, string | undefined> = { tirzepatide: undefined, retatrutide: '7 4', semaglutide: '2 3' };
   const medColors: Record<string, { stroke: string; fill: string; dot: string }> = {
-    tirzepatide: { stroke: '#22C55E', fill: '#22C55E', dot: '#22C55E' },
-    retatrutide: { stroke: '#F59E0B', fill: '#F59E0B', dot: '#F59E0B' },
+    tirzepatide: { stroke: '#15803d', fill: '#15803d', dot: '#15803d' },
+    retatrutide: { stroke: '#b45309', fill: '#b45309', dot: '#b45309' },
     semaglutide: { stroke: '#6D4AFF', fill: '#6D4AFF', dot: '#6D4AFF' }
   };
 
@@ -81,12 +83,12 @@ export function MedicationLevelChart({ className = '', onOpenSources }: Props) {
           <AreaChart data={pkData.points} margin={{ top: 15, right: 15, left: -15, bottom: 5 }}>
             <defs>
               <linearGradient id="colorTirzepatide" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#22C55E" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#22C55E" stopOpacity={0.02}/>
+                <stop offset="5%" stopColor="#15803d" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#15803d" stopOpacity={0.02}/>
               </linearGradient>
               <linearGradient id="colorRetatrutide" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#F59E0B" stopOpacity={0.02}/>
+                <stop offset="5%" stopColor="#b45309" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#b45309" stopOpacity={0.02}/>
               </linearGradient>
               <linearGradient id="colorSemaglutide" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#6D4AFF" stopOpacity={0.3}/>
@@ -127,6 +129,7 @@ export function MedicationLevelChart({ className = '', onOpenSources }: Props) {
                   name={med}
                   stroke={colorObj.stroke} 
                   strokeWidth={2} 
+                  strokeDasharray={medDash[medLower]}
                   fillOpacity={1} 
                   fill={gradId}
                   dot={false}

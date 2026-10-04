@@ -122,7 +122,7 @@ function EffectsForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
           value={date}
           onChange={(e) => setDate(e.target.value)}
           aria-invalid={dateError ? true : undefined}
-          className="w-full px-3.5 py-2.5 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-sm font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none"
+          className="w-full px-3.5 py-2.5 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-sm font-medium focus:ring-2 focus:ring-amber-700 focus:outline-none"
         />
         {dateError && <p role="alert" className="text-xs text-danger mt-1">{dateError}</p>}
       </div>
@@ -157,7 +157,7 @@ function EffectsForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
 
       <div>
         <label htmlFor={`${uid}-notes`} className="block text-xs font-semibold text-muted mb-1.5">Notes & reflections</label>
-        <textarea id={`${uid}-notes`} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Energy, meals, water intake…" className="w-full px-3.5 py-2 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none" />
+        <textarea id={`${uid}-notes`} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Energy, meals, water intake…" className="w-full px-3.5 py-2 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-sm focus:ring-2 focus:ring-amber-700 focus:outline-none" />
       </div>
 
       <div className="pt-2 flex gap-3">

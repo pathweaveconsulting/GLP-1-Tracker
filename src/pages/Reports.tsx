@@ -96,7 +96,7 @@ export function Reports() {
                         <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#475569' }} />
                         <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#475569' }} domain={['auto', 'auto']} width={44} />
                         <Tooltip />
-                        <Line type="monotone" dataKey="weight" name={`Weight (${unit})`} stroke="#22C55E" strokeWidth={2.5} dot={{ r: 3 }} />
+                        <Line type="monotone" dataKey="weight" name={`Weight (${unit})`} stroke="#15803d" strokeWidth={2.5} dot={{ r: 3 }} />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>

@@ -426,16 +426,16 @@ export function ControlCenter() {
                    <Tooltip 
                       contentStyle={{ borderRadius: '16px', border: '1px solid #E5E7EB', boxShadow: '0 4px 20px rgba(16,24,40,0.05)' }}
                    />
-                   <Bar yAxisId="right" dataKey="shots" fill="#E9D5FF" barSize={18} radius={[4, 4, 0, 0]} name="Injections" />
+                   <Bar yAxisId="right" dataKey="shots" fill="#7e22ce" barSize={18} radius={[4, 4, 0, 0]} name="Injections" />
                    <Line 
                       yAxisId="left"
                       type="monotone" 
                       dataKey="weight" 
-                      stroke="#22C55E" 
+                      stroke="#15803d" 
                       strokeWidth={2}
                       connectNulls={false}
-                      dot={{ r: 4, fill: '#22C55E', strokeWidth: 0 }}
-                      activeDot={{ r: 6, fill: '#22C55E', stroke: '#fff', strokeWidth: 2 }}
+                      dot={{ r: 4, fill: '#15803d', strokeWidth: 0 }}
+                      activeDot={{ r: 6, fill: '#15803d', stroke: '#fff', strokeWidth: 2 }}
                       name={`Weekly Weight (${unit})`}
                    />
                  </ComposedChart>
