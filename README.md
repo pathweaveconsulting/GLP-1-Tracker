@@ -22,6 +22,7 @@ The product constitution is in [`AGENTS.md`](./AGENTS.md). The rules that shape 
 | `npm run preview` | Serve the production build |
 | `npm run lint` | Type-check (`tsc --noEmit`, strict mode) |
 | `npm test` | Run the whole test suite once |
+| `npm run contrast` | WCAG contrast audit of text colours (also enforced by a test) |
 | `npm run test:watch` | Watch mode |
 
 Run the tests under another timezone with e.g. `TZ=Pacific/Auckland npm test`.
@@ -58,7 +59,9 @@ Data formats you can export from Settings:
 - **CSV** with columns `Type, Date, Item, Value, Unit, Details, Notes` (UTF-8 with BOM, weights in your chosen unit, spreadsheet-formula-safe).
 - **JSON backup** (`format: "glp1-tracker-backup"`, `version: 1`) that can be restored, with strict validation.
 
-Weights can also be imported from a CSV (Weight page → import button).
+If stored data can't be read (invalid JSON, rows that fail validation), the app keeps the readable rows, shows a notice, and keeps a raw copy under `glp1-tracker-storage-corrupt` until you erase data from Settings. If the browser refuses to save (storage full or blocked), a banner offers a backup download.
+
+Weights can also be imported from a CSV (up to 5 MB / 50,000 rows) (Weight page → import button).
 
 ## Testing
 
@@ -74,6 +77,8 @@ Every new assertion should be mutation-checked at least once (break the code, wa
 ## Review medication reference data
 
 `src/lib/medications.ts` holds approximate half-lives, dose steps, maximums and missed-dose notes. They were written conservatively and are marked *approximate; verify against current prescribing information*. **A clinician or pharmacist should review them against current prescribing information before release.** They are used only to draw the simplified level estimate and to warn about unusual amounts; the app never tells anyone what dose to take.
+
+Also review before release: the wording of `SafetyNotice` (the red-flag list is labelled as examples, not exhaustive), and the decision that oral semaglutide (Rybelsus) is treated as "Other" because the weekly model does not describe a daily tablet.
 
 The reference curves in `WeightVsTrialsChart` (interpolated between approximate published trial endpoints) and the illustrative weekly-pattern chart on *This Week* also need review.
 
