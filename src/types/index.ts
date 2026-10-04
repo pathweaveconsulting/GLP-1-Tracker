@@ -65,6 +65,8 @@ export interface PersistedData {
 export interface AppState extends PersistedData {
   /** Rows that could not be read when the stored data was loaded (not persisted). */
   skippedEntries: number;
+  /** False when the copy of unreadable data could not be stored (storage full), so the notice must not claim one. Not persisted. */
+  rescueKept: boolean;
   dismissSkippedNotice: () => void;
   /** True while the browser refuses to save (storage full or blocked); data then lives in memory only. Not persisted. */
   storageError: boolean;

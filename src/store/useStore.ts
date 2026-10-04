@@ -16,6 +16,7 @@ export const useStore = create<AppState>()(
     (set) => ({
       ...emptyData(),
       skippedEntries: 0,
+      rescueKept: true,
       storageError: false,
       dismissStorageError: () => {
         storageErrorDismissed = true;
@@ -71,7 +72,7 @@ export const useStore = create<AppState>()(
       name: STORAGE_KEY,
       version: STORE_VERSION,
       storage: createSafeStorage<PersistedData>(),
-      merge: (persisted, current) => ({ ...current, ...(persisted as object), skippedEntries: storageReport.skipped }),
+      merge: (persisted, current) => ({ ...current, ...(persisted as object), skippedEntries: storageReport.skipped, rescueKept: storageReport.rescueKept }),
       migrate: (persisted, version) => migrateStore(persisted, version) as unknown as AppState,
       // Persist data only, never the action functions.
       partialize: (state): PersistedData => ({

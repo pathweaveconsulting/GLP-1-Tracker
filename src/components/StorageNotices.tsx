@@ -7,6 +7,7 @@ import { exportBackupJson } from '../lib/dataTransfer';
 /** Banners about problems loading stored data. Rendered above both the app and onboarding. */
 export function StorageNotices() {
   const skipped = useStore((s) => s.skippedEntries);
+  const rescueKept = useStore((s) => s.rescueKept);
   const dismiss = useStore((s) => s.dismissSkippedNotice);
   const storageError = useStore((s) => s.storageError);
   const dismissStorageError = useStore((s) => s.dismissStorageError);
@@ -46,8 +47,18 @@ export function StorageNotices() {
     <div role="status" className="bg-amber-50 border-b border-amber-200 text-amber-950 text-xs px-4 py-2.5 flex items-start gap-3">
       <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
       <p className="flex-1">
-        {skipped} {skipped === 1 ? 'entry' : 'entries'} couldn’t be read and {skipped === 1 ? 'was' : 'were'} skipped. A copy of the original data was kept on this device.{' '}
-        <button type="button" onClick={downloadOriginal} className="font-semibold underline">Download original data</button>
+        {skipped} {skipped === 1 ? 'entry' : 'entries'} couldn’t be read and {skipped === 1 ? 'was' : 'were'} skipped.{' '}
+        {rescueKept ? (
+          <>
+            A copy of the original data was kept on this device.{' '}
+            <button type="button" onClick={downloadOriginal} className="font-semibold underline">Download original data</button>
+          </>
+        ) : (
+          <>
+            We couldn’t keep a copy of your data. Download it now.{' '}
+            <button type="button" onClick={downloadBackup} className="font-semibold underline">Download a backup</button>
+          </>
+        )}
       </p>
       <button type="button" onClick={dismiss} aria-label="Dismiss notice" className="shrink-0"><X className="w-4 h-4" aria-hidden="true" /></button>
     </div>

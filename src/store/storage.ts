@@ -4,16 +4,18 @@ import { isObj } from '../lib/rowValidation';
 import { sanitizePersistedState } from './sanitize';
 
 /** What the last read of storage found; consumed by the store when it hydrates. */
-export const storageReport = { skipped: 0 };
+export const storageReport = { skipped: 0, rescueKept: true };
 
 /** Hooks the store installs so the adapter can report write failures without importing the store. */
 export const storageEvents: { onWriteError?: () => void; onWriteOk?: () => void } = {};
 
-function copyToCorrupt(raw: string): void {
+/** Stores the raw blob under CORRUPT_KEY; false when storage is full or blocked, so nothing may claim a copy exists. */
+function copyToCorrupt(raw: string): boolean {
   try {
     localStorage.setItem(CORRUPT_KEY, raw);
+    return true;
   } catch {
-    // Storage is full or blocked: nothing more we can do for the copy.
+    return false;
   }
 }
 
@@ -26,6 +28,7 @@ export function createSafeStorage<S>(): PersistStorage<S> {
   return {
     getItem: (name) => {
       storageReport.skipped = 0;
+      storageReport.rescueKept = true;
       let raw: string | null = null;
       try {
         raw = localStorage.getItem(name);
@@ -38,17 +41,29 @@ export function createSafeStorage<S>(): PersistStorage<S> {
       try {
         parsed = JSON.parse(raw);
       } catch {
-        copyToCorrupt(raw);
+        storageReport.rescueKept = copyToCorrupt(raw);
         return null;
       }
       if (!isObj(parsed) || !isObj(parsed.state)) {
-        copyToCorrupt(raw);
+        storageReport.rescueKept = copyToCorrupt(raw);
         return null;
       }
       const clean = sanitizePersistedState(parsed.state);
-      if (clean.dropped > 0 || clean.malformed) copyToCorrupt(raw);
+      const result = { ...parsed, state: clean.state };
+      if (clean.dropped > 0 || clean.malformed) {
+        storageReport.rescueKept = copyToCorrupt(raw);
+        // Once the original is safe, store the cleaned blob so the notice doesn't repeat on every reload.
+        // If the copy failed, leave the original in place: it is the only copy there is.
+        if (storageReport.rescueKept) {
+          try {
+            localStorage.setItem(name, JSON.stringify(result));
+          } catch {
+            // ignore: the next write will try again
+          }
+        }
+      }
       storageReport.skipped = clean.dropped;
-      return { ...parsed, state: clean.state } as unknown as StorageValue<S>;
+      return result as unknown as StorageValue<S>;
     },
     // Writes can fail (quota exceeded, storage blocked). The app keeps working in memory and the store is told,
     // so it can warn the user and offer a backup. Nothing here may throw into a click handler.
