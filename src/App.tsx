@@ -9,6 +9,7 @@ import { Layout } from './components/Layout';
 import { Onboarding } from './pages/Onboarding';
 import { useStore } from './store/useStore';
 import { ToastProvider } from './components/ui/Toast';
+import { StorageNotices } from './components/StorageNotices';
 
 // Route-level code splitting: each page (and the charting library it pulls in) loads on demand.
 const ControlCenter = lazy(() => import('./pages/ControlCenter').then((m) => ({ default: m.ControlCenter })));
@@ -26,9 +27,10 @@ const ThisWeekPage = lazy(() => import('./pages/ThisWeekPage').then((m) => ({ de
 
 export default function App() {
   const hasOnboarded = useStore((s) => s.hasOnboarded);
-  if (!hasOnboarded) return <Onboarding />;
+  if (!hasOnboarded) return (<><StorageNotices /><Onboarding /></>);
   return (
     <ToastProvider>
+      <StorageNotices />
       <Router>
         <Routes>
           <Route path="/" element={<Layout />}>

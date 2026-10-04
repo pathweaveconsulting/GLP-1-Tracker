@@ -1,6 +1,6 @@
-import type { DoseEvent, EffectEntry, Severity, UserSettings, WeightEntry } from '../types';
+import type { DoseEvent, EffectEntry, UserSettings, WeightEntry } from '../types';
 import { normalizeMedication } from './medications';
-import { normalizeSeverity } from './symptoms';
+import { checkDose, checkEffect, checkWeight, isIso, isObj, RowResult } from './rowValidation';
 
 export const BACKUP_FORMAT = 'glp1-tracker-backup';
 export const BACKUP_VERSION = 1;
@@ -25,11 +25,7 @@ export function createBackup(data: BackupData, now: Date = new Date()): BackupFi
 
 export type ParseBackupResult = { ok: true; data: BackupData; counts: { doses: number; weights: number; effects: number } } | { ok: false; errors: string[] };
 
-const isObj = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
-const isIso = (v: unknown): v is string => typeof v === 'string' && v.length >= 8 && !Number.isNaN(new Date(v).getTime());
 const MAX_ERRORS = 10;
-
-const SEVERITY_FIELDS = ['hunger', 'foodNoise', 'cravings', 'mood', 'energy', 'nausea', 'fatigue', 'constipation', 'diarrhea', 'reflux', 'appetiteLoss', 'bloating', 'dehydration', 'indigestion', 'insomnia'] as const;
 
 /** Strictly validate and normalise a backup file. Any invalid row rejects the whole restore, with readable reasons. */
 export function parseBackup(text: string): ParseBackupResult {
@@ -66,55 +62,19 @@ export function parseBackup(text: string): ParseBackupResult {
     return (id: string, n: number) => { if (ids.has(id)) err(`${kind} #${n}: duplicate id “${id}”.`); ids.add(id); };
   };
 
-  const checkDoseId = seen('Dose');
-  const doses: DoseEvent[] = arr('doses').flatMap((r, i): DoseEvent[] => {
-    const n = i + 1;
-    if (!isObj(r)) { err(`Dose #${n}: not an object.`); return []; }
-    const before = errors.length;
-    if (typeof r.id !== 'string' || !r.id) err(`Dose #${n}: missing id.`); else checkDoseId(r.id, n);
-    if (!isIso(r.date)) err(`Dose #${n}: “date” isn’t a valid date.`);
-    if (typeof r.amountMg !== 'number' || !Number.isFinite(r.amountMg) || r.amountMg <= 0 || r.amountMg > 1000) err(`Dose #${n}: “amountMg” must be a positive number.`);
-    const pain = r.painLevel == null ? 0 : r.painLevel;
-    if (typeof pain !== 'number' || !Number.isFinite(pain) || pain < 0 || pain > 10) err(`Dose #${n}: “painLevel” must be 0 to 10.`);
-    if (errors.length > before) return [];
-    return [{
-      id: r.id as string,
-      medication: normalizeMedication(r.medication),
-      amountMg: r.amountMg as number,
-      date: r.date as string,
-      site: typeof r.site === 'string' ? r.site : '',
-      painLevel: pain as number,
-      notes: typeof r.notes === 'string' ? r.notes : '',
-    }];
-  });
-
-  const checkWeightId = seen('Weight');
-  const weights: WeightEntry[] = arr('weights').flatMap((r, i): WeightEntry[] => {
-    const n = i + 1;
-    if (!isObj(r)) { err(`Weight #${n}: not an object.`); return []; }
-    const before = errors.length;
-    if (typeof r.id !== 'string' || !r.id) err(`Weight #${n}: missing id.`); else checkWeightId(r.id, n);
-    if (!isIso(r.date)) err(`Weight #${n}: “date” isn’t a valid date.`);
-    if (typeof r.weightLbs !== 'number' || !Number.isFinite(r.weightLbs) || r.weightLbs <= 0 || r.weightLbs > 1500) err(`Weight #${n}: “weightLbs” must be a number between 0 and 1500.`);
-    if (errors.length > before) return [];
-    return [{ id: r.id as string, date: r.date as string, weightLbs: r.weightLbs as number }];
-  });
-
-  const checkEffectId = seen('Symptom log');
-  const effects: EffectEntry[] = arr('effects').flatMap((r, i): EffectEntry[] => {
-    const n = i + 1;
-    if (!isObj(r)) { err(`Symptom log #${n}: not an object.`); return []; }
-    const before = errors.length;
-    if (typeof r.id !== 'string' || !r.id) err(`Symptom log #${n}: missing id.`); else checkEffectId(r.id, n);
-    if (!isIso(r.date)) err(`Symptom log #${n}: “date” isn’t a valid date.`);
-    if (errors.length > before) return [];
-    const entry = { id: r.id as string, date: r.date as string, notes: typeof r.notes === 'string' ? r.notes : '' } as EffectEntry;
-    for (const k of SEVERITY_FIELDS) (entry as unknown as Record<string, Severity>)[k] = normalizeSeverity(r[k]);
-    if (isObj(r.customEffects)) {
-      entry.customEffects = Object.fromEntries(Object.entries(r.customEffects).map(([name, v]) => [name, normalizeSeverity(v)]));
-    }
-    return [entry];
-  });
+  const rows = <T,>(key: 'doses' | 'weights' | 'effects', kind: string, check: (r: unknown) => RowResult<T>): T[] => {
+    const checkId = seen(kind);
+    return arr(key).flatMap((r, i): T[] => {
+      const n = i + 1;
+      if (isObj(r) && typeof r.id === 'string' && r.id) checkId(r.id, n);
+      const res = check(r);
+      if (!res.ok) { res.reasons.forEach((m) => err(`${kind} #${n}: ${m}`)); return []; }
+      return [res.row];
+    });
+  };
+  const doses: DoseEvent[] = rows('doses', 'Dose', checkDose);
+  const weights: WeightEntry[] = rows('weights', 'Weight', checkWeight);
+  const effects: EffectEntry[] = rows('effects', 'Symptom log', checkEffect);
 
   let settings: UserSettings | null = null;
   if (!isObj(d.settings)) {

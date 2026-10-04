@@ -3,13 +3,17 @@ import { persist } from 'zustand/middleware';
 import { AppState, PersistedData } from '../types';
 import { newId } from '../lib/id';
 import { emptyData, migrateStore, STORE_VERSION } from './migrate';
+import { CORRUPT_KEY, STORAGE_KEY } from './keys';
+import { createSafeStorage, storageReport } from './storage';
 
-export const STORAGE_KEY = 'glp1-tracker-storage';
+export { STORAGE_KEY, CORRUPT_KEY };
 
 export const useStore = create<AppState>()(
   persist(
     (set) => ({
       ...emptyData(),
+      skippedEntries: 0,
+      dismissSkippedNotice: () => set({ skippedEntries: 0 }),
 
       completeOnboarding: (settings, opts) =>
         set((state) => ({
@@ -23,8 +27,14 @@ export const useStore = create<AppState>()(
         })),
 
       resetAllData: () => {
-        set(emptyData());
+        set({ ...emptyData(), skippedEntries: 0 });
         useStore.persist.clearStorage();
+        // "Erase" must remove everything the app keeps, including a rescue copy of unreadable data.
+        try {
+          localStorage.removeItem(CORRUPT_KEY);
+        } catch {
+          // ignore
+        }
       },
 
       replaceAllData: (data) =>
@@ -52,6 +62,8 @@ export const useStore = create<AppState>()(
     {
       name: STORAGE_KEY,
       version: STORE_VERSION,
+      storage: createSafeStorage<PersistedData>(),
+      merge: (persisted, current) => ({ ...current, ...(persisted as object), skippedEntries: storageReport.skipped }),
       migrate: (persisted, version) => migrateStore(persisted, version) as unknown as AppState,
       // Persist data only, never the action functions.
       partialize: (state): PersistedData => ({

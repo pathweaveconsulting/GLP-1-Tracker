@@ -80,3 +80,134 @@ describe('F1: welcome-back onboarding after an upgrade', () => {
     cleanup();
   });
 });
+
+// ---------------------------------------------------------------- F2 + F12
+import { vi } from 'vitest';
+import { CORRUPT_KEY } from '../store/keys';
+import { ErrorBoundary } from '../components/ErrorBoundary';
+
+describe('F2/F12: unreadable stored rows never crash the app', () => {
+  const goodW = { id: UUID + 'w', weightLbs: 201, date: '2026-09-12T12:00:00.000Z' };
+  const goodD = { id: UUID + 'd', medication: 'Tirzepatide', amountMg: 5, date: '2026-09-10T12:00:00.000Z', site: 'x', painLevel: 0, notes: '' };
+  const v1 = (state: object) => ({ state: { effects: [], settings: { medication: 'Tirzepatide', startingWeight: 210, targetWeight: 180, heightInches: 70, startDate: '2026-09-01T12:00:00.000Z', weightUnit: 'lbs' }, hasOnboarded: true, ...state }, version: 1 });
+
+  const cases: Array<[string, object | string, number]> = [
+    ['a dose row with no date', v1({ doses: [goodD, { id: UUID + 'x', medication: 'Tirzepatide', amountMg: 5 }], weights: [goodW] }), 1],
+    ['a weight with date "zzz"', v1({ doses: [goodD], weights: [goodW, { id: UUID + 'z', weightLbs: 200, date: 'zzz' }] }), 1],
+    ['a dose with amountMg "abc"', v1({ doses: [goodD, { ...goodD, id: UUID + 'a', amountMg: 'abc' }], weights: [goodW] }), 1],
+    ['rows that are not objects', v1({ doses: [goodD, null, 5, 'x'], weights: [goodW] }), 3],
+    ['the same garbage in an old (version 0) blob', { state: { doses: [goodD, { id: UUID + 'x' }], weights: [goodW], effects: [], settings: demoSettings }, version: 0 }, 1],
+  ];
+  for (const [name, blob, expectedDropped] of cases) {
+    it(`${name}: no crash, valid rows survive, notice shown, original kept`, async () => {
+      const raw = typeof blob === 'string' ? blob : JSON.stringify(blob);
+      await rehydrateFrom(raw);
+      const s = useStore.getState();
+      expect(s.skippedEntries).toBe(expectedDropped);
+      expect(s.weights.map((w) => w.id)).toEqual([goodW.id]);
+      expect(s.doses.map((d) => d.id)).toContain(goodD.id);
+      expect(localStorage.getItem(CORRUPT_KEY)).toBe(raw);
+
+      window.history.pushState({}, '', '/');
+      render(<App />);
+      expect(await screen.findAllByRole('heading', { level: 1 })).not.toHaveLength(0);
+      expect(screen.getAllByRole('status').map((n) => n.textContent).join(' ')).toContain(`${expectedDropped} ${expectedDropped === 1 ? 'entry' : 'entries'} couldn’t be read`);
+      cleanup();
+    });
+  }
+
+  it('the notice is dismissible', async () => {
+    await rehydrateFrom(JSON.stringify(v1({ doses: [goodD, { id: UUID }], weights: [goodW] })));
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: /dismiss notice/i }));
+    expect(screen.queryByText(/couldn’t be read/)).not.toBeInTheDocument();
+    expect(useStore.getState().skippedEntries).toBe(0);
+  });
+
+  for (const [name, raw] of [['{"state":null}', '{"state":null,"version":1}'], ['truncated JSON', '{"state":{"doses":[{"id":"abc'], ['not JSON', 'hello']] as const) {
+    it(`${name}: blank app, no crash, original blob copied before anything overwrites it`, async () => {
+      await rehydrateFrom(raw);
+      expect(useStore.getState().weights).toEqual([]);
+      expect(localStorage.getItem(CORRUPT_KEY)).toBe(raw);
+      render(<App />);
+      expect((await screen.findAllByRole('heading', { level: 1 }))[0]).toHaveTextContent(/set up your journey/i);
+      // a later write replaces the main key but never the rescue copy
+      useStore.getState().addWeight({ date: new Date().toISOString(), weightLbs: 200 });
+      expect(localStorage.getItem(CORRUPT_KEY)).toBe(raw);
+      cleanup();
+    });
+  }
+
+  it('keeps only the newest rescue copy', async () => {
+    await rehydrateFrom('first-garbage');
+    await rehydrateFrom('second-garbage');
+    expect(localStorage.getItem(CORRUPT_KEY)).toBe('second-garbage');
+  });
+
+  it('valid data is not copied and shows no notice', async () => {
+    await rehydrateFrom(JSON.stringify(v1({ doses: [goodD], weights: [goodW] })));
+    expect(localStorage.getItem(CORRUPT_KEY)).toBeNull();
+    expect(useStore.getState().skippedEntries).toBe(0);
+  });
+
+  it('Erase in Settings also removes the rescue copy', async () => {
+    await rehydrateFrom('garbage');
+    expect(localStorage.getItem(CORRUPT_KEY)).toBe('garbage');
+    useStore.getState().resetAllData();
+    expect(localStorage.getItem(CORRUPT_KEY)).toBeNull();
+  });
+});
+
+describe('F2: ErrorBoundary', () => {
+  function Boom(): never { throw new Error('kaboom'); }
+
+  it('renders without the store and its Download raw data button downloads the stored string', async () => {
+    const raw = JSON.stringify({ state: { weights: [] }, version: 1 });
+    localStorage.setItem(STORAGE_KEY, raw);
+    const blobs: Blob[] = [];
+    URL.createObjectURL = vi.fn((b: Blob | MediaSource) => { blobs.push(b as Blob); return 'blob:x'; });
+    URL.revokeObjectURL = vi.fn();
+    const clicks: string[] = [];
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) { clicks.push(this.download); });
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const user = userEvent.setup();
+    render(<ErrorBoundary><Boom /></ErrorBoundary>);
+    expect(screen.getByRole('alert')).toHaveTextContent(/something went wrong/i);
+    await user.click(screen.getByRole('button', { name: /download raw data/i }));
+    expect(clicks[0]).toMatch(/^glp1-tracker-raw-data-.*\.json$/);
+    const text = await new Promise<string>((res) => { const r = new FileReader(); r.onload = () => res(String(r.result)); r.readAsText(blobs[0]); });
+    expect(text).toBe(raw);
+    err.mockRestore();
+  });
+
+  it('Reset app asks first, keeps a rescue copy, clears the main key and reloads', async () => {
+    localStorage.setItem(STORAGE_KEY, 'precious');
+    const reload = vi.fn();
+    Object.defineProperty(window, 'location', { configurable: true, value: { ...window.location, reload } });
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const user = userEvent.setup();
+    render(<ErrorBoundary><Boom /></ErrorBoundary>);
+    await user.click(screen.getByRole('button', { name: /reset app/i }));
+    expect(localStorage.getItem(STORAGE_KEY)).toBe('precious'); // not yet
+    await user.click(screen.getByRole('button', { name: /erase and reload/i }));
+    expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+    expect(localStorage.getItem(CORRUPT_KEY)).toBe('precious');
+    expect(reload).toHaveBeenCalled();
+    err.mockRestore();
+  });
+
+  it('Reload calls location.reload and a healthy tree renders normally', async () => {
+    const reload = vi.fn();
+    Object.defineProperty(window, 'location', { configurable: true, value: { ...window.location, reload } });
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const user = userEvent.setup();
+    const { unmount } = render(<ErrorBoundary><Boom /></ErrorBoundary>);
+    await user.click(screen.getByRole('button', { name: /^reload$/i }));
+    expect(reload).toHaveBeenCalled();
+    unmount();
+    render(<ErrorBoundary><p>fine</p></ErrorBoundary>);
+    expect(screen.getByText('fine')).toBeInTheDocument();
+    err.mockRestore();
+  });
+});
