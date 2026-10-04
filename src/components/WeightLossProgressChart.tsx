@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Info } from 'lucide-react';
 import { 
-  ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceDot 
+  ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid 
 } from 'recharts';
-import { format, subDays, subMonths, subYears, isAfter, isBefore } from 'date-fns';
+import { format, subDays, subMonths, subYears } from 'date-fns';
 import { useStore } from '../store/useStore';
 import { getWeightUnit, lbsToDisplay } from '../lib/units';
 

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles, Calendar, CheckCircle2, TrendingDown, TrendingUp, Award, Flag, Zap, Compass, Star, Minus } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar, AreaChart, Area, ReferenceLine } from 'recharts';

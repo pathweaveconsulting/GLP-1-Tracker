@@ -1,7 +1,7 @@
-import React, { useId, useRef } from 'react';
+import { useId, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useDialog } from '../../hooks/useDialog';
-import { X, Home, Syringe, Scale, ClipboardList, Activity, Lightbulb, CircleDashed, HeartPulse, Database, Calendar, FileText, Settings, Sparkles, Compass } from 'lucide-react';
+import { X, Home, Syringe, Scale, ClipboardList, Activity, Lightbulb, HeartPulse, Database, Calendar, FileText, Settings, Sparkles } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;

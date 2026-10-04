@@ -1,6 +1,6 @@
-import React, { Suspense, useState } from 'react';
+import { Suspense, useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
-import { Home, Syringe, Activity, FileText, Settings, Calendar, Scale, Database, Lightbulb, CircleDashed, HeartPulse, MoreHorizontal, Sparkles, Compass, UserRound } from 'lucide-react';
+import { Home, Syringe, Activity, FileText, Settings, Calendar, Scale, Database, Lightbulb, HeartPulse, MoreHorizontal, Sparkles, UserRound } from 'lucide-react';
 import { format } from 'date-fns';
 import { useStore } from '../store/useStore';
 import { cn } from '../lib/utils';

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button';
 import { WeightLossProgressChart } from '../components/WeightLossProgressChart';
 import { format } from 'date-fns';
-import { Scale, TrendingDown, TrendingUp, Plus, Upload, Trash2, Sparkles, ListFilter, Compass } from 'lucide-react';
+import { TrendingDown, TrendingUp, Plus, Upload, Trash2, ListFilter, Compass } from 'lucide-react';
 import { LogWeightModal } from '../components/modals/LogWeightModal';
 import { WeightJourneyDashboard } from '../components/WeightJourneyDashboard';
 import { formatWeight, formatWeightChange, getWeightUnit } from '../lib/units';

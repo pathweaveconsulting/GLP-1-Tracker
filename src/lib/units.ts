@@ -37,10 +37,6 @@ export function displayToLbs(value: number, unit: WeightUnit): number {
   return unit === 'kg' ? value * LBS_PER_KG : value;
 }
 
-export function lbsToKg(lbs: number): number {
-  return lbs / LBS_PER_KG;
-}
-
 export function formatWeight(lbs: number | null | undefined, unit: WeightUnit, opts: { unit?: boolean; digits?: number } = {}): string {
   if (lbs == null || !Number.isFinite(lbs)) return '–';
   const digits = opts.digits ?? 1;

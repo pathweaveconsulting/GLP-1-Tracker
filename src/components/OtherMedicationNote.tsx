@@ -1,4 +1,3 @@
-import React from 'react';
 import { Info } from 'lucide-react';
 import { OTHER_MEDICATION_NOTE } from '../lib/medications';
 import type { Medication } from '../types';

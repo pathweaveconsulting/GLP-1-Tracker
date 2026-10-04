@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { 
-  Menu, Bell, Calendar as CalendarIcon, TrendingDown, 
-  Trophy, BarChart3, Info, ChevronDown, Syringe, Sparkles,
-  Scale, Smile, FileText, ChevronRight, X, Settings as SettingsIcon
+  Menu, Bell, TrendingDown, 
+  Syringe, Sparkles,
+  Scale, Smile, FileText, ChevronRight, Settings as SettingsIcon
 } from 'lucide-react';
 import { 
-  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, 
-  ComposedChart, Line, Bar, ReferenceDot
+  XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, 
+  ComposedChart, Line, Bar
 } from 'recharts';
 import { format, subDays, startOfWeek, endOfWeek } from 'date-fns';
 import { LogDoseModal } from '../components/modals/LogDoseModal';
@@ -30,7 +30,6 @@ export function ControlCenter() {
   const { settings, weights, doses, effects } = useStore();
 
   // Filter states
-  const [pkTimeline, setPkTimeline] = useState<'2 weeks' | '1 month' | '3 months' | 'All time'>('3 months');
   const [weightTimeline, setWeightTimeline] = useState<'Weekly' | 'Monthly' | '3 Months' | 'All Time'>('Weekly');
   
   // Modal states
@@ -61,7 +60,7 @@ export function ControlCenter() {
   const notificationCount = buildNotifications({ doses, weights, effects, settings }).length;
 
   // Estimated medication level for the most recently dosed medication
-  const pkData = generatePKCurve(sortedDoses, pkTimeline);
+  const pkData = generatePKCurve(sortedDoses, '2 weeks');
   const shotPhaseInfo = calculateShotPhase(sortedDoses);
 
   // Weekly weight & injections chart: weeks without a weigh-in stay empty (no invented points)

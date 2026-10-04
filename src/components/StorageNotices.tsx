@@ -1,4 +1,3 @@
-import React from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { CORRUPT_KEY } from '../store/keys';

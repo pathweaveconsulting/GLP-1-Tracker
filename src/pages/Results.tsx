@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -12,7 +12,7 @@ import { bmi as calcBmi, bmiCategory, formatWeight, formatWeightChange, getWeigh
 import { dosesBySite, doseCountsByAmount, latestWeight, weeklyRate } from '../lib/insights';
 import { SEVERITY_RANK, sevOf, sortEffects } from '../lib/symptoms';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
-import { Activity, Sparkles, TrendingUp, Compass } from 'lucide-react';
+import { Sparkles, TrendingUp, Compass } from 'lucide-react';
 
 export function Results() {
   const { weights, settings, effects, doses } = useStore();

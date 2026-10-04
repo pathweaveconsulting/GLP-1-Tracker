@@ -1,4 +1,3 @@
-import React from 'react';
 import { Bell, Syringe, TrendingDown, Trophy, HeartPulse, Scale, CheckCircle2 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { buildNotifications, NotificationKind } from '../../lib/notifications';

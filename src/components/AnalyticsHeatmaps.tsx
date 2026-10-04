@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { 
-  format, subDays, startOfWeek, addDays, differenceInDays, isSameMonth, startOfMonth 
+  format, subDays, startOfWeek, addDays 
 } from 'date-fns';
 import { useStore } from '../store/useStore';
 import { formatWeightChange, getWeightUnit } from '../lib/units';
@@ -12,7 +12,6 @@ interface Props {
 export function AnalyticsHeatmaps({ className = '' }: Props) {
   const { weights, doses, effects, settings } = useStore();
   const unit = getWeightUnit(settings);
-  const [hoveredCellInfo, setHoveredCellInfo] = useState<string | null>(null);
 
   // Generate calendar grid for the past ~16 weeks (approx 112 days) up to today
   const calendarData = useMemo(() => {
@@ -209,8 +208,6 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
                         <div
                           key={day.dateStr}
                           title={tooltipText}
-                          onMouseEnter={() => setHoveredCellInfo(tooltipText)}
-                          onMouseLeave={() => setHoveredCellInfo(null)}
                           className={`w-6 h-6 rounded-md transition-all cursor-pointer ${colorClass} hover:ring-2 hover:ring-purple-400 hover:scale-105`}
                         />
                       );
@@ -277,8 +274,6 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
                         <div
                           key={`act-${day.dateStr}`}
                           title={tooltipText}
-                          onMouseEnter={() => setHoveredCellInfo(tooltipText)}
-                          onMouseLeave={() => setHoveredCellInfo(null)}
                           className={`w-6 h-6 rounded-md transition-all cursor-pointer ${colorClass} hover:ring-2 hover:ring-purple-400 hover:scale-105`}
                         />
                       );
