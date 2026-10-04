@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useStore } from '../store/useStore';
+import { formatWeight, getWeightUnit } from '../lib/units';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, subMonths, addMonths } from 'date-fns';
 import { ChevronLeft, ChevronRight, Syringe, Scale, Activity } from 'lucide-react';
 
 export function CalendarView() {
-  const { doses, weights, effects } = useStore();
+  const { doses, weights, effects, settings } = useStore();
+  const unit = getWeightUnit(settings);
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const monthStart = startOfMonth(currentDate);
@@ -84,7 +86,7 @@ export function CalendarView() {
                     {dayWeight && (
                       <div className="flex items-center gap-1 text-[10px] bg-emerald-50 text-[#16A34A] px-2 py-0.5 rounded-[6px] font-semibold truncate">
                         <Scale className="w-3 h-3 shrink-0" />
-                        <span className="truncate">{dayWeight.weightLbs.toFixed(1)}</span>
+                        <span className="truncate">{formatWeight(dayWeight.weightLbs, unit)}</span>
                       </div>
                     )}
                     {dayEffect && dayEffect.nausea !== 'none' && (

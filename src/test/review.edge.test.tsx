@@ -199,11 +199,11 @@ describe('backup portability across display units', () => {
 });
 
 describe('calendar weights follow the display unit', () => {
-  it.fails('shows kilograms in kg mode (it prints the pound value unlabelled)', async () => {
+  it('shows kilograms in kg mode, converted and labelled', async () => {
     seedStore('empty', 'kg');
     useStore.setState({ weights: [{ id: 'k', date: isoDaysAgo(1), weightLbs: 220.462 }] });
     await open('/calendar');
-    expect(mainText()).toContain('100.0');
+    expect(mainText()).toContain('100.0 kg');
   });
 });
 
