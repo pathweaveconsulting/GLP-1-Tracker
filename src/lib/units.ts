@@ -24,6 +24,14 @@ export function lbsToDisplay(lbs: number, unit: WeightUnit): number {
   return unit === 'kg' ? round1(lbs / LBS_PER_KG) : round1(lbs);
 }
 
+/**
+ * Value to show in an editable field: 1 decimal for pounds, 2 for kilograms (0.1 kg is 0.22 lb, too coarse to
+ * show something the user may edit and save back).
+ */
+export function lbsToInput(lbs: number, unit: WeightUnit): number {
+  return unit === 'kg' ? Math.round((lbs / LBS_PER_KG) * 100) / 100 : round1(lbs);
+}
+
 /** Convert a typed value in `unit` into the canonical pounds (full precision). */
 export function displayToLbs(value: number, unit: WeightUnit): number {
   return unit === 'kg' ? value * LBS_PER_KG : value;

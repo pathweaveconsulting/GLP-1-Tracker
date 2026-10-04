@@ -42,7 +42,7 @@ describe('weight entry in kg is stored as pounds', () => {
 
 describe('profile unit switch', () => {
   it('converts typed values when the unit toggles, in both directions', () => {
-    expect(convertTyped('220.5', 'lbs', 'kg')).toBe('100');
+    expect(convertTyped('220.5', 'lbs', 'kg')).toBe('100.02'); // kg is shown to 2 decimals (F6)
     expect(convertTyped('100', 'kg', 'lbs')).toBe('220.5');
     expect(convertTyped('', 'lbs', 'kg')).toBe('');
     expect(convertTyped('abc', 'lbs', 'kg')).toBe('abc');
@@ -56,14 +56,14 @@ describe('profile unit switch', () => {
     const dialog = screen.getByRole('dialog', { name: /edit profile/i });
     expect(within(dialog).getByLabelText(/starting weight \(lbs\)/i)).toHaveValue(220);
     await user.click(within(dialog).getByRole('button', { name: 'kg' }));
-    expect(within(dialog).getByLabelText(/starting weight \(kg\)/i)).toHaveValue(99.8);
+    expect(within(dialog).getByLabelText(/starting weight \(kg\)/i)).toHaveValue(99.79);
     await user.clear(within(dialog).getByLabelText(/goal weight \(kg\)/i));
     await user.type(within(dialog).getByLabelText(/goal weight \(kg\)/i), '70');
     await user.click(within(dialog).getByRole('button', { name: /save profile/i }));
     const s = useStore.getState().settings;
     expect(s.weightUnit).toBe('kg');
     expect(s.targetWeight).toBeCloseTo(70 * 2.2046226, 3);
-    expect(s.startingWeight).toBeCloseTo(99.8 * 2.2046226, 3);
+    expect(s.startingWeight).toBe(220); // untouched fields keep their exact stored pounds (F6)
   });
 });
 

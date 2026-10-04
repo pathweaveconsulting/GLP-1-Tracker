@@ -95,28 +95,56 @@ describe('unit round trips', () => {
     expect(worst).toBeLessThan(0.12);
   });
 
-  it.fails('EXPECTED by the review brief: a kg round trip should be within 0.05 lb (it is not: kg is shown to 0.1 kg = 0.22 lb)', () => {
-    let worst = 0;
-    for (const lbs of sweep(100, 400)) worst = Math.max(worst, Math.abs(displayToLbs(lbsToDisplay(lbs, 'kg'), 'kg') - lbs));
-    expect(worst).toBeLessThan(0.05);
+  it('F6: opening and saving an unchanged profile 25 times in kg mode drifts by under 0.001 lb', async () => {
+    seedStore('empty', 'kg');
+    useStore.setState({ settings: { ...useStore.getState().settings, startingWeight: 223.37, targetWeight: 170.51, heightInches: 68.5 } });
+    const before = { ...useStore.getState().settings };
+    const user = userEvent.setup();
+    await open('/settings');
+    for (let i = 0; i < 25; i++) {
+      await user.click(screen.getByRole('button', { name: /edit profile/i }));
+      await user.click(within(screen.getByRole('dialog', { name: /edit profile/i })).getByRole('button', { name: /save profile/i }));
+    }
+    const after = useStore.getState().settings;
+    expect(Math.abs(after.startingWeight - before.startingWeight)).toBeLessThan(0.001);
+    expect(Math.abs(after.targetWeight - before.targetWeight)).toBeLessThan(0.001);
+    expect(after.heightInches).toBe(68.5);
+  });
+
+  it('F6: toggling the unit in the form and saving does not mutate stored weights; editing one field changes only that field', async () => {
+    seedStore('empty', 'lbs');
+    useStore.setState({ settings: { ...useStore.getState().settings, startingWeight: 223.37, targetWeight: 170.51, heightInches: 68.5 } });
+    const user = userEvent.setup();
+    await open('/settings');
+    await user.click(screen.getByRole('button', { name: /edit profile/i }));
+    let dialog = screen.getByRole('dialog', { name: /edit profile/i });
+    for (let i = 0; i < 5; i++) {
+      await user.click(within(dialog).getByRole('button', { name: 'kg' }));
+      await user.click(within(dialog).getByRole('button', { name: 'lbs' }));
+    }
+    await user.click(within(dialog).getByRole('button', { name: 'kg' }));
+    await user.click(within(dialog).getByRole('button', { name: /save profile/i }));
+    let s = useStore.getState().settings;
+    expect(s.weightUnit).toBe('kg');
+    expect(s.startingWeight).toBe(223.37);
+    expect(s.targetWeight).toBe(170.51);
+
+    await user.click(screen.getByRole('button', { name: /edit profile/i }));
+    dialog = screen.getByRole('dialog', { name: /edit profile/i });
+    const goal = within(dialog).getByLabelText(/goal weight \(kg\)/i);
+    await user.clear(goal);
+    await user.type(goal, '70');
+    await user.click(within(dialog).getByRole('button', { name: /save profile/i }));
+    s = useStore.getState().settings;
+    expect(s.targetWeight).toBeCloseTo(70 * 2.2046226, 3);
+    expect(s.startingWeight).toBe(223.37);
+    expect(s.heightInches).toBe(68.5);
   });
 
   it('lbs display round trip is within 0.05 lb', () => {
     let worst = 0;
     for (let lbs = 70; lbs <= 600; lbs += 0.037) worst = Math.max(worst, Math.abs(displayToLbs(lbsToDisplay(lbs, 'lbs'), 'lbs') - lbs));
     expect(worst).toBeLessThanOrEqual(0.05 + 1e-9);
-  });
-
-  it('saving the profile form without changes in kg silently moves the stored goal weight', async () => {
-    seedStore('empty', 'kg');
-    useStore.setState({ settings: { ...useStore.getState().settings, targetWeight: 170.5 } });
-    const user = userEvent.setup();
-    await open('/settings');
-    await user.click(screen.getByRole('button', { name: /edit profile/i }));
-    await user.click(within(screen.getByRole('dialog', { name: /edit profile/i })).getByRole('button', { name: /save profile/i }));
-    const moved = Math.abs(useStore.getState().settings.targetWeight - 170.5);
-    expect(moved).toBeGreaterThan(0.05); // current behaviour; flagged as a finding
-    expect(moved).toBeLessThan(0.12);
   });
 });
 

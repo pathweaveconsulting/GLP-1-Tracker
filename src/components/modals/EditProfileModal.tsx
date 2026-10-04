@@ -4,7 +4,7 @@ import { useStore } from '../../store/useStore';
 import { Medication } from '../../types';
 import { Modal } from '../ui/Modal';
 import { MEDICATION_OPTIONS } from '../../lib/medications';
-import { WeightUnit, displayToLbs, getWeightUnit, lbsToDisplay } from '../../lib/units';
+import { WeightUnit, displayToLbs, getWeightUnit, lbsToInput } from '../../lib/units';
 import { ProfileField, ProfileFormInput, validateProfile } from '../../lib/profile';
 import { isoToLocalDateString } from '../../lib/dates';
 
@@ -20,7 +20,7 @@ const labelCls = 'block text-xs font-semibold text-[#667085] mb-1.5';
 export function convertTyped(text: string, from: WeightUnit, to: WeightUnit): string {
   const n = Number(text);
   if (!text.trim() || !Number.isFinite(n) || from === to) return text;
-  return String(lbsToDisplay(displayToLbs(n, from), to));
+  return String(lbsToInput(displayToLbs(n, from), to));
 }
 
 function ProfileForm({ onClose }: { onClose: () => void }) {
@@ -30,15 +30,20 @@ function ProfileForm({ onClose }: { onClose: () => void }) {
   const [form, setForm] = useState<ProfileFormInput>({
     medication: settings.medication,
     unit: unit0,
-    startingWeight: settings.startingWeight > 0 ? String(lbsToDisplay(settings.startingWeight, unit0)) : '',
-    goalWeight: settings.targetWeight > 0 ? String(lbsToDisplay(settings.targetWeight, unit0)) : '',
+    startingWeight: settings.startingWeight > 0 ? String(lbsToInput(settings.startingWeight, unit0)) : '',
+    goalWeight: settings.targetWeight > 0 ? String(lbsToInput(settings.targetWeight, unit0)) : '',
     heightFt: settings.heightInches > 0 ? String(Math.floor(settings.heightInches / 12)) : '',
     heightIn: settings.heightInches > 0 ? String(Math.round(settings.heightInches % 12)) : '',
     startDate: isoToLocalDateString(settings.startDate),
   });
   const [errors, setErrors] = useState<Partial<Record<ProfileField, string>>>({});
+  // Only fields the user actually edited are converted back; everything else keeps its exact stored value.
+  const [touched, setTouched] = useState<Set<ProfileField>>(new Set());
   const id = (n: string) => `${uid}-${n}`;
-  const set = <K extends ProfileField>(k: K, v: ProfileFormInput[K]) => setForm((f) => ({ ...f, [k]: v }));
+  const set = <K extends ProfileField>(k: K, v: ProfileFormInput[K]) => {
+    setForm((f) => ({ ...f, [k]: v }));
+    setTouched((t) => new Set(t).add(k));
+  };
 
   const switchUnit = (to: WeightUnit) =>
     setForm((f) => ({
@@ -57,8 +62,16 @@ function ProfileForm({ onClose }: { onClose: () => void }) {
     const result = validateProfile(form);
     setErrors(result.errors);
     if (!result.value) return;
-    // Keep the original start instant; only the weights, height, medication and unit change here.
-    updateSettings({ ...result.value, startDate: settings.startDate });
+    // Keep the original start instant. Weights and height are only replaced when the user edited them, so opening
+    // and saving the form (or flipping the unit toggle) can never nudge a stored value through display rounding.
+    const heightTouched = touched.has('heightFt') || touched.has('heightIn');
+    updateSettings({
+      ...result.value,
+      startDate: settings.startDate,
+      startingWeight: touched.has('startingWeight') ? result.value.startingWeight : settings.startingWeight,
+      targetWeight: touched.has('goalWeight') ? result.value.targetWeight : settings.targetWeight,
+      heightInches: heightTouched ? result.value.heightInches : settings.heightInches,
+    });
     onClose();
   };
 
