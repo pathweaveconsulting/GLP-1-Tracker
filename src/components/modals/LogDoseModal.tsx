@@ -3,7 +3,7 @@ import { Syringe, Check, Clock, Sparkles } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { Medication } from '../../types';
 import { INJECTION_SITES_ABDOMEN, INJECTION_SITES_OTHER, getRecommendedNextSite } from '../../lib/glp1Utils';
-import { MEDICATION_OPTIONS, defaultDoseAmount, doseWarning, medicationInfo } from '../../lib/medications';
+import { APPROXIMATE_NOTE, MEDICATION_OPTIONS, defaultDoseAmount, doseWarning, medicationInfo } from '../../lib/medications';
 import { dstGapAdjustment, localDateTimeToIso, nowLocalTimeString, parseDateOnly, todayLocalDateString } from '../../lib/dates';
 import { lastDoseOf } from '../../lib/insights';
 import { Modal } from '../ui/Modal';
@@ -120,6 +120,7 @@ function DoseForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
           className={field}
         />
         {info.doseSteps.length > 0 && (
+          <>
           <div className="flex flex-wrap gap-1.5 mt-2" role="group" aria-label={`Standard ${medication} dose steps`}>
             {info.doseSteps.map((step) => (
               <button
@@ -133,6 +134,8 @@ function DoseForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
               </button>
             ))}
           </div>
+          <p className="text-[11px] text-subtle mt-1.5">Standard steps are {APPROXIMATE_NOTE}.</p>
+          </>
         )}
         <div id={`${uid}-amt-help`} className="mt-1.5 space-y-1">
           <p className="text-[11px] text-subtle">Log the amount your prescriber told you to use. We never suggest a dose.</p>

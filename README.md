@@ -70,13 +70,20 @@ Weights can also be imported from a CSV (up to 5 MB / 50,000 rows) (Weight page 
 - a **smoke test that renders every route** with the real `<App/>` in four modes (empty / populated × lbs / kg) and fails on `NaN`, `Infinity`, `undefined` or `[object Object]` in the page text;
 - an **accessibility test** (accessible names for every control, one `<h1>` per page, dialog semantics, Escape and focus handling);
 - unit tests for every `src/lib` module and the store migration;
-- the whole suite runs in CI under four timezones.
+- the whole suite runs in CI under five timezones (UTC, Los Angeles, Auckland, Kolkata, New York; the New York run executes the DST tests).
 
 Every new assertion should be mutation-checked at least once (break the code, watch the test fail, restore it).
 
 ## Review medication reference data
 
 `src/lib/medications.ts` holds approximate half-lives, dose steps, maximums and missed-dose notes. They were written conservatively and are marked *approximate; verify against current prescribing information*. **A clinician or pharmacist should review them against current prescribing information before release.** They are used only to draw the simplified level estimate and to warn about unusual amounts; the app never tells anyone what dose to take.
+
+Items a clinician should check (nothing here was changed in code by the wording pass; only labels were added):
+
+- `medications.ts`: Tirzepatide half-life 5 d, steps 2.5–15 mg, max 15 mg, missed-dose window "about 4 days (96 hours)"; Semaglutide half-life 7 d, steps 0.25, 0.5, 1, 1.7, 2, 2.4 mg, max 2.4 mg (newer, higher Wegovy doses may make this maximum warn wrongly), window "about 5 days"; weekly interval for all three; the generic "Other" text.
+- **Retatrutide: the 6-day half-life and the weekly interval are low confidence** (investigational, no approved labelling); they only shape the illustrative level curve.
+- `SafetyNotice.tsx`: the red-flag list, the "examples, not exhaustive" sentence, and "If you miss a dose" (the windows could be read as permission to dose late, so the leaflet/pharmacist line sits directly under them).
+- `doseWarning` texts ("above the usual maximum", "isn't one of the usual steps").
 
 Also review before release: the wording of `SafetyNotice` (the red-flag list is labelled as examples, not exhaustive), and the decision that oral semaglutide (Rybelsus) is treated as "Other" because the weekly model does not describe a daily tablet.
 

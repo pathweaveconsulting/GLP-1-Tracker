@@ -7,6 +7,11 @@ import type { Medication } from '../types';
  * Verify against the current prescribing information before relying on it, and see
  * "Needs human review" in the README. None of it is used to tell anyone what dose to take.
  */
+/** Repeated wherever a number from this file is shown to the user. */
+export const APPROXIMATE_NOTE = 'approximate; verify against current prescribing information';
+/** Shown wherever a missed-dose window appears. */
+export const LEAFLET_LINE = 'Check your leaflet or ask your pharmacist.';
+
 export interface MedicationInfo {
   name: Medication;
   /** Approximate elimination half-life in days (approximate; verify against current prescribing information). */
@@ -49,6 +54,8 @@ export const MEDICATION_INFO: Record<Medication, MedicationInfo> = {
   },
   Retatrutide: {
     name: 'Retatrutide',
+    // Low confidence: investigational, so both the 6-day half-life and the weekly interval are placeholders for the
+    // illustrative curve only (approximate; verify against current prescribing information, which does not exist yet).
     halfLifeDays: 6,
     doseSteps: [],
     maxStandardMg: null,
@@ -125,14 +132,14 @@ export function doseWarning(medication: Medication, amountMg: number): DoseWarni
   if (info.maxStandardMg != null && amountMg > info.maxStandardMg) {
     return {
       level: 'caution',
-      text: `${amountMg} mg is above the usual maximum of ${info.maxStandardMg} mg for ${info.name}. Check your prescription, and make sure this is mg and not another unit.`,
+      text: `${amountMg} mg is above the usual maximum of ${info.maxStandardMg} mg for ${info.name}. Check your prescription, and make sure this is mg and not another unit. (${APPROXIMATE_NOTE})`,
       requiresConfirmation: true,
     };
   }
   if (info.doseSteps.length > 0 && !info.doseSteps.some((s) => Math.abs(s - amountMg) < 1e-9)) {
     return {
       level: 'info',
-      text: `${amountMg} mg isn't one of the usual ${info.name} steps (${info.doseSteps.join(', ')} mg). That's fine if it matches your prescription.`,
+      text: `${amountMg} mg isn't one of the usual ${info.name} steps (${info.doseSteps.join(', ')} mg). That's fine if it matches your prescription. (Steps are ${APPROXIMATE_NOTE}.)`,
       requiresConfirmation: false,
     };
   }
