@@ -63,3 +63,24 @@ describe('localDayDiff', () => {
     expect(localDayDiff(new Date(2026, 5, 15), new Date(2026, 5, 10))).toBe(-5);
   });
 });
+
+// F15 — only meaningful in a timezone that has a spring-forward gap; run with TZ=America/New_York.
+import { dstGapAdjustment } from './dates';
+const inNewYork = Intl.DateTimeFormat().resolvedOptions().timeZone === 'America/New_York';
+
+describe('dstGapAdjustment (F15)', () => {
+  it.skipIf(!inNewYork)('reports the time a nonexistent local time is saved as', () => {
+    expect(dstGapAdjustment('2026-03-08', '02:30')).toBe('03:30');
+    expect(dstGapAdjustment('2026-03-08', '02:00')).toBe('03:00');
+  });
+  it.skipIf(!inNewYork)('is silent for times that exist, including 01:30 that day and the fall-back day', () => {
+    expect(dstGapAdjustment('2026-03-08', '01:30')).toBeNull();
+    expect(dstGapAdjustment('2026-03-08', '03:00')).toBeNull();
+    expect(dstGapAdjustment('2026-11-01', '01:30')).toBeNull();
+  });
+  it('is silent for invalid input and in every timezone for an ordinary date', () => {
+    expect(dstGapAdjustment('nope', '02:30')).toBeNull();
+    expect(dstGapAdjustment('2026-06-15', '12:00')).toBeNull();
+    expect(dstGapAdjustment('2026-06-15', '9:5')).toBeNull();
+  });
+});

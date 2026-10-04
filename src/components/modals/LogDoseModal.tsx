@@ -4,7 +4,7 @@ import { useStore } from '../../store/useStore';
 import { Medication } from '../../types';
 import { INJECTION_SITES_ABDOMEN, INJECTION_SITES_OTHER, getRecommendedNextSite } from '../../lib/glp1Utils';
 import { MEDICATION_OPTIONS, defaultDoseAmount, doseWarning, medicationInfo } from '../../lib/medications';
-import { localDateTimeToIso, nowLocalTimeString, parseDateOnly, todayLocalDateString } from '../../lib/dates';
+import { dstGapAdjustment, localDateTimeToIso, nowLocalTimeString, parseDateOnly, todayLocalDateString } from '../../lib/dates';
 import { lastDoseOf } from '../../lib/insights';
 import { Modal } from '../ui/Modal';
 import { OtherMedicationNote } from '../OtherMedicationNote';
@@ -67,6 +67,7 @@ function DoseForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
   const [customSite, setCustomSite] = useState('');
   const [errors, setErrors] = useState<{ amount?: string; when?: string; confirm?: string }>({});
 
+  const gapTime = dstGapAdjustment(dateStr, timeStr);
   const info = medicationInfo(medication);
   const amountNum = amount.trim() === '' ? NaN : Number(amount);
   const warning = doseWarning(medication, amountNum);
@@ -160,6 +161,7 @@ function DoseForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
           <label htmlFor={`${uid}-time`} className={`${label} flex items-center gap-1`}><Clock className="w-3 h-3 text-[#6D4AFF]" aria-hidden="true" /> Time</label>
           <input id={`${uid}-time`} type="time" value={timeStr} onChange={(e) => setTimeStr(e.target.value)} className={field} aria-invalid={errors.when ? true : undefined} />
         </div>
+        {gapTime && <p role="status" className="text-xs text-slate-700 sm:col-span-2 -mt-1">That time doesn&apos;t exist on this date; saved as {gapTime}.</p>}
         {errors.when && <p role="alert" className="text-xs text-danger sm:col-span-2 -mt-1">{errors.when}</p>}
       </div>
 

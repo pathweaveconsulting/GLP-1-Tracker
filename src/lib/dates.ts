@@ -68,3 +68,15 @@ export function localDayDiff(a: Date | string, b: Date | string): number {
   const ub = Date.UTC(db.getFullYear(), db.getMonth(), db.getDate());
   return Math.round((ub - ua) / 86_400_000);
 }
+
+/**
+ * If the chosen local date/time falls in a daylight-saving gap (e.g. 02:30 on the US spring-forward day), the clock
+ * skips it and JavaScript silently moves it forward. Returns the 'HH:mm' it will really be saved as, or null when the
+ * time exists (or the input is invalid).
+ */
+export function dstGapAdjustment(dateStr: string, timeStr: string): string | null {
+  if (!parseDateOnly(dateStr) || !/^\d{2}:\d{2}$/.test(timeStr)) return null;
+  const iso = localDateTimeToIso(dateStr, timeStr);
+  const saved = isoToLocalTimeString(iso);
+  return saved !== timeStr || isoToLocalDateString(iso) !== dateStr ? saved : null;
+}

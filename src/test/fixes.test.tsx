@@ -488,3 +488,30 @@ describe('F10: dialog focus and stacked Escape', () => {
     }
   });
 });
+
+// ---------------------------------------------------------------- F15 / F16
+describe('F15: dose time inside a DST gap (TZ=America/New_York)', () => {
+  const inNY = Intl.DateTimeFormat().resolvedOptions().timeZone === 'America/New_York';
+  it.skipIf(!inNY)('the dose form says the time does not exist and what it is saved as', async () => {
+    seed7('empty', 'lbs');
+    const user = userEvent.setup();
+    await open7('/doses');
+    await user.click(screen.getByRole('button', { name: /record injection/i }));
+    const dialog = screen.getByRole('dialog', { name: /log shot/i });
+    const date = within(dialog).getByLabelText(/^date/i);
+    await user.clear(date);
+    await user.type(date, '2026-03-08');
+    const time = within(dialog).getByLabelText(/^time/i);
+    await user.clear(time);
+    await user.type(time, '02:30');
+    expect(within(dialog).getByRole('status')).toHaveTextContent("That time doesn't exist on this date; saved as 03:30.");
+    await user.clear(time);
+    await user.type(time, '01:30');
+    expect(within(dialog).queryByText(/doesn't exist/)).not.toBeInTheDocument();
+    await user.clear(time);
+    await user.type(time, '02:30');
+    await user.click(within(dialog).getByRole('button', { name: /save dose/i }));
+    const saved = new Date(useStore.getState().doses[0].date);
+    expect([saved.getHours(), saved.getMinutes()]).toEqual([3, 30]);
+  });
+});
