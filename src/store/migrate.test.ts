@@ -14,6 +14,13 @@ describe('DEMO_ID_PATTERN', () => {
 });
 
 describe('migrateStore from the unversioned build', () => {
+  it('maps legacy Rybelsus data to Other, not weekly semaglutide (F7)', () => {
+    const real = { ...demoDose, id: 'abc-uuid', medication: 'Rybelsus' };
+    const out = migrateStore({ doses: [real], weights: [], effects: [], settings: { ...oldSettings, medication: 'Rybelsus' } }, 0);
+    expect(out.doses[0].medication).toBe('Other');
+    expect(out.settings.medication).toBe('Other');
+  });
+
   it('strips demo rows and sends a demo-only user back through onboarding', () => {
     const out = migrateStore({ doses: [demoDose], weights: [demoWeight], effects: [demoEffect], settings: oldSettings }, 0);
     expect(out.doses).toEqual([]);

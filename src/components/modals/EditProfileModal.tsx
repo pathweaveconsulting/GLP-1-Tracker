@@ -3,6 +3,7 @@ import { User, Check } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { Medication } from '../../types';
 import { Modal } from '../ui/Modal';
+import { OtherMedicationNote } from '../OtherMedicationNote';
 import { MEDICATION_OPTIONS } from '../../lib/medications';
 import { WeightUnit, displayToLbs, getWeightUnit, lbsToInput } from '../../lib/units';
 import { ProfileField, ProfileFormInput, validateProfile } from '../../lib/profile';
@@ -83,6 +84,7 @@ function ProfileForm({ onClose }: { onClose: () => void }) {
           {MEDICATION_OPTIONS.map((m) => <option key={m} value={m}>{m}</option>)}
         </select>
         {err('medication')}
+        <OtherMedicationNote medication={form.medication} className="mt-2" />
       </div>
 
       <fieldset>

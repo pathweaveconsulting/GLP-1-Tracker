@@ -16,6 +16,7 @@ import { LogWeightModal } from '../components/modals/LogWeightModal';
 import { LogEffectsModal } from '../components/modals/LogEffectsModal';
 import { NotificationsModal } from '../components/modals/NotificationsModal';
 import { MobileMenuDrawer } from '../components/modals/MobileMenuDrawer';
+import { OtherMedicationNote } from '../components/OtherMedicationNote';
 import { PkInfoModal } from '../components/PkInfoModal';
 import { MedicationLevelChart } from '../components/MedicationLevelChart';
 import { generatePKCurve, calculateShotPhase } from '../lib/glp1Utils';
@@ -256,7 +257,9 @@ export function ControlCenter() {
             <div className="grid grid-cols-2 gap-4">
               <div className="border-r border-[#F1F5F9]">
                 <p className="text-xs font-normal text-[#667085] mb-1">Estimated Level</p>
-                {lastDose ? (
+                {lastDose && !pkData.modelled ? (
+                  <p className="text-sm text-[#667085]">No estimate for this medication</p>
+                ) : lastDose ? (
                   <>
                     <div className="flex items-baseline gap-2 mb-1">
                       <p className="text-3xl font-semibold text-[#111827] leading-none">{pkData.currentLevel} mg</p>
@@ -284,6 +287,7 @@ export function ControlCenter() {
                 )}
               </div>
             </div>
+            <OtherMedicationNote medication={lastDose?.medication} className="mt-4" />
           </Link>
 
           {/* Weight Card */}

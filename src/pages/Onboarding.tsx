@@ -3,6 +3,7 @@ import { useStore } from '../store/useStore';
 import { MEDICATION_OPTIONS } from '../lib/medications';
 import { ProfileField, ProfileFormInput, earliestEntryDefaults, validateProfile } from '../lib/profile';
 import { todayLocalDateString } from '../lib/dates';
+import { OtherMedicationNote } from '../components/OtherMedicationNote';
 import { SafetyNotice } from '../components/SafetyNotice';
 import type { Medication } from '../types';
 import { lbsToDisplay, type WeightUnit } from '../lib/units';
@@ -91,6 +92,7 @@ export function Onboarding() {
               {MEDICATION_OPTIONS.map((m) => <option key={m} value={m}>{m}</option>)}
             </select>
             <FieldError id={id('medication-err')} message={errors.medication} />
+            <OtherMedicationNote medication={form.medication} className="mt-2" />
           </div>
 
           <fieldset>

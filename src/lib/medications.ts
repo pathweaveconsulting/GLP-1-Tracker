@@ -70,6 +70,10 @@ export const MEDICATION_INFO: Record<Medication, MedicationInfo> = {
   },
 };
 
+/** Shown wherever "Other" (including oral tablets such as Rybelsus) is selected or loaded. */
+export const OTHER_MEDICATION_NOTE =
+  'Dose guidance and the level curve aren’t available for this medication. This includes daily oral tablets such as Rybelsus, which the weekly model doesn’t describe. Your logs, weight and symptom pages still work.';
+
 /** The medications the app tracks. Single source of truth for every dropdown. */
 export const MEDICATION_OPTIONS: readonly Medication[] = ['Tirzepatide', 'Semaglutide', 'Retatrutide', 'Other'];
 
@@ -85,7 +89,10 @@ export function normalizeMedication(value: unknown): Medication {
   if (typeof value !== 'string') return 'Other';
   const v = value.trim().toLowerCase();
   if (v === 'tirzepatide' || v === 'mounjaro' || v === 'zepbound') return 'Tirzepatide';
-  if (v === 'semaglutide' || v === 'ozempic' || v === 'wegovy' || v === 'rybelsus') return 'Semaglutide';
+  if (v === 'semaglutide' || v === 'ozempic' || v === 'wegovy') return 'Semaglutide';
+  // Oral semaglutide (Rybelsus) is a daily tablet, so the weekly model, dose steps and maximum below do not apply to it.
+  // approximate; verify against current prescribing information
+  if (v === 'rybelsus') return 'Other';
   if (v === 'retatrutide') return 'Retatrutide';
   return 'Other';
 }

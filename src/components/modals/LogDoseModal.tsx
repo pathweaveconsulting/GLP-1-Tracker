@@ -7,6 +7,7 @@ import { MEDICATION_OPTIONS, defaultDoseAmount, doseWarning, medicationInfo } fr
 import { localDateTimeToIso, nowLocalTimeString, parseDateOnly, todayLocalDateString } from '../../lib/dates';
 import { lastDoseOf } from '../../lib/insights';
 import { Modal } from '../ui/Modal';
+import { OtherMedicationNote } from '../OtherMedicationNote';
 
 interface Props {
   isOpen: boolean;
@@ -100,6 +101,7 @@ function DoseForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
           {MEDICATION_OPTIONS.map((m) => <option key={m} value={m}>{m}</option>)}
         </select>
         {info.investigational && <p className="text-xs text-amber-800 mt-1">{info.notes}</p>}
+        <OtherMedicationNote medication={medication} className="mt-2" />
       </div>
 
       <div>

@@ -313,3 +313,48 @@ describe('F4: storage failures never throw out of handlers', () => {
     spy2.mockRestore();
   });
 });
+
+// ---------------------------------------------------------------- F7
+import { seedStore as seed7 } from './fixtures';
+import { open as open7 } from './helpers';
+
+describe('F7: no weekly guidance for oral/unknown medications', () => {
+  it('the dose form explains that guidance and the level curve are unavailable for "Other"', async () => {
+    seed7('empty', 'lbs');
+    const user = userEvent.setup();
+    await open7('/doses');
+    await user.click(screen.getByRole('button', { name: /record injection/i }));
+    const dialog = screen.getByRole('dialog', { name: /log shot/i });
+    expect(within(dialog).queryByText(/aren’t available for this medication/i)).not.toBeInTheDocument();
+    await user.selectOptions(within(dialog).getByLabelText(/^medication/i), 'Other');
+    expect(within(dialog).getByText(/aren’t available for this medication/i)).toHaveTextContent(/Rybelsus/);
+    expect(within(dialog).queryByRole('button', { name: /mg$/ })).not.toBeInTheDocument(); // no dose-step chips
+  });
+
+  it('legacy Rybelsus data shows no weekly schedule, no level estimate and the note', async () => {
+    await rehydrateFrom(oldBlob({
+      doses: [{ id: UUID, medication: 'Rybelsus', amountMg: 14, date: new Date(Date.now() - 2 * 86400000).toISOString(), site: '', painLevel: 0, notes: '' }],
+      weights: [{ id: UUID + 'w', weightLbs: 200, date: new Date().toISOString() }],
+      effects: [],
+      settings: demoSettings,
+    }));
+    useStore.setState({ hasOnboarded: true });
+    expect(useStore.getState().doses[0].medication).toBe('Other');
+    window.history.pushState({}, '', '/');
+    render(<App />);
+    await screen.findAllByRole('heading', { level: 1 });
+    const text = document.querySelector('main')!.textContent!;
+    expect(text).not.toMatch(/above the usual maximum|if you dose weekly/);
+    expect(text).toMatch(/No set schedule for this medication/);
+    expect(text).toMatch(/aren’t available for this medication/);
+    expect(text).toMatch(/No estimate is available/);
+  });
+
+  it('Onboarding shows the note when "Other" is chosen', async () => {
+    useStore.getState().resetAllData();
+    const user = userEvent.setup();
+    render(<App />);
+    await user.selectOptions(screen.getByLabelText(/^medication/i), 'Other');
+    expect(screen.getByText(/aren’t available for this medication/i)).toBeInTheDocument();
+  });
+});

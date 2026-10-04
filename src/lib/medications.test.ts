@@ -4,7 +4,9 @@ import { MEDICATION_INFO, MEDICATION_OPTIONS, defaultDoseAmount, doseWarning, no
 describe('normalizeMedication', () => {
   it('maps brands to generics, case-insensitively', () => {
     for (const b of ['Mounjaro', 'zepbound', ' TIRZEPATIDE ']) expect(normalizeMedication(b)).toBe('Tirzepatide');
-    for (const b of ['Ozempic', 'Wegovy', 'Rybelsus', 'semaglutide']) expect(normalizeMedication(b)).toBe('Semaglutide');
+    for (const b of ['Ozempic', 'Wegovy', 'semaglutide']) expect(normalizeMedication(b)).toBe('Semaglutide');
+    // Oral semaglutide is a daily tablet: the weekly model, dose steps and maximum do not apply (F7).
+    for (const b of ['Rybelsus', ' rybelsus ']) expect(normalizeMedication(b)).toBe('Other');
     expect(normalizeMedication('retatrutide')).toBe('Retatrutide');
   });
   it('never guesses a specific drug for unknown input', () => {
