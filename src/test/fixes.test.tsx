@@ -372,3 +372,33 @@ describe('F8: the safety list does not read as exhaustive', () => {
     });
   }
 });
+
+// ---------------------------------------------------------------- F9
+import { isoDaysAgo as daysAgo9 } from './fixtures';
+
+describe('F9: one weigh-in and one dose never produce a projection', () => {
+  const pages = ['/', '/health', '/results?tab=journey', '/results?tab=progress', '/weight', '/reports', '/recommendations', '/this-week'];
+  for (const path of pages) {
+    it(`${path}: no pace projection, no "Reached", no projected date`, async () => {
+      seed7('empty', 'lbs');
+      useStore.setState({
+        weights: [{ id: 'w', date: daysAgo9(1), weightLbs: 200 }],
+        doses: [{ id: 'd', date: daysAgo9(3), medication: 'Tirzepatide', amountMg: 5, site: 'Thigh: Left', painLevel: 0, notes: '' }],
+        settings: { ...useStore.getState().settings, startingWeight: 200, targetWeight: 180, heightInches: 68 },
+      });
+      await open7(path);
+      const text = document.querySelector('main')!.textContent!;
+      expect(text).not.toContain('If your recent pace continues');
+      expect(text).not.toContain('Reached');
+      expect(text).not.toMatch(/\bAround [A-Z][a-z]{2} \d{4}/); // Health's projected month
+      expect(text).not.toMatch(/Goal Date(?!–)[A-Z][a-z]{2} \d{1,2}, \d{4}/); // Journey's projected date
+      cleanup();
+    });
+  }
+  it('/results?tab=journey says what is missing instead', async () => {
+    seed7('empty', 'lbs');
+    useStore.setState({ weights: [{ id: 'w', date: daysAgo9(1), weightLbs: 200 }], settings: { ...useStore.getState().settings, targetWeight: 180 } });
+    await open7('/results?tab=journey');
+    expect(document.querySelector('main')!.textContent).toMatch(/Goal Date–Needs 3\+ weigh-ins over 2\+ weeks/);
+  });
+});
