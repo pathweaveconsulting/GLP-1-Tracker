@@ -67,6 +67,10 @@ export interface AppState extends PersistedData {
   completeOnboarding: (settings: UserSettings) => void;
   /** Wipes every log and the profile and returns the app to first-run state. */
   resetAllData: () => void;
+  /** Replaces everything with a validated backup. */
+  replaceAllData: (data: { settings: UserSettings; doses: DoseEvent[]; weights: WeightEntry[]; effects: EffectEntry[] }) => void;
+  /** Adds several weigh-ins at once (e.g. from a CSV import). */
+  addWeights: (rows: Array<Omit<WeightEntry, 'id'>>) => void;
   addDose: (dose: Omit<DoseEvent, 'id'>) => void;
   updateDose: (id: string, dose: Partial<DoseEvent>) => void;
   deleteDose: (id: string) => void;

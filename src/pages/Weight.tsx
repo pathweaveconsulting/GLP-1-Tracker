@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useStore } from '../store/useStore';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -9,9 +9,17 @@ import { LogWeightModal } from '../components/modals/LogWeightModal';
 import { WeightJourneyDashboard } from '../components/WeightJourneyDashboard';
 import { formatWeight, formatWeightChange, getWeightUnit } from '../lib/units';
 import { sortByDate } from '../lib/insights';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
+import { useToast } from '../components/ui/Toast';
+import { readFileAsText } from '../lib/dataTransfer';
+import { importWeightsCsv, WeightImportResult } from '../lib/weightImport';
 
 export function Weight() {
-  const { weights, deleteWeight, settings } = useStore();
+  const { weights, deleteWeight, settings, addWeights } = useStore();
+  const { show: showToast } = useToast();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [pendingImport, setPendingImport] = useState<WeightImportResult | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'journey' | 'table'>('journey');
   const [isLogWeightOpen, setIsLogWeightOpen] = useState(false);
   
@@ -24,8 +32,22 @@ export function Weight() {
   const percentChange = change != null && startLbs ? (change / startLbs) * 100 : null;
   const goalRemaining = latestWeight != null && settings.targetWeight > 0 ? Math.max(0, latestWeight - settings.targetWeight) : null;
 
-  const handleImportCSV = () => {
-    alert("CSV Import Ready: Select a valid .csv file containing Date, Weight(lbs).");
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setImportError(null);
+    const result = importWeightsCsv(await readFileAsText(file), { existing: weights, defaultUnit: unit });
+    if (result.errors.length > 0) setImportError(result.errors[0]);
+    else if (result.rows.length === 0) setImportError(`Nothing to import: ${result.duplicates} already in your log, ${result.skipped} rows couldn’t be read.`);
+    else setPendingImport(result);
+  };
+
+  const confirmImport = () => {
+    if (!pendingImport) return;
+    addWeights(pendingImport.rows);
+    showToast(`Imported ${pendingImport.rows.length} ${pendingImport.rows.length === 1 ? 'weight' : 'weights'}.`);
+    setPendingImport(null);
   };
 
   return (
@@ -64,9 +86,10 @@ export function Weight() {
           </div>
 
           <div className="flex gap-2">
-            <Button variant="outline" size="icon" title="Import CSV" onClick={handleImportCSV} className="rounded-[14px] border-[#E5E7EB]">
-              <Upload className="w-4 h-4 text-[#667085]" />
+            <Button variant="outline" size="icon" aria-label="Import weights from CSV" onClick={() => fileRef.current?.click()} className="rounded-[14px] border-[#E5E7EB]">
+              <Upload className="w-4 h-4 text-[#667085]" aria-hidden="true" />
             </Button>
+            <input ref={fileRef} type="file" accept=".csv,text/csv" aria-label="Choose a CSV file of weights" className="sr-only" tabIndex={-1} onChange={handleImportFile} />
             <Button onClick={() => setIsLogWeightOpen(true)} className="gap-2 bg-[#22C55E] hover:bg-[#22C55E] text-white rounded-[14px] shadow-xs px-4 py-2.5 text-xs font-semibold">
               <Plus className="w-4 h-4" />
               <span>Record Weight</span>
@@ -74,6 +97,13 @@ export function Weight() {
           </div>
         </div>
       </header>
+
+      {importError && (
+        <div role="alert" className="flex items-start justify-between gap-3 rounded-[16px] border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-900">
+          <span>{importError}</span>
+          <button type="button" onClick={() => setImportError(null)} className="font-semibold underline shrink-0">Dismiss</button>
+        </div>
+      )}
 
       {activeTab === 'journey' ? (
         <WeightJourneyDashboard />
@@ -176,6 +206,26 @@ export function Weight() {
           </Card>
         </>
       )}
+
+      <ConfirmDialog
+        open={!!pendingImport}
+        title={pendingImport ? `Import ${pendingImport.rows.length} ${pendingImport.rows.length === 1 ? 'weight' : 'weights'}?` : ''}
+        description={
+          pendingImport && (
+            <>
+              <p>
+                Read as <strong>{pendingImport.unit}</strong> ({{ header: 'from the column header', column: 'from the unit in the file', values: 'guessed from the values, so please check', default: 'your current unit, since the file doesn’t say' }[pendingImport.unitSource]}).
+              </p>
+              <p className="mt-1">
+                {pendingImport.duplicates} already in your log and {pendingImport.skipped} unreadable {pendingImport.skipped === 1 ? 'row' : 'rows'} will be skipped.
+              </p>
+            </>
+          )
+        }
+        confirmLabel="Import"
+        onConfirm={confirmImport}
+        onCancel={() => setPendingImport(null)}
+      />
 
       <LogWeightModal 
         isOpen={isLogWeightOpen} 

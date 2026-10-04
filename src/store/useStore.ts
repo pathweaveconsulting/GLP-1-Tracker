@@ -30,6 +30,12 @@ export const useStore = create<AppState>()(
         useStore.persist.clearStorage();
       },
 
+      replaceAllData: (data) =>
+        set({ doses: data.doses, weights: data.weights, effects: data.effects, settings: data.settings, hasOnboarded: true }),
+
+      addWeights: (rows) =>
+        set((state) => ({ weights: [...state.weights, ...rows.map((r) => ({ ...r, id: newId() }))] })),
+
       addDose: (dose) => set((state) => ({ doses: [...state.doses, { ...dose, id: newId() }] })),
       updateDose: (id, updatedDose) =>
         set((state) => ({ doses: state.doses.map((d) => (d.id === id ? { ...d, ...updatedDose } : d)) })),

@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { Download, Trash2 } from 'lucide-react';
 import { formatWeight, getWeightUnit } from '../lib/units';
 import { sortByDate } from '../lib/insights';
+import { exportTidyCsv } from '../lib/dataTransfer';
 
 export function AllLogs() {
   const { effects, weights, doses, deleteDose, deleteWeight, settings } = useStore();
@@ -16,28 +17,7 @@ export function AllLogs() {
   const sortedEffects = sortByDate(effects, 'desc');
   const sortedDoses = sortByDate(doses, 'desc');
 
-  const handleExportCSV = () => {
-    let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Type,Date,Value/Details,Notes\n";
-
-    doses.forEach(d => {
-      csvContent += `Shot,${d.date},${d.amountMg} mg (${d.site}),"${d.notes || ''}"\n`;
-    });
-    weights.forEach(w => {
-      csvContent += `Weight,${w.date},${w.weightLbs} lbs,\n`;
-    });
-    effects.forEach(e => {
-      csvContent += `Effect,${e.date},Hunger:${e.hunger} FoodNoise:${e.foodNoise} Nausea:${e.nausea},"${e.notes || ''}"\n`;
-    });
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `glp1_logs_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  const handleExportCSV = () => exportTidyCsv({ settings, doses, weights, effects }, unit);
 
   return (
     <div className="space-y-6">
