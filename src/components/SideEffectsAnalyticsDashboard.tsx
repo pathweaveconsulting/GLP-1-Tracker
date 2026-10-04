@@ -20,11 +20,11 @@ const sevTick = (v: number) => ['None', 'Mild', 'Mod', 'Severe'][v] ?? '';
 const DOSE_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#0d9488'];
 
 const CELL: Record<Severity | 'empty', string> = {
-  severe: 'bg-rose-500 text-white',
-  moderate: 'bg-amber-500 text-white',
+  severe: 'bg-rose-700 text-white',
+  moderate: 'bg-amber-700 text-white',
   mild: 'bg-amber-200 text-amber-900',
   none: 'bg-[#86efac] text-emerald-950',
-  empty: 'bg-[#F1F5F9] text-[#98A2B3]',
+  empty: 'bg-[#F1F5F9] text-subtle',
 };
 
 export function SideEffectsAnalyticsDashboard({ className = '' }: Props) {
@@ -53,7 +53,7 @@ export function SideEffectsAnalyticsDashboard({ className = '' }: Props) {
       <div className={`space-y-6 ${className}`}>
         <div className={card}>
           <h2 className="text-xl font-semibold text-[#111827] tracking-tight">Side Effects Overview</h2>
-          <p className="text-sm text-[#667085] mt-2">
+          <p className="text-sm text-muted mt-2">
             You haven't logged any symptoms yet. <Link to="/effects" className="text-[#6D4AFF] font-semibold hover:underline">Log how you feel</Link> and this page will show how often each symptom shows up, when in the week, and how it changes over time. It only ever uses your own entries.
           </p>
         </div>
@@ -65,34 +65,34 @@ export function SideEffectsAnalyticsDashboard({ className = '' }: Props) {
     <div className={`space-y-6 ${className}`}>
       <div className={card}>
         <h2 className="text-xl font-semibold text-[#111827] tracking-tight">Side Effects Overview</h2>
-        <p className="text-sm text-[#667085] mt-0.5">
+        <p className="text-sm text-muted mt-0.5">
           Based on {logs.length} symptom {logs.length === 1 ? 'log' : 'logs'} from {format(new Date(logs[0].date), 'MMM d, yyyy')} to {format(new Date(logs[logs.length - 1].date), 'MMM d, yyyy')}. Compared with your own history, not with anyone else.
         </p>
         {logs.length < 6 && <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-[12px] px-3 py-2 mt-3">With fewer than 6 logs we can't tell you about trends yet. Patterns get clearer as you log more.</p>}
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className={card}><div className="text-xs text-[#667085]">Days logged</div><div className="text-3xl font-semibold text-[#111827] mt-1">{logs.length}</div></div>
-        <div className={card}><div className="text-xs text-[#667085]">Days with a moderate or severe symptom</div><div className="text-3xl font-semibold text-[#111827] mt-1">{daysWithModerate}</div></div>
-        <div className={card}><div className="text-xs text-[#667085]">Most frequent symptom</div><div className="text-lg font-semibold text-[#111827] mt-1">{top ? top.label : 'None logged'}</div>{top && <div className="text-[11px] text-[#98A2B3]">{top.daysPresent} of {top.daysLogged} days</div>}</div>
-        <div className={card}><div className="text-xs text-[#667085]">Injections logged</div><div className="text-3xl font-semibold text-[#111827] mt-1">{doses.length}</div></div>
+        <div className={card}><div className="text-xs text-muted">Days logged</div><div className="text-3xl font-semibold text-[#111827] mt-1">{logs.length}</div></div>
+        <div className={card}><div className="text-xs text-muted">Days with a moderate or severe symptom</div><div className="text-3xl font-semibold text-[#111827] mt-1">{daysWithModerate}</div></div>
+        <div className={card}><div className="text-xs text-muted">Most frequent symptom</div><div className="text-lg font-semibold text-[#111827] mt-1">{top ? top.label : 'None logged'}</div>{top && <div className="text-[11px] text-subtle">{top.daysPresent} of {top.daysLogged} days</div>}</div>
+        <div className={card}><div className="text-xs text-muted">Injections logged</div><div className="text-3xl font-semibold text-[#111827] mt-1">{doses.length}</div></div>
       </div>
 
       <section aria-labelledby="se-table" className={card}>
         <h3 id="se-table" className="text-base font-semibold text-[#111827] mb-3">Symptom by symptom</h3>
         {overview.length === 0 ? (
-          <p className="text-xs text-[#667085]">No symptoms recorded, only days of "none". That's a good sign, and it's still useful to keep logging.</p>
+          <p className="text-xs text-muted">No symptoms recorded, only days of "none". That's a good sign, and it's still useful to keep logging.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left">
-              <thead><tr className="text-[#98A2B3]"><th className="py-2 font-medium">Symptom</th><th className="py-2 font-medium">Days present</th><th className="py-2 font-medium">Worst</th><th className="py-2 font-medium">Compared with earlier logs</th></tr></thead>
+              <thead><tr className="text-subtle"><th className="py-2 font-medium">Symptom</th><th className="py-2 font-medium">Days present</th><th className="py-2 font-medium">Worst</th><th className="py-2 font-medium">Compared with earlier logs</th></tr></thead>
               <tbody>
                 {overview.map((r) => (
                   <tr key={r.key} className="border-t border-[#F1F5F9]">
                     <td className="py-2.5 font-semibold text-[#111827]">{r.label}</td>
-                    <td className="py-2.5 text-[#667085]">{r.daysPresent} of {r.daysLogged}</td>
-                    <td className="py-2.5 text-[#667085]">{severityLabel(r.peak)}</td>
-                    <td className="py-2.5 text-[#667085]">{r.trend ? `Happening ${r.trend}` : 'Needs 6+ logs'}</td>
+                    <td className="py-2.5 text-muted">{r.daysPresent} of {r.daysLogged}</td>
+                    <td className="py-2.5 text-muted">{severityLabel(r.peak)}</td>
+                    <td className="py-2.5 text-muted">{r.trend ? `Happening ${r.trend}` : 'Needs 6+ logs'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -104,16 +104,16 @@ export function SideEffectsAnalyticsDashboard({ className = '' }: Props) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <section aria-labelledby="se-recovery" className={card}>
           <h3 id="se-recovery" className="text-base font-semibold text-[#111827]">Days after an injection</h3>
-          <p className="text-xs text-[#667085] mb-3">Average of common side effects (nausea, fatigue, diarrhea, constipation, bloating, reflux) on each day after a shot, from days you logged.</p>
+          <p className="text-xs text-muted mb-3">Average of common side effects (nausea, fatigue, diarrhea, constipation, bloating, reflux) on each day after a shot, from days you logged.</p>
           {recovery.every((p) => p.avg === null) ? (
-            <p className="text-xs text-[#667085]">Needs symptom logs made within a week after a logged injection.</p>
+            <p className="text-xs text-muted">Needs symptom logs made within a week after a logged injection.</p>
           ) : (
             <div className="h-[220px] w-full" role="img" aria-label="Average side-effect severity by day after injection">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={recovery} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
-                  <YAxis domain={[0, 3]} ticks={SEV_TICKS} tickFormatter={sevTick} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} width={48} />
+                  <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#475569' }} />
+                  <YAxis domain={[0, 3]} ticks={SEV_TICKS} tickFormatter={sevTick} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#475569' }} width={48} />
                   <Tooltip formatter={(v, _n, item) => [`${Number(v).toFixed(2)} (${(item.payload as { logs: number }).logs} logs)`, 'Average']} />
                   <Bar dataKey="avg" name="Average severity" fill="#f59e0b" radius={[4, 4, 0, 0]} />
                 </BarChart>
@@ -124,13 +124,13 @@ export function SideEffectsAnalyticsDashboard({ className = '' }: Props) {
 
         <section aria-labelledby="se-appetite" className={card}>
           <h3 id="se-appetite" className="text-base font-semibold text-[#111827]">Hunger and food noise over time</h3>
-          <p className="text-xs text-[#667085] mb-3">Monthly averages of your own ratings.</p>
+          <p className="text-xs text-muted mb-3">Monthly averages of your own ratings.</p>
           <div className="h-[220px] w-full" role="img" aria-label="Monthly average hunger and food noise ratings">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={appetite} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="period" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
-                <YAxis domain={[0, 3]} ticks={SEV_TICKS} tickFormatter={sevTick} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} width={48} />
+                <XAxis dataKey="period" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#475569' }} />
+                <YAxis domain={[0, 3]} ticks={SEV_TICKS} tickFormatter={sevTick} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#475569' }} width={48} />
                 <Tooltip formatter={(v) => Number(v).toFixed(2)} />
                 <Legend />
                 <Line type="monotone" dataKey="hunger" name="Hunger" stroke="#f59e0b" strokeWidth={2.5} dot={{ r: 3 }} />
@@ -147,13 +147,13 @@ export function SideEffectsAnalyticsDashboard({ className = '' }: Props) {
           <div className="flex bg-[#F8F9FC] p-1 rounded-[12px] border border-[#E5E7EB] text-xs font-medium" role="group" aria-label="Heatmap period">
             {(['months', 'weeks'] as const).map((m) => (
               <button key={m} type="button" aria-pressed={heatmapMode === m} onClick={() => setHeatmapMode(m)}
-                className={`px-3 py-1 rounded-[8px] capitalize ${heatmapMode === m ? 'bg-white shadow-xs font-semibold text-[#111827]' : 'text-[#667085]'}`}>{m}</button>
+                className={`px-3 py-1 rounded-[8px] capitalize ${heatmapMode === m ? 'bg-white shadow-xs font-semibold text-[#111827]' : 'text-muted'}`}>{m}</button>
             ))}
           </div>
         </div>
         <div className="overflow-x-auto">
           <table className="text-[10px] w-full min-w-[420px]">
-            <thead><tr><th className="text-left font-medium text-[#98A2B3] pb-1"><span className="sr-only">Symptom</span></th>{heatmap.headers.map((h) => <th key={h} className="font-medium text-[#98A2B3] pb-1">{h}</th>)}</tr></thead>
+            <thead><tr><th className="text-left font-medium text-subtle pb-1"><span className="sr-only">Symptom</span></th>{heatmap.headers.map((h) => <th key={h} className="font-medium text-subtle pb-1">{h}</th>)}</tr></thead>
             <tbody>
               {heatmap.rows.map((r) => (
                 <tr key={r.label}>
@@ -168,23 +168,23 @@ export function SideEffectsAnalyticsDashboard({ className = '' }: Props) {
             </tbody>
           </table>
         </div>
-        <p className="text-[11px] text-[#98A2B3] mt-2">Grey "–" means you didn't log anything in that period. It does not mean "no symptoms".</p>
+        <p className="text-[11px] text-subtle mt-2">Grey "–" means you didn't log anything in that period. It does not mean "no symptoms".</p>
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <section aria-labelledby="se-dose" className={card}>
           <h3 id="se-dose" className="text-base font-semibold text-[#111827]">By dose level</h3>
           {byDose.doses.length < 2 ? (
-            <p className="text-xs text-[#667085] mt-2">Needs symptom logs after injections at two or more different doses.</p>
+            <p className="text-xs text-muted mt-2">Needs symptom logs after injections at two or more different doses.</p>
           ) : (
             <>
-              <p className="text-xs text-[#667085] mb-2">Average severity in the week after injections at each dose ({byDose.doses.map((d) => `${d.label}: ${d.logs} logs`).join(', ')}). This describes your own history. It doesn't show that a dose causes a symptom.</p>
+              <p className="text-xs text-muted mb-2">Average severity in the week after injections at each dose ({byDose.doses.map((d) => `${d.label}: ${d.logs} logs`).join(', ')}). This describes your own history. It doesn't show that a dose causes a symptom.</p>
               <div className="h-[240px] w-full" role="img" aria-label="Average side-effect severity by dose level">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={byDose.symptoms} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="symptom" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
-                    <YAxis domain={[0, 3]} ticks={SEV_TICKS} tickFormatter={sevTick} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} width={48} />
+                    <XAxis dataKey="symptom" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#475569' }} />
+                    <YAxis domain={[0, 3]} ticks={SEV_TICKS} tickFormatter={sevTick} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#475569' }} width={48} />
                     <Tooltip />
                     <Legend />
                     {byDose.doses.map((d, i) => <Bar key={d.label} dataKey={d.label} fill={DOSE_COLORS[i % DOSE_COLORS.length]} radius={[3, 3, 0, 0]} />)}
@@ -206,12 +206,12 @@ export function SideEffectsAnalyticsDashboard({ className = '' }: Props) {
             )}
           </div>
           {!detailDose ? (
-            <p className="text-xs text-[#667085]">Log an injection to explore the week after it.</p>
+            <p className="text-xs text-muted">Log an injection to explore the week after it.</p>
           ) : detail && detail.logs === 0 ? (
-            <p className="text-xs text-[#667085]">No symptom logs in the 7 days after this injection.</p>
+            <p className="text-xs text-muted">No symptom logs in the 7 days after this injection.</p>
           ) : detail ? (
             <>
-              <p className="text-[11px] text-[#98A2B3] mb-2">{detail.logs} {detail.logs === 1 ? 'log' : 'logs'} in the 7 days after this injection</p>
+              <p className="text-[11px] text-subtle mb-2">{detail.logs} {detail.logs === 1 ? 'log' : 'logs'} in the 7 days after this injection</p>
               <ul className="grid grid-cols-2 gap-2 text-xs">
                 {detail.averages.map((a) => (
                   <li key={a.label} className="flex justify-between p-2.5 rounded-[12px] bg-[#F8F9FC] border border-[#E5E7EB]"><span className="text-[#344054]">{a.label}</span><span className="font-semibold text-[#111827]">{sevTick(Math.round(a.avg))}</span></li>

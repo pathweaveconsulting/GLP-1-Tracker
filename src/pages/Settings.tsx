@@ -59,7 +59,7 @@ export function Settings() {
 
   const stat = (label: string, value: string) => (
     <div className="bg-[#F8F9FC] p-4 rounded-[16px] border border-[#E5E7EB]">
-      <dt className="text-xs font-medium text-[#667085] block mb-1">{label}</dt>
+      <dt className="text-xs font-medium text-muted block mb-1">{label}</dt>
       <dd className="text-sm font-semibold text-[#111827]">{value}</dd>
     </div>
   );
@@ -68,7 +68,7 @@ export function Settings() {
     <div className="space-y-6">
       <header>
         <h1 className="text-3xl font-semibold tracking-tight text-[#111827]">Settings & Privacy</h1>
-        <p className="text-sm text-[#667085] mt-0.5">Manage your profile, goals, and local health data</p>
+        <p className="text-sm text-muted mt-0.5">Manage your profile, goals, and local health data</p>
       </header>
 
       <Card className="rounded-[24px] border-[#E5E7EB] bg-white shadow-xs p-2">
@@ -94,12 +94,12 @@ export function Settings() {
       <Card className="rounded-[24px] border-[#E5E7EB] bg-white shadow-xs p-2">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-[#16A34A]" aria-hidden="true" />
+            <Shield className="w-5 h-5 text-positive" aria-hidden="true" />
             <CardTitle className="text-base font-semibold text-[#111827]"><h2>Privacy & your data</h2></CardTitle>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="text-xs text-[#667085] font-normal leading-relaxed space-y-2">
+          <div className="text-xs text-muted font-normal leading-relaxed space-y-2">
             <p>
               Your data lives only in this browser on this device. This app has no account and no server, and it doesn’t send your logs anywhere.
             </p>
@@ -110,13 +110,13 @@ export function Settings() {
           </div>
           <div className="space-y-2 pt-2">
             <Button onClick={handleExportCSV} variant="outline" className="w-full justify-start gap-2.5 rounded-[14px] border-[#E5E7EB] text-[#111827] font-semibold text-xs py-3">
-              <Download className="w-4 h-4 text-[#667085]" aria-hidden="true" /> Export everything as CSV
+              <Download className="w-4 h-4 text-muted" aria-hidden="true" /> Export everything as CSV
             </Button>
             <Button onClick={handleExportJSON} variant="outline" className="w-full justify-start gap-2.5 rounded-[14px] border-[#E5E7EB] text-[#111827] font-semibold text-xs py-3">
-              <FileJson className="w-4 h-4 text-[#667085]" aria-hidden="true" /> Download a backup (JSON)
+              <FileJson className="w-4 h-4 text-muted" aria-hidden="true" /> Download a backup (JSON)
             </Button>
             <Button onClick={() => fileRef.current?.click()} variant="outline" className="w-full justify-start gap-2.5 rounded-[14px] border-[#E5E7EB] text-[#111827] font-semibold text-xs py-3">
-              <Upload className="w-4 h-4 text-[#667085]" aria-hidden="true" /> Restore from a backup
+              <Upload className="w-4 h-4 text-muted" aria-hidden="true" /> Restore from a backup
             </Button>
             <input ref={fileRef} type="file" accept="application/json,.json" aria-label="Choose a backup file to restore" className="sr-only" tabIndex={-1} onChange={handleRestoreFile} />
             <Button onClick={() => setConfirmErase(true)} variant="outline" className="w-full justify-start gap-2.5 rounded-[14px] border-rose-100 text-rose-700 hover:text-rose-800 hover:bg-rose-50 font-semibold text-xs py-3">
@@ -129,7 +129,7 @@ export function Settings() {
       <SafetyNotice variant="full" />
 
       <div className="text-center pb-8 pt-4">
-        <p className="text-[11px] text-[#667085] font-medium">GLP-1 Companion • Not medical advice. Always consult your care team.</p>
+        <p className="text-[11px] text-muted font-medium">GLP-1 Companion • Not medical advice. Always consult your care team.</p>
       </div>
 
       <ConfirmDialog

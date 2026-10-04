@@ -35,7 +35,7 @@ export function ConfirmDialog({ open, title, description, confirmLabel, cancelLa
         className="bg-white w-full max-w-md rounded-[24px] p-6 shadow-2xl border border-[#E5E7EB]"
       >
         <h2 id={titleId} className="text-lg font-semibold text-[#111827]">{title}</h2>
-        <div id={descId} className="mt-2 text-sm text-[#667085] leading-relaxed">{description}</div>
+        <div id={descId} className="mt-2 text-sm text-muted leading-relaxed">{description}</div>
         <div className="mt-6 flex gap-3">
           <button
             ref={cancelRef}

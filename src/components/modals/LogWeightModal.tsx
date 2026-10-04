@@ -46,7 +46,7 @@ function WeightForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-4">
       <div>
-        <label htmlFor={`${uid}-w`} className="block text-xs font-semibold text-[#667085] mb-1.5">Weight ({unit})</label>
+        <label htmlFor={`${uid}-w`} className="block text-xs font-semibold text-muted mb-1.5">Weight ({unit})</label>
         <div className="relative">
           <input
             id={`${uid}-w`}
@@ -61,13 +61,13 @@ function WeightForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
             aria-describedby={error ? `${uid}-w-err` : undefined}
             className="w-full px-4 py-3 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-lg font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none"
           />
-          <span className="absolute right-4 top-3.5 text-sm font-semibold text-[#98A2B3]" aria-hidden="true">{unit}</span>
+          <span className="absolute right-4 top-3.5 text-sm font-semibold text-subtle" aria-hidden="true">{unit}</span>
         </div>
-        {error && <p id={`${uid}-w-err`} role="alert" className="text-xs text-rose-600 mt-1">{error}</p>}
+        {error && <p id={`${uid}-w-err`} role="alert" className="text-xs text-danger mt-1">{error}</p>}
       </div>
 
       <div>
-        <label htmlFor={`${uid}-d`} className="block text-xs font-semibold text-[#667085] mb-1.5">Date</label>
+        <label htmlFor={`${uid}-d`} className="block text-xs font-semibold text-muted mb-1.5">Date</label>
         <input
           id={`${uid}-d`}
           type="date"
@@ -78,14 +78,14 @@ function WeightForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
           aria-describedby={dateError ? `${uid}-d-err` : undefined}
           className="w-full px-3.5 py-2.5 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none"
         />
-        {dateError && <p id={`${uid}-d-err`} role="alert" className="text-xs text-rose-600 mt-1">{dateError}</p>}
+        {dateError && <p id={`${uid}-d-err`} role="alert" className="text-xs text-danger mt-1">{dateError}</p>}
       </div>
 
       <div className="pt-2 flex gap-3">
         <button type="button" onClick={onClose} className="flex-1 py-3 px-4 rounded-[16px] border border-[#E5E7EB] text-[#344054] font-semibold text-sm hover:bg-[#F8F9FC] transition-colors">
           Cancel
         </button>
-        <button type="submit" className="flex-1 py-3 px-4 rounded-[16px] bg-[#16A34A] text-white font-semibold text-sm hover:bg-[#15803D] transition-colors shadow-md shadow-emerald-200 flex items-center justify-center gap-2">
+        <button type="submit" className="flex-1 py-3 px-4 rounded-[16px] bg-[#15803D] text-white font-semibold text-sm hover:bg-[#166534] transition-colors shadow-md shadow-emerald-200 flex items-center justify-center gap-2">
           <Check className="w-4 h-4" aria-hidden="true" /> Save Weight
         </button>
       </div>
@@ -100,7 +100,7 @@ export function LogWeightModal({ isOpen, onClose, onSuccess }: Props) {
       onClose={onClose}
       title="Log Weight"
       subtitle="Record your current body weight"
-      icon={<div className="w-10 h-10 rounded-[16px] bg-emerald-50 flex items-center justify-center text-[#22C55E]"><Scale className="w-5 h-5" aria-hidden="true" /></div>}
+      icon={<div className="w-10 h-10 rounded-[16px] bg-emerald-50 flex items-center justify-center text-positive"><Scale className="w-5 h-5" aria-hidden="true" /></div>}
     >
       <WeightForm onClose={onClose} onSuccess={onSuccess} />
     </Modal>

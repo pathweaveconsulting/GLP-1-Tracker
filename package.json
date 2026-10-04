@@ -10,7 +10,8 @@
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "contrast": "node scripts/contrast.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

@@ -52,7 +52,7 @@ export function ControlCenter() {
   const bmi = calcBmi(currentWeight, settings.heightInches);
   const bmiLabel = bmiCategory(bmi);
   const rate = weeklyRate(weights);
-  const changeClass = totalChange == null || totalChange === 0 ? 'text-[#111827]' : totalChange < 0 ? 'text-[#22C55E]' : 'text-slate-600';
+  const changeClass = totalChange == null || totalChange === 0 ? 'text-[#111827]' : totalChange < 0 ? 'text-positive' : 'text-slate-600';
   const arrow = totalChange == null || totalChange === 0 ? '' : totalChange < 0 ? '↓' : '↑';
 
   const sortedDoses = sortByDate(doses);
@@ -111,11 +111,11 @@ export function ControlCenter() {
             <Menu className="w-5 h-5 text-[#111827]" />
           </button>
           <div>
-            <p className="text-sm text-[#667085] font-medium flex items-center gap-1.5">
+            <p className="text-sm text-muted font-medium flex items-center gap-1.5">
               Welcome back <span className="text-base leading-none" aria-hidden="true">👋</span>
             </p>
             <h1 className="text-3xl font-semibold tracking-tight text-[#111827] mt-1">Control Center</h1>
-            <p className="text-sm text-[#667085] mt-0.5">Your GLP-1 journey & active serum metrics</p>
+            <p className="text-sm text-muted mt-0.5">Your GLP-1 journey & active serum metrics</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -158,13 +158,13 @@ export function ControlCenter() {
           </button>
           <button 
             onClick={() => setIsLogWeightOpen(true)}
-            className="flex-1 sm:flex-none px-4 py-2.5 rounded-[14px] bg-[#ECFDF3] hover:bg-emerald-100 text-[#22C55E] text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer"
+            className="flex-1 sm:flex-none px-4 py-2.5 rounded-[14px] bg-[#ECFDF3] hover:bg-emerald-100 text-positive text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer"
           >
             <Scale className="w-3.5 h-3.5" /> Record Weight
           </button>
           <button 
             onClick={() => setIsLogEffectsOpen(true)}
-            className="flex-1 sm:flex-none px-4 py-2.5 rounded-[14px] bg-[#FFF7E6] hover:bg-amber-100 text-[#F59E0B] text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer"
+            className="flex-1 sm:flex-none px-4 py-2.5 rounded-[14px] bg-[#FFF7E6] hover:bg-amber-100 text-caution text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer"
           >
             <Smile className="w-3.5 h-3.5" /> Record Symptoms
           </button>
@@ -172,7 +172,7 @@ export function ControlCenter() {
             onClick={() => navigate('/logs')}
             className="flex-1 sm:flex-none px-4 py-2.5 rounded-[14px] bg-white border border-[#E5E7EB] hover:bg-[#F8F9FC] text-[#111827] text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer"
           >
-            <FileText className="w-3.5 h-3.5 text-[#667085]" /> History
+            <FileText className="w-3.5 h-3.5 text-muted" /> History
           </button>
         </div>
       </div>
@@ -230,21 +230,21 @@ export function ControlCenter() {
 
             <div className="grid grid-cols-3 gap-4 mb-6 border-b border-[#F1F5F9] pb-6">
               <div>
-                <p className="text-xs font-normal text-[#667085] mb-1">Total Injections</p>
+                <p className="text-xs font-normal text-muted mb-1">Total Injections</p>
                 <p className="text-2xl font-semibold text-[#111827] leading-none mb-1">{sortedDoses.length}</p>
-                <p className="text-xs text-[#98A2B3]">Logged so far</p>
+                <p className="text-xs text-subtle">Logged so far</p>
               </div>
               <div>
-                <p className="text-xs font-normal text-[#667085] mb-1">Last Dose</p>
+                <p className="text-xs font-normal text-muted mb-1">Last Dose</p>
                 <p className="text-sm font-semibold text-[#111827] leading-tight mb-1">
                   {lastDose ? format(new Date(lastDose.date), 'MMM d, yyyy') : 'No dose yet'}
                 </p>
-                <p className="text-xs text-[#98A2B3]">
+                <p className="text-xs text-subtle">
                   {lastDose ? format(new Date(lastDose.date), 'h:mm a') : 'Click to record'}
                 </p>
               </div>
               <div>
-                <p className="text-xs font-normal text-[#667085] mb-1">Medication</p>
+                <p className="text-xs font-normal text-muted mb-1">Medication</p>
                 <p className="text-sm font-semibold text-[#111827] leading-tight mb-1">{lastDose ? lastDose.medication : '–'}</p>
                 {lastDose && (
                   <span className="inline-block px-2 py-0.5 bg-[#F3F0FF] text-[#6D4AFF] rounded-md text-[11px] font-semibold">
@@ -256,9 +256,9 @@ export function ControlCenter() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="border-r border-[#F1F5F9]">
-                <p className="text-xs font-normal text-[#667085] mb-1">Estimated Level</p>
+                <p className="text-xs font-normal text-muted mb-1">Estimated Level</p>
                 {lastDose && !pkData.modelled ? (
-                  <p className="text-sm text-[#667085]">No estimate for this medication</p>
+                  <p className="text-sm text-muted">No estimate for this medication</p>
                 ) : lastDose ? (
                   <>
                     <div className="flex items-baseline gap-2 mb-1">
@@ -267,23 +267,23 @@ export function ControlCenter() {
                         {pkData.percentOfPeak}%
                       </span>
                     </div>
-                    <p className="text-xs text-[#98A2B3]">Simplified model, not a blood test</p>
+                    <p className="text-xs text-subtle">Simplified model, not a blood test</p>
                   </>
                 ) : (
-                  <p className="text-sm text-[#667085]">Log a dose to see an estimate</p>
+                  <p className="text-sm text-muted">Log a dose to see an estimate</p>
                 )}
               </div>
               <div className="pl-2">
-                <p className="text-xs font-normal text-[#667085] mb-1">Next Dose</p>
+                <p className="text-xs font-normal text-muted mb-1">Next Dose</p>
                 {next.dueDate && next.daysUntil != null ? (
                   <>
                     <p className="text-3xl font-semibold text-[#111827] leading-none mb-1">
-                      {next.daysUntil >= 0 ? next.daysUntil : Math.abs(next.daysUntil)} <span className="text-xs font-normal text-[#667085]">{next.daysUntil < 0 ? 'days overdue' : next.daysUntil === 1 ? 'day' : 'days'}</span>
+                      {next.daysUntil >= 0 ? next.daysUntil : Math.abs(next.daysUntil)} <span className="text-xs font-normal text-muted">{next.daysUntil < 0 ? 'days overdue' : next.daysUntil === 1 ? 'day' : 'days'}</span>
                     </p>
-                    <p className="text-xs text-[#98A2B3]">{format(next.dueDate, 'MMM d, yyyy')} · if you dose weekly</p>
+                    <p className="text-xs text-subtle">{format(next.dueDate, 'MMM d, yyyy')} · if you dose weekly</p>
                   </>
                 ) : (
-                  <p className="text-sm text-[#667085]">{lastDose ? 'No set schedule for this medication' : 'Log a dose to see this'}</p>
+                  <p className="text-sm text-muted">{lastDose ? 'No set schedule for this medication' : 'Log a dose to see this'}</p>
                 )}
               </div>
             </div>
@@ -296,47 +296,47 @@ export function ControlCenter() {
             className="block bg-white rounded-[24px] p-6 shadow-xs border border-[#E5E7EB] relative overflow-hidden group hover:border-emerald-200 transition-all"
           >
             <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-2 text-[#22C55E] font-semibold text-sm">
+              <div className="flex items-center gap-2 text-positive font-semibold text-sm">
                 <TrendingDown className="w-4 h-4" /> Weight
               </div>
-              <span className="text-xs font-semibold text-[#22C55E] group-hover:underline flex items-center gap-0.5">
+              <span className="text-xs font-semibold text-positive group-hover:underline flex items-center gap-0.5">
                 View Details <ChevronRight className="w-3.5 h-3.5" />
               </span>
             </div>
 
             <div className="grid grid-cols-3 gap-4 mb-6 border-b border-[#F1F5F9] pb-6">
               <div>
-                <p className="text-xs font-normal text-[#667085] mb-1">Total Change</p>
+                <p className="text-xs font-normal text-muted mb-1">Total Change</p>
                 <p className={`text-2xl font-semibold leading-none mb-1 ${changeClass}`}>
-                  {formatWeightChange(totalChange, unit, { unit: false })} <span className="text-xs font-normal text-[#667085]">{unit}</span>
+                  {formatWeightChange(totalChange, unit, { unit: false })} <span className="text-xs font-normal text-muted">{unit}</span>
                 </p>
-                <p className="text-xs text-[#667085] font-medium">{totalChange == null ? 'Since your starting weight' : totalChange === 0 ? 'No change yet' : `${arrow} ${formatWeight(Math.abs(totalChange), unit)} ${totalChange < 0 ? 'lower' : 'higher'}`}</p>
+                <p className="text-xs text-muted font-medium">{totalChange == null ? 'Since your starting weight' : totalChange === 0 ? 'No change yet' : `${arrow} ${formatWeight(Math.abs(totalChange), unit)} ${totalChange < 0 ? 'lower' : 'higher'}`}</p>
               </div>
               <div>
-                <p className="text-xs font-normal text-[#667085] mb-1">Recent Pace</p>
+                <p className="text-xs font-normal text-muted mb-1">Recent Pace</p>
                 <p className="text-2xl font-semibold text-[#111827] leading-none mb-1">
-                  {rate ? formatWeightChange(rate.lbsPerWeek, unit, { unit: false }) : '–'} <span className="text-xs font-normal text-[#667085]">{unit}/wk</span>
+                  {rate ? formatWeightChange(rate.lbsPerWeek, unit, { unit: false }) : '–'} <span className="text-xs font-normal text-muted">{unit}/wk</span>
                 </p>
-                <p className="text-xs text-[#98A2B3]">{rate ? `Trend of ${rate.points} weigh-ins` : 'Needs 3+ weigh-ins over 2+ weeks'}</p>
+                <p className="text-xs text-subtle">{rate ? `Trend of ${rate.points} weigh-ins` : 'Needs 3+ weigh-ins over 2+ weeks'}</p>
               </div>
               <div>
-                <p className="text-xs font-normal text-[#667085] mb-1">Current Weight</p>
-                <p className="text-2xl font-semibold text-[#111827] leading-none mb-1">{formatWeight(currentWeight, unit, { unit: false })} <span className="text-xs font-normal text-[#667085]">{unit}</span></p>
-                {!latest && <p className="text-xs text-[#98A2B3]">No weigh-ins yet</p>}
+                <p className="text-xs font-normal text-muted mb-1">Current Weight</p>
+                <p className="text-2xl font-semibold text-[#111827] leading-none mb-1">{formatWeight(currentWeight, unit, { unit: false })} <span className="text-xs font-normal text-muted">{unit}</span></p>
+                {!latest && <p className="text-xs text-subtle">No weigh-ins yet</p>}
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <p className="text-xs font-normal text-[#667085] mb-1">Goal Weight</p>
-                <p className="text-xl font-semibold text-[#111827] leading-none">{settings.targetWeight > 0 ? formatWeight(settings.targetWeight, unit, { unit: false }) : '–'} <span className="text-xs font-normal text-[#667085]">{unit}</span></p>
+                <p className="text-xs font-normal text-muted mb-1">Goal Weight</p>
+                <p className="text-xl font-semibold text-[#111827] leading-none">{settings.targetWeight > 0 ? formatWeight(settings.targetWeight, unit, { unit: false }) : '–'} <span className="text-xs font-normal text-muted">{unit}</span></p>
               </div>
               <div>
-                <p className="text-xs font-normal text-[#667085] mb-1">% Change</p>
+                <p className="text-xs font-normal text-muted mb-1">% Change</p>
                 <p className={`text-xl font-semibold leading-none mb-1 ${changeClass}`}>{percentChange == null ? '–' : `${percentChange > 0 ? '+' : ''}${percentChange.toFixed(1)}%`}</p>
               </div>
               <div>
-                <p className="text-xs font-normal text-[#667085] mb-1">Current BMI</p>
+                <p className="text-xs font-normal text-muted mb-1">Current BMI</p>
                 <p className="text-xl font-semibold text-[#111827] leading-none mb-1">{bmi == null ? '–' : bmi.toFixed(1)}</p>
                 {bmiLabel && <span className="inline-block px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md text-[10px] font-semibold">{bmiLabel}</span>}
               </div>
@@ -352,7 +352,7 @@ export function ControlCenter() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <div>
               <h3 className="font-semibold text-[#111827] text-base">Weight & Injections</h3>
-              <p className="text-xs text-[#667085]">Aggregated on a weekly basis</p>
+              <p className="text-xs text-muted">Aggregated on a weekly basis</p>
             </div>
             
             {/* Timeline Filter Options */}
@@ -363,7 +363,7 @@ export function ControlCenter() {
                   aria-pressed={weightTimeline === t}
                   onClick={() => setWeightTimeline(t)}
                   className={`px-3 py-1.5 rounded-[10px] transition-all ${
-                    weightTimeline === t ? 'bg-white text-[#111827] shadow-xs font-semibold' : 'text-[#667085] hover:text-[#111827]'
+                    weightTimeline === t ? 'bg-white text-[#111827] shadow-xs font-semibold' : 'text-muted hover:text-[#111827]'
                   }`}
                 >
                   {t}
@@ -375,18 +375,18 @@ export function ControlCenter() {
           <div className="flex flex-col md:flex-row gap-6">
             <div className="w-full md:w-48 shrink-0 flex flex-row md:flex-col gap-6 md:border-r border-[#F1F5F9] md:pr-6">
                <div>
-                 <p className="text-xs font-normal text-[#667085] mb-1">Weight Change</p>
+                 <p className="text-xs font-normal text-muted mb-1">Weight Change</p>
                  <p className={`text-2xl font-semibold leading-none mb-1 ${changeClass}`}>
-                   {formatWeightChange(totalChange, unit, { unit: false })} <span className="text-xs font-normal text-[#667085]">{unit}</span>
+                   {formatWeightChange(totalChange, unit, { unit: false })} <span className="text-xs font-normal text-muted">{unit}</span>
                  </p>
-                 <p className="text-xs text-[#667085] font-medium">Since your starting weight</p>
+                 <p className="text-xs text-muted font-medium">Since your starting weight</p>
                </div>
                <div>
-                 <p className="text-xs font-normal text-[#667085] mb-1">Total Injections</p>
+                 <p className="text-xs font-normal text-muted mb-1">Total Injections</p>
                  <div className="flex items-center gap-3">
                    <div>
                      <p className="text-2xl font-semibold text-[#111827] leading-none mb-1">{sortedDoses.length}</p>
-                     <p className="text-xs text-[#98A2B3]">Logged so far</p>
+                     <p className="text-xs text-subtle">Logged so far</p>
                    </div>
                    <div className="w-8 h-8 rounded-full bg-[#F3F0FF] flex items-center justify-center">
                      <Syringe className="w-4 h-4 text-[#6D4AFF]" />
@@ -397,7 +397,7 @@ export function ControlCenter() {
 
             <div className="h-[250px] w-full flex-1 relative">
                {!chartHasWeight && (
-                 <p className="absolute inset-0 flex items-center justify-center text-xs text-[#667085] text-center px-6 z-10">No weigh-ins in this period yet. Injections are still shown.</p>
+                 <p className="absolute inset-0 flex items-center justify-center text-xs text-muted text-center px-6 z-10">No weigh-ins in this period yet. Injections are still shown.</p>
                )}
                <ResponsiveContainer width="100%" height="100%">
                  <ComposedChart data={weeklyData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -414,7 +414,7 @@ export function ControlCenter() {
                       domain={['dataMin - 3', 'dataMax + 3']} 
                       axisLine={false} 
                       tickLine={false} 
-                      tick={{ fontSize: 11, fill: '#22C55E', fontWeight: 500 }} 
+                      tick={{ fontSize: 11, fill: '#15803D', fontWeight: 500 }} 
                    />
                    <YAxis 
                       yAxisId="right"

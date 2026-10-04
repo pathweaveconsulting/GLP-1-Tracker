@@ -10,11 +10,11 @@ interface Props {
 }
 
 const STYLE: Record<NotificationKind, { icon: typeof Bell; color: string }> = {
-  dose: { icon: Syringe, color: 'bg-purple-100 text-[#6D4AFF]' },
-  trend: { icon: TrendingDown, color: 'bg-emerald-100 text-[#22C55E]' },
-  milestone: { icon: Trophy, color: 'bg-amber-100 text-amber-600' },
-  symptom: { icon: HeartPulse, color: 'bg-rose-100 text-rose-600' },
-  reminder: { icon: Scale, color: 'bg-blue-100 text-blue-600' },
+  dose: { icon: Syringe, color: 'bg-purple-100 text-accent' },
+  trend: { icon: TrendingDown, color: 'bg-emerald-50 text-positive' },
+  milestone: { icon: Trophy, color: 'bg-amber-100 text-caution' },
+  symptom: { icon: HeartPulse, color: 'bg-rose-100 text-danger' },
+  reminder: { icon: Scale, color: 'bg-blue-100 text-info' },
 };
 
 export function NotificationsModal({ isOpen, onClose }: Props) {
@@ -30,11 +30,11 @@ export function NotificationsModal({ isOpen, onClose }: Props) {
       onClose={onClose}
       title="Notifications"
       subtitle="Based on what you've logged"
-      icon={<div className="w-10 h-10 rounded-[16px] bg-red-50 flex items-center justify-center text-red-500"><Bell className="w-5 h-5" aria-hidden="true" /></div>}
+      icon={<div className="w-10 h-10 rounded-[16px] bg-red-50 flex items-center justify-center text-danger"><Bell className="w-5 h-5" aria-hidden="true" /></div>}
     >
       {items.length === 0 ? (
-        <div className="p-4 bg-[#F8F9FC] rounded-[16px] border border-[#E5E7EB] flex items-start gap-3 text-xs text-[#667085] leading-relaxed">
-          <CheckCircle2 className="w-4 h-4 text-[#22C55E] shrink-0 mt-0.5" aria-hidden="true" />
+        <div className="p-4 bg-[#F8F9FC] rounded-[16px] border border-[#E5E7EB] flex items-start gap-3 text-xs text-muted leading-relaxed">
+          <CheckCircle2 className="w-4 h-4 text-positive shrink-0 mt-0.5" aria-hidden="true" />
           <span>Nothing needs your attention right now. As you log doses, weights and symptoms, helpful updates will appear here.</span>
         </div>
       ) : (
@@ -48,7 +48,7 @@ export function NotificationsModal({ isOpen, onClose }: Props) {
                 </div>
                 <div className="flex-1">
                   <h3 className="text-sm font-semibold text-[#111827] mb-0.5">{n.title}</h3>
-                  <p className="text-xs text-[#667085] font-normal leading-relaxed">{n.description}</p>
+                  <p className="text-xs text-muted font-normal leading-relaxed">{n.description}</p>
                 </div>
               </li>
             );

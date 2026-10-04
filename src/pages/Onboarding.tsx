@@ -10,12 +10,12 @@ import { lbsToDisplay, type WeightUnit } from '../lib/units';
 
 const inputCls =
   'w-full px-3.5 py-2.5 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-sm font-medium focus:ring-2 focus:ring-purple-500 focus:outline-none';
-const labelCls = 'block text-xs font-semibold text-[#667085] mb-1.5';
+const labelCls = 'block text-xs font-semibold text-muted mb-1.5';
 
 function FieldError({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
   return (
-    <p id={id} role="alert" className="text-xs text-rose-600 mt-1">
+    <p id={id} role="alert" className="text-xs text-danger mt-1">
       {message}
     </p>
   );
@@ -73,7 +73,7 @@ export function Onboarding() {
     <div className="min-h-screen bg-[#F8F9FC] text-[#111827] font-sans antialiased flex items-start md:items-center justify-center p-4">
       <main className="w-full max-w-xl bg-white rounded-[24px] border border-[#E5E7EB] shadow-xs p-6 md:p-8 my-6">
         <h1 className="text-2xl font-semibold tracking-tight">{welcomeBack ? 'Welcome back. Let’s confirm your details.' : 'Welcome. Let’s set up your journey.'}</h1>
-        <p className="text-sm text-[#667085] mt-1.5 leading-relaxed">
+        <p className="text-sm text-muted mt-1.5 leading-relaxed">
           {welcomeBack
             ? `We kept your ${keptCount} ${keptCount === 1 ? 'entry' : 'entries'}. This version needs your goal and height again so every number is based on you. We pre-filled what we could from your earliest entries; please check it.`
             : 'A few details so every number you see is based on you. Everything stays on this device. Nothing is uploaded.'}

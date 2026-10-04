@@ -22,7 +22,7 @@ export function Doses() {
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-[#111827]">Medication</h1>
-          <p className="text-sm text-[#667085] mt-0.5">Track injections with exact timestamps, sites, and dosages</p>
+          <p className="text-sm text-muted mt-0.5">Track injections with exact timestamps, sites, and dosages</p>
         </div>
         <Button onClick={() => setIsLogDoseOpen(true)} className="gap-2 bg-[#6D4AFF] hover:bg-[#5B3FE0] text-white rounded-[14px] shadow-xs px-4 py-2.5 text-xs font-semibold">
           <Plus className="w-4 h-4" />
@@ -37,8 +37,8 @@ export function Doses() {
           return (
             <Card key={siteCategory} className="rounded-[20px] border-[#E5E7EB] bg-white shadow-xs">
               <CardContent className="p-4 flex flex-col justify-center items-center text-center gap-1">
-                <span className="text-xs font-normal text-[#667085]">{siteCategory}</span>
-                <span className="text-2xl font-semibold tracking-tight text-[#111827]">{count} <span className="text-xs font-normal text-[#98A2B3]">injections</span></span>
+                <span className="text-xs font-normal text-muted">{siteCategory}</span>
+                <span className="text-2xl font-semibold tracking-tight text-[#111827]">{count} <span className="text-xs font-normal text-subtle">injections</span></span>
               </CardContent>
             </Card>
           );
@@ -68,9 +68,9 @@ export function Doses() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-[#111827] text-base">{dose.amountMg} mg {dose.medication}</h3>
-                  <p className="text-xs text-[#667085] font-normal flex items-center gap-1">
+                  <p className="text-xs text-muted font-normal flex items-center gap-1">
                     <span>{format(new Date(dose.date), 'EEEE, MMMM do, yyyy')}</span>
-                    <span className="text-[#98A2B3]">@</span>
+                    <span className="text-subtle">@</span>
                     <span className="text-[#111827] font-semibold flex items-center gap-0.5">
                       <Clock className="w-3 h-3 text-[#6D4AFF] inline" />
                       {format(new Date(dose.date), 'h:mm a')}
@@ -78,17 +78,17 @@ export function Doses() {
                     <span>•</span>
                     <span className="text-[#6D4AFF] font-medium">{dose.site}</span>
                   </p>
-                  {dose.notes && <p className="text-xs text-[#98A2B3] mt-0.5 italic">"{dose.notes}"</p>}
+                  {dose.notes && <p className="text-xs text-subtle mt-0.5 italic">"{dose.notes}"</p>}
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
-                <span className="text-xs font-semibold text-[#667085] bg-[#F8F9FC] px-2.5 py-1 rounded-lg border border-[#E5E7EB]">
+                <span className="text-xs font-semibold text-muted bg-[#F8F9FC] px-2.5 py-1 rounded-lg border border-[#E5E7EB]">
                   Injection #{sortedDoses.length - i}
                 </span>
                 <button
                   onClick={() => deleteDose(dose.id)}
-                  className="p-2 rounded-[16px] text-[#98A2B3] hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                  className="p-2 rounded-[16px] text-subtle hover:text-danger hover:bg-red-50 transition-colors cursor-pointer"
                   aria-label={`Delete ${dose.amountMg} mg injection from ${format(new Date(dose.date), 'MMM d, yyyy')}`}
                 >
                   <Trash2 className="w-4 h-4" aria-hidden="true" />

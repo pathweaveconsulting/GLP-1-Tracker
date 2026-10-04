@@ -66,14 +66,14 @@ export function Layout() {
             </div>
             <div>
               <div className="text-sm font-semibold tracking-tight text-[#111827] leading-tight">GLP-1 Companion</div>
-              <p className="text-[11px] font-medium text-[#667085]">Your journey, explained</p>
+              <p className="text-[11px] font-medium text-muted">Your journey, explained</p>
             </div>
           </NavLink>
         </div>
         <nav aria-label="Main" className="flex-1 px-4 py-5 space-y-5 overflow-y-auto">
           {navSections.map((section, idx) => (
             <div key={idx} className="space-y-1">
-              <span className="px-3 text-[11px] font-semibold text-[#98A2B3] tracking-normal block mb-1">
+              <span className="px-3 text-[11px] font-semibold text-subtle tracking-normal block mb-1">
                 {section.title}
               </span>
               {section.items.map((item) => (
@@ -87,7 +87,7 @@ export function Layout() {
                         ? 'bg-[#F3F0FF] text-[#6D4AFF] border-l-2 border-[#6D4AFF]'
                         : item.highlight
                         ? 'bg-purple-50/60 text-[#6D4AFF] hover:bg-purple-100/60'
-                        : 'text-[#667085] hover:bg-[#F8F9FC] hover:text-[#111827]'
+                        : 'text-muted hover:bg-[#F8F9FC] hover:text-[#111827]'
                     )
                   }
                 >
@@ -104,7 +104,7 @@ export function Layout() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-semibold text-[#111827] truncate">{settings.medication}</p>
-            <p className="text-[10px] text-[#667085] truncate">
+            <p className="text-[10px] text-muted truncate">
               {settings.startDate ? `Started ${format(new Date(settings.startDate), 'MMM d, yyyy')}` : 'Your journey'}
             </p>
           </div>
@@ -114,7 +114,7 @@ export function Layout() {
       {/* Main Content */}
       <main id="main-content" tabIndex={-1} className="flex-1 overflow-y-auto print:overflow-visible pb-24 md:pb-8 focus:outline-none">
         <div className="max-w-6xl mx-auto p-4 md:p-8">
-          <Suspense fallback={<p role="status" className="py-24 text-center text-sm text-[#667085]">Loading…</p>}>
+          <Suspense fallback={<p role="status" className="py-24 text-center text-sm text-muted">Loading…</p>}>
             <Outlet />
           </Suspense>
           <footer className="mt-10 pt-4 border-t border-[#E5E7EB] print:hidden">
@@ -131,7 +131,7 @@ export function Layout() {
         <NavLink
           to="/"
           className={({ isActive }) =>
-            cn('flex flex-col items-center p-2 rounded-[16px] transition-colors', isActive ? 'text-[#6D4AFF] font-semibold' : 'text-[#98A2B3] hover:text-[#667085]')
+            cn('flex flex-col items-center p-2 rounded-[16px] transition-colors', isActive ? 'text-[#6D4AFF] font-semibold' : 'text-subtle hover:text-muted')
           }
         >
           <Home className="w-5 h-5 mb-0.5" />
@@ -141,7 +141,7 @@ export function Layout() {
         <NavLink
           to="/logs"
           className={({ isActive }) =>
-            cn('flex flex-col items-center p-2 rounded-[16px] transition-colors', isActive ? 'text-[#6D4AFF] font-semibold' : 'text-[#98A2B3] hover:text-[#667085]')
+            cn('flex flex-col items-center p-2 rounded-[16px] transition-colors', isActive ? 'text-[#6D4AFF] font-semibold' : 'text-subtle hover:text-muted')
           }
         >
           <Database className="w-5 h-5 mb-0.5" />
@@ -151,7 +151,7 @@ export function Layout() {
         <NavLink
           to="/results"
           className={({ isActive }) =>
-            cn('flex flex-col items-center p-2 rounded-[16px] transition-colors', isActive ? 'text-[#6D4AFF] font-semibold' : 'text-[#98A2B3] hover:text-[#667085]')
+            cn('flex flex-col items-center p-2 rounded-[16px] transition-colors', isActive ? 'text-[#6D4AFF] font-semibold' : 'text-subtle hover:text-muted')
           }
         >
           <Activity className="w-5 h-5 mb-0.5" />
@@ -161,7 +161,7 @@ export function Layout() {
         <NavLink
           to="/weight"
           className={({ isActive }) =>
-            cn('flex flex-col items-center p-2 rounded-[16px] transition-colors', isActive ? 'text-[#6D4AFF] font-semibold' : 'text-[#98A2B3] hover:text-[#667085]')
+            cn('flex flex-col items-center p-2 rounded-[16px] transition-colors', isActive ? 'text-[#6D4AFF] font-semibold' : 'text-subtle hover:text-muted')
           }
         >
           <Scale className="w-5 h-5 mb-0.5" />
@@ -171,7 +171,7 @@ export function Layout() {
         <button
           type="button"
           onClick={() => setIsMenuOpen(true)}
-          className="flex flex-col items-center p-2 rounded-[16px] text-[#98A2B3] hover:text-[#667085] transition-colors"
+          className="flex flex-col items-center p-2 rounded-[16px] text-subtle hover:text-muted transition-colors"
         >
           <MoreHorizontal className="w-5 h-5 mb-0.5" />
           <span className="text-[10px]">More</span>

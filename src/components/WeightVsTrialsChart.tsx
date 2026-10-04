@@ -188,7 +188,7 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
         <div>
           <h3 className="text-xl font-semibold text-[#111827] tracking-tight">Weight vs trials</h3>
-          <p className="text-xs text-[#667085] mt-1 max-w-xl">
+          <p className="text-xs text-muted mt-1 max-w-xl">
             Illustrative reference curves shaped around published average results, not a forecast for you. Trial participants, doses and support differ from real life, so your own line may sit anywhere around them.
           </p>
         </div>
@@ -235,7 +235,7 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
               if (onOpenInfo) onOpenInfo();
               else setShowInfoModal(true);
             }}
-            className="text-[#98A2B3] hover:text-[#6D4AFF] transition-colors p-1.5 rounded-full hover:bg-[#F1F5F9] cursor-pointer"
+            className="text-subtle hover:text-[#6D4AFF] transition-colors p-1.5 rounded-full hover:bg-[#F1F5F9] cursor-pointer"
             aria-label="About the trial reference curves"
           >
             <Info className="w-4 h-4" aria-hidden="true" />
@@ -244,7 +244,7 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
       </div>
 
       {/* LEGEND SECTION */}
-      <div className="flex justify-end items-center gap-4 text-xs font-semibold text-[#667085] mb-2">
+      <div className="flex justify-end items-center gap-4 text-xs font-semibold text-muted mb-2">
         <div className="flex items-center gap-1.5">
           <span 
             className="w-3 h-3 rounded-xs inline-block" 
@@ -260,7 +260,7 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
 
       {/* CHART CANVAS */}
       <div className="h-[300px] w-full relative">
-        <div className="absolute top-2 right-4 text-[#D0D5DD] font-medium text-xs pointer-events-none select-none opacity-60">
+        <div className="absolute top-2 right-4 text-subtle font-medium text-xs pointer-events-none select-none opacity-60">
           days
         </div>
 
@@ -277,14 +277,14 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
               dataKey="daysLabel" 
               axisLine={false} 
               tickLine={false} 
-              tick={{ fontSize: 11, fill: '#64748b', fontWeight: 500 }} 
+              tick={{ fontSize: 11, fill: '#475569', fontWeight: 500 }} 
               dy={10}
             />
             <YAxis 
               domain={yDomain}
               axisLine={false} 
               tickLine={false} 
-              tick={{ fontSize: 11, fill: '#64748b', fontWeight: 500 }}
+              tick={{ fontSize: 11, fill: '#475569', fontWeight: 500 }}
               tickFormatter={(val) => isPercentMode ? `${val}%` : `${val} ${chartData[0]?.unitLabel || ''}`}
             />
             <Tooltip
@@ -349,7 +349,7 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
               className={`px-4 py-2 rounded-[16px] transition-all cursor-pointer whitespace-nowrap ${
                 timeframe === t 
                   ? 'bg-[#582967] text-white shadow-xs' 
-                  : 'text-[#667085] hover:text-[#111827] hover:bg-[#E5E7EB]/50'
+                  : 'text-muted hover:text-[#111827] hover:bg-[#E5E7EB]/50'
               }`}
             >
               {t}
@@ -360,7 +360,7 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
 
       <Modal open={showInfoModal} onClose={() => setShowInfoModal(false)} title="About the reference curves" widthClass="max-w-lg">
         <div className="space-y-3">
-          <p className="text-xs text-[#667085] leading-relaxed">
+          <p className="text-xs text-muted leading-relaxed">
             The curves are drawn between approximate average results reported by these trials. The shape between those points is an interpolation, not trial data, and trial participants received structured support that real life rarely matches. Your own line may sit anywhere around them. Please don't read it as a target or a forecast.
           </p>
           <ul className="text-xs space-y-2 text-[#344054] font-medium">
@@ -374,7 +374,7 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
               <strong>Semaglutide (STEP 1):</strong> average loss of about 15% at 68 weeks at 2.4 mg.
             </li>
           </ul>
-          <p className="text-[11px] text-[#98A2B3]">Approximate; verify against the published trial reports.</p>
+          <p className="text-[11px] text-subtle">Approximate; verify against the published trial reports.</p>
           <button type="button" onClick={() => setShowInfoModal(false)} className="w-full py-2.5 rounded-[16px] bg-[#582967] text-white font-semibold text-xs hover:bg-[#4a2257] transition-all">Close</button>
         </div>
       </Modal>

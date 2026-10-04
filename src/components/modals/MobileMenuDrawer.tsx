@@ -72,7 +72,7 @@ export function MobileMenuDrawer({ isOpen, onClose }: Props) {
             type="button"
             onClick={onClose}
             aria-label="Close menu"
-            className="w-8 h-8 rounded-full bg-[#F1F5F9] flex items-center justify-center text-[#667085] hover:bg-[#E5E7EB]"
+            className="w-8 h-8 rounded-full bg-[#F1F5F9] flex items-center justify-center text-muted hover:bg-[#E5E7EB]"
           >
             <X className="w-4 h-4" aria-hidden="true" />
           </button>
@@ -81,7 +81,7 @@ export function MobileMenuDrawer({ isOpen, onClose }: Props) {
         <nav aria-label="Main menu" className="flex-1 overflow-y-auto p-4 space-y-4">
           {navSections.map((section, idx) => (
             <div key={idx} className="space-y-1">
-              <span className="px-3.5 text-[10px] font-semibold text-[#98A2B3] tracking-wider block mb-1">
+              <span className="px-3.5 text-[10px] font-semibold text-subtle tracking-wider block mb-1">
                 {section.title}
               </span>
               {section.items.map((item) => (
@@ -95,7 +95,7 @@ export function MobileMenuDrawer({ isOpen, onClose }: Props) {
                         ? 'bg-[#6D4AFF] text-white shadow-md shadow-purple-200'
                         : item.highlight
                         ? 'bg-purple-50 text-[#6D4AFF]'
-                        : 'text-[#667085] hover:bg-[#F8F9FC] hover:text-[#111827]'
+                        : 'text-muted hover:bg-[#F8F9FC] hover:text-[#111827]'
                     }`
                   }
                 >
@@ -108,7 +108,7 @@ export function MobileMenuDrawer({ isOpen, onClose }: Props) {
         </nav>
 
         <div className="p-4 border-t border-[#E5E7EB] text-center">
-          <p className="text-xs text-[#98A2B3] font-medium">GLP-1 Companion</p>
+          <p className="text-xs text-subtle font-medium">GLP-1 Companion</p>
         </div>
       </div>
     </div>

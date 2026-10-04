@@ -37,19 +37,19 @@ export function MedicationLevelChart({ className = '', onOpenSources }: Props) {
               <button
                 onClick={onOpenSources}
                 aria-label="About the estimated level"
-                className="cursor-pointer text-[#98A2B3] hover:text-[#6D4AFF] transition-colors p-1 rounded-full hover:bg-[#F1F5F9]"
+                className="cursor-pointer text-subtle hover:text-[#6D4AFF] transition-colors p-1 rounded-full hover:bg-[#F1F5F9]"
               >
                 <Info className="w-4 h-4" aria-hidden="true" />
               </button>
             )}
           </div>
-          <p className="text-xs text-[#667085] mt-0.5">
+          <p className="text-xs text-muted mt-0.5">
             {doses.length === 0 ? (
               'Log a dose to see an estimate.'
             ) : pkData.modelled ? (
               <>
                 Estimated {pkData.medicationName} level now: <strong className="text-[#111827] font-semibold">{pkData.currentLevel} mg</strong>{' '}
-                <span className="text-[#98A2B3]">({pkData.percentOfPeak}% of your modelled peak)</span>
+                <span className="text-subtle">({pkData.percentOfPeak}% of your modelled peak)</span>
               </>
             ) : (
               'No estimate is available for this medication.'
@@ -58,11 +58,11 @@ export function MedicationLevelChart({ className = '', onOpenSources }: Props) {
           {pkData.mixedMedications && (
             <p className="text-[11px] text-amber-800 mt-1">You’ve logged more than one medication. Each is drawn separately and never added together; the number above is for {pkData.medicationName}, your most recent.</p>
           )}
-          {doses.length > 0 && <p className="text-[11px] text-[#98A2B3] mt-0.5">Simplified model, not a blood test. The right-hand side shows how the estimate would fall if no further doses were taken.</p>}
+          {doses.length > 0 && <p className="text-[11px] text-subtle mt-0.5">Simplified model, not a blood test. The right-hand side shows how the estimate would fall if no further doses were taken.</p>}
         </div>
 
         {/* LEGEND */}
-        <div className="flex items-center gap-4 text-xs font-medium text-[#667085]">
+        <div className="flex items-center gap-4 text-xs font-medium text-muted">
           {activeMeds.map((med) => {
             const colorObj = medColors[med.toLowerCase()] || { stroke: '#6D4AFF', fill: '#6D4AFF' };
             return (
@@ -149,7 +149,7 @@ export function MedicationLevelChart({ className = '', onOpenSources }: Props) {
               className={`px-3.5 py-1.5 rounded-[10px] transition-all cursor-pointer ${
                 pkTimeline === t 
                   ? 'bg-white text-[#111827] shadow-xs font-semibold' 
-                  : 'text-[#667085] hover:text-[#111827]'
+                  : 'text-muted hover:text-[#111827]'
               }`}
             >
               {t}

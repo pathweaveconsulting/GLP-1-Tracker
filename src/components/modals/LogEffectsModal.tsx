@@ -43,7 +43,7 @@ function SeveritySelector({ label, value, onChange }: { label: string; value: Se
             type="button"
             aria-pressed={value === s}
             onClick={() => onChange(s)}
-            className={`py-1.5 text-xs font-semibold rounded-lg border transition-all ${value === s ? ACTIVE[s] : 'border-[#E5E7EB] text-[#667085] hover:bg-[#F8F9FC]'}`}
+            className={`py-1.5 text-xs font-semibold rounded-lg border transition-all ${value === s ? ACTIVE[s] : 'border-[#E5E7EB] text-muted hover:bg-[#F8F9FC]'}`}
           >
             {severityLabel(s)}
           </button>
@@ -114,7 +114,7 @@ function EffectsForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-4">
       <div>
-        <label htmlFor={`${uid}-date`} className="block text-xs font-semibold text-[#667085] mb-1.5">Date</label>
+        <label htmlFor={`${uid}-date`} className="block text-xs font-semibold text-muted mb-1.5">Date</label>
         <input
           id={`${uid}-date`}
           type="date"
@@ -124,7 +124,7 @@ function EffectsForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
           aria-invalid={dateError ? true : undefined}
           className="w-full px-3.5 py-2.5 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-sm font-medium focus:ring-2 focus:ring-amber-500 focus:outline-none"
         />
-        {dateError && <p role="alert" className="text-xs text-rose-600 mt-1">{dateError}</p>}
+        {dateError && <p role="alert" className="text-xs text-danger mt-1">{dateError}</p>}
       </div>
 
       {DEFAULT_SYMPTOMS.map((s) => (
@@ -156,13 +156,13 @@ function EffectsForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
       )}
 
       <div>
-        <label htmlFor={`${uid}-notes`} className="block text-xs font-semibold text-[#667085] mb-1.5">Notes & reflections</label>
+        <label htmlFor={`${uid}-notes`} className="block text-xs font-semibold text-muted mb-1.5">Notes & reflections</label>
         <textarea id={`${uid}-notes`} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Energy, meals, water intake…" className="w-full px-3.5 py-2 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none" />
       </div>
 
       <div className="pt-2 flex gap-3">
         <button type="button" onClick={onClose} className="flex-1 py-3 px-4 rounded-[16px] border border-[#E5E7EB] text-[#344054] font-semibold text-sm hover:bg-[#F8F9FC] transition-colors">Cancel</button>
-        <button type="submit" className="flex-1 py-3 px-4 rounded-[16px] bg-amber-600 text-white font-semibold text-sm hover:bg-amber-700 transition-colors shadow-md shadow-amber-200 flex items-center justify-center gap-2">
+        <button type="submit" className="flex-1 py-3 px-4 rounded-[16px] bg-amber-700 text-white font-semibold text-sm hover:bg-amber-800 transition-colors shadow-md shadow-amber-200 flex items-center justify-center gap-2">
           <Check className="w-4 h-4" aria-hidden="true" /> Save Log
         </button>
       </div>
@@ -177,7 +177,7 @@ export function LogEffectsModal({ isOpen, onClose, onSuccess }: Props) {
       onClose={onClose}
       title="Log How You Feel"
       subtitle="Appetite, side effects and anything else you notice"
-      icon={<div className="w-10 h-10 rounded-[16px] bg-amber-50 flex items-center justify-center text-amber-600"><Smile className="w-5 h-5" aria-hidden="true" /></div>}
+      icon={<div className="w-10 h-10 rounded-[16px] bg-amber-50 flex items-center justify-center text-caution"><Smile className="w-5 h-5" aria-hidden="true" /></div>}
     >
       <EffectsForm onClose={onClose} onSuccess={onSuccess} />
     </Modal>

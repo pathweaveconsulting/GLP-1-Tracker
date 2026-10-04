@@ -39,19 +39,19 @@ export function Reports() {
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-[#111827]">Reports</h1>
-          <p className="text-sm text-[#667085] mt-0.5">A plain summary of what you logged in a week or a month.</p>
+          <p className="text-sm text-muted mt-0.5">A plain summary of what you logged in a week or a month.</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex bg-[#F8F9FC] p-1 rounded-[14px] border border-[#E5E7EB]" role="group" aria-label="Report length">
             {(['weekly', 'monthly'] as ReportKind[]).map((k) => (
               <button key={k} type="button" aria-pressed={kind === k} onClick={() => changeKind(k)}
-                className={`px-4 py-1.5 text-xs font-semibold rounded-[10px] capitalize transition-all ${kind === k ? 'bg-white text-[#111827] shadow-xs' : 'text-[#667085] hover:text-[#111827]'}`}>
+                className={`px-4 py-1.5 text-xs font-semibold rounded-[10px] capitalize transition-all ${kind === k ? 'bg-white text-[#111827] shadow-xs' : 'text-muted hover:text-[#111827]'}`}>
                 {k}
               </button>
             ))}
           </div>
           <button type="button" onClick={() => window.print()} className="inline-flex items-center gap-2 px-4 py-2 rounded-[14px] border border-[#E5E7EB] bg-white text-xs font-semibold text-[#111827] hover:bg-[#F8F9FC]">
-            <Printer className="w-4 h-4 text-[#667085]" aria-hidden="true" /> Print
+            <Printer className="w-4 h-4 text-muted" aria-hidden="true" /> Print
           </button>
         </div>
       </header>
@@ -70,31 +70,31 @@ export function Reports() {
 
       {report.isEmpty ? (
         <div className={card}>
-          <p className="text-sm text-[#667085]">
+          <p className="text-sm text-muted">
             Nothing was logged in this {kind === 'weekly' ? 'week' : 'month'}. Use the arrows to look at another period, or <Link to="/" className="text-[#6D4AFF] font-semibold hover:underline">log something today</Link>.
           </p>
         </div>
       ) : (
         <>
           <section aria-labelledby="rep-weight" className={card}>
-            <div className="flex items-center gap-2 mb-4"><Scale className="w-4 h-4 text-[#22C55E]" aria-hidden="true" /><h3 id="rep-weight" className="text-sm font-semibold text-[#111827]">Weight</h3></div>
+            <div className="flex items-center gap-2 mb-4"><Scale className="w-4 h-4 text-positive" aria-hidden="true" /><h3 id="rep-weight" className="text-sm font-semibold text-[#111827]">Weight</h3></div>
             {report.weights.entries.length === 0 ? (
-              <p className="text-xs text-[#667085]">No weigh-ins in this period.</p>
+              <p className="text-xs text-muted">No weigh-ins in this period.</p>
             ) : (
               <>
                 <dl className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div><dt className="text-xs text-[#667085]">First weigh-in</dt><dd className="font-semibold">{formatWeight(report.weights.first!.weightLbs, unit)}</dd></div>
-                  <div><dt className="text-xs text-[#667085]">Last weigh-in</dt><dd className="font-semibold">{formatWeight(report.weights.last!.weightLbs, unit)}</dd></div>
-                  <div><dt className="text-xs text-[#667085]">Change in period</dt><dd className="font-semibold">{report.weights.changeLbs == null ? '– (needs 2 weigh-ins)' : formatWeightChange(report.weights.changeLbs, unit)}</dd></div>
-                  <div><dt className="text-xs text-[#667085]">Average ({report.weights.entries.length} {report.weights.entries.length === 1 ? 'entry' : 'entries'})</dt><dd className="font-semibold">{formatWeight(report.weights.averageLbs, unit)}</dd></div>
+                  <div><dt className="text-xs text-muted">First weigh-in</dt><dd className="font-semibold">{formatWeight(report.weights.first!.weightLbs, unit)}</dd></div>
+                  <div><dt className="text-xs text-muted">Last weigh-in</dt><dd className="font-semibold">{formatWeight(report.weights.last!.weightLbs, unit)}</dd></div>
+                  <div><dt className="text-xs text-muted">Change in period</dt><dd className="font-semibold">{report.weights.changeLbs == null ? '– (needs 2 weigh-ins)' : formatWeightChange(report.weights.changeLbs, unit)}</dd></div>
+                  <div><dt className="text-xs text-muted">Average ({report.weights.entries.length} {report.weights.entries.length === 1 ? 'entry' : 'entries'})</dt><dd className="font-semibold">{formatWeight(report.weights.averageLbs, unit)}</dd></div>
                 </dl>
                 {chart.length >= 2 && (
                   <div className="h-[180px] w-full mt-4" role="img" aria-label={`Weight in ${unit} across this period`}>
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={chart} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                        <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
-                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} domain={['auto', 'auto']} width={44} />
+                        <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#475569' }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#475569' }} domain={['auto', 'auto']} width={44} />
                         <Tooltip />
                         <Line type="monotone" dataKey="weight" name={`Weight (${unit})`} stroke="#22C55E" strokeWidth={2.5} dot={{ r: 3 }} />
                       </LineChart>
@@ -108,14 +108,14 @@ export function Reports() {
           <section aria-labelledby="rep-doses" className={card}>
             <div className="flex items-center gap-2 mb-4"><Syringe className="w-4 h-4 text-[#6D4AFF]" aria-hidden="true" /><h3 id="rep-doses" className="text-sm font-semibold text-[#111827]">Doses</h3></div>
             {report.doses.entries.length === 0 ? (
-              <p className="text-xs text-[#667085]">No doses logged in this period.</p>
+              <p className="text-xs text-muted">No doses logged in this period.</p>
             ) : (
               <>
                 <ul className="space-y-2 text-sm">
                   {report.doses.entries.map((d) => (
                     <li key={d.id} className="flex justify-between p-3 rounded-[14px] bg-[#F8F9FC] border border-[#E5E7EB]">
                       <span className="font-medium text-[#111827]">{d.amountMg} mg {d.medication}</span>
-                      <span className="text-xs text-[#667085]">{format(new Date(d.date), 'EEE, MMM d · h:mm a')} · {d.site}</span>
+                      <span className="text-xs text-muted">{format(new Date(d.date), 'EEE, MMM d · h:mm a')} · {d.site}</span>
                     </li>
                   ))}
                 </ul>
@@ -129,19 +129,19 @@ export function Reports() {
           </section>
 
           <section aria-labelledby="rep-symptoms" className={card}>
-            <div className="flex items-center gap-2 mb-4"><HeartPulse className="w-4 h-4 text-rose-500" aria-hidden="true" /><h3 id="rep-symptoms" className="text-sm font-semibold text-[#111827]">Symptoms</h3></div>
+            <div className="flex items-center gap-2 mb-4"><HeartPulse className="w-4 h-4 text-danger" aria-hidden="true" /><h3 id="rep-symptoms" className="text-sm font-semibold text-[#111827]">Symptoms</h3></div>
             {report.symptoms.daysLogged === 0 ? (
-              <p className="text-xs text-[#667085]">No symptom logs in this period.</p>
+              <p className="text-xs text-muted">No symptom logs in this period.</p>
             ) : report.symptoms.items.length === 0 ? (
-              <p className="text-xs text-[#667085]">You logged {report.symptoms.daysLogged} {report.symptoms.daysLogged === 1 ? 'day' : 'days'} and recorded no symptoms.</p>
+              <p className="text-xs text-muted">You logged {report.symptoms.daysLogged} {report.symptoms.daysLogged === 1 ? 'day' : 'days'} and recorded no symptoms.</p>
             ) : (
               <>
-                <p className="text-[11px] text-[#98A2B3] mb-2">{report.symptoms.daysLogged} {report.symptoms.daysLogged === 1 ? 'day' : 'days'} logged</p>
+                <p className="text-[11px] text-subtle mb-2">{report.symptoms.daysLogged} {report.symptoms.daysLogged === 1 ? 'day' : 'days'} logged</p>
                 <ul className="space-y-2 text-sm">
                   {report.symptoms.items.map((i) => (
                     <li key={i.key} className="flex justify-between p-3 rounded-[14px] bg-[#F8F9FC] border border-[#E5E7EB]">
                       <span className="font-medium text-[#111827]">{i.label}</span>
-                      <span className="text-xs text-[#667085]">{severityLabel(i.peak)} at worst · {i.daysPresent} {i.daysPresent === 1 ? 'day' : 'days'}</span>
+                      <span className="text-xs text-muted">{severityLabel(i.peak)} at worst · {i.daysPresent} {i.daysPresent === 1 ? 'day' : 'days'}</span>
                     </li>
                   ))}
                 </ul>
@@ -150,7 +150,7 @@ export function Reports() {
           </section>
         </>
       )}
-      <p className="text-[11px] text-[#98A2B3] text-center">Generated from your own logs on this device. Not medical advice.</p>
+      <p className="text-[11px] text-subtle text-center">Generated from your own logs on this device. Not medical advice.</p>
     </div>
   );
 }

@@ -5,8 +5,8 @@ import { Modal } from './ui/Modal';
 /** Plain-language description of how the "estimated medication level" is calculated, and its limits. */
 export function PkInfoModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
-    <Modal open={open} onClose={onClose} title="About the estimated level" icon={<Info className="w-5 h-5 text-amber-500" aria-hidden="true" />} widthClass="max-w-md">
-      <div className="space-y-3 text-xs text-[#667085] leading-relaxed">
+    <Modal open={open} onClose={onClose} title="About the estimated level" icon={<Info className="w-5 h-5 text-caution" aria-hidden="true" />} widthClass="max-w-md">
+      <div className="space-y-3 text-xs text-muted leading-relaxed">
         <p>
           The level you see is a <strong className="text-[#111827]">simplified, illustrative one-compartment model</strong>. It uses the doses you logged and an
           approximate half-life for your medication. It is not a blood test and does not measure what is actually in your body.

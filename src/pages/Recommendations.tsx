@@ -20,14 +20,14 @@ function TipCard({ tip }: { tip: Tip }) {
           <div className="flex items-center justify-between gap-2 mb-3">
             <div className="flex items-center gap-2">
               <div className="p-2 bg-[#F3F0FF] rounded-[10px]"><Icon className="w-4 h-4 text-[#6D4AFF]" aria-hidden="true" /></div>
-              <span className="text-xs font-medium text-[#667085]">{tip.category}</span>
+              <span className="text-xs font-medium text-muted">{tip.category}</span>
             </div>
             <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${tip.source === 'logs' ? 'bg-[#F3F0FF] text-[#5B3FE0]' : 'bg-slate-100 text-slate-600'}`}>
               {tip.source === 'logs' ? 'From your logs' : 'General'}
             </span>
           </div>
           <h2 className="font-semibold text-base text-[#111827] mb-2">{tip.title}</h2>
-          <p className="text-xs text-[#667085] leading-relaxed font-normal">{tip.desc}</p>
+          <p className="text-xs text-muted leading-relaxed font-normal">{tip.desc}</p>
           {open && <p id={panelId} className="text-xs text-[#344054] leading-relaxed mt-3 pt-3 border-t border-[#F1F5F9]">{tip.details}</p>}
         </div>
         <button
@@ -58,7 +58,7 @@ export function Recommendations() {
     <div className="space-y-6">
       <header>
         <h1 className="text-3xl font-semibold tracking-tight text-[#111827]">Insights & Guidance</h1>
-        <p className="text-sm text-[#667085] mt-0.5">What your own logs suggest, plus a few general ideas that are labelled as such.</p>
+        <p className="text-sm text-muted mt-0.5">What your own logs suggest, plus a few general ideas that are labelled as such.</p>
       </header>
 
       <section aria-labelledby="from-logs" className="space-y-3">
@@ -69,7 +69,7 @@ export function Recommendations() {
       </section>
 
       <section aria-labelledby="general" className="space-y-3">
-        <h2 id="general" className="text-sm font-semibold text-[#344054]">General ideas <span className="font-normal text-[#98A2B3]">(not personalised)</span></h2>
+        <h2 id="general" className="text-sm font-semibold text-[#344054]">General ideas <span className="font-normal text-subtle">(not personalised)</span></h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {general.map((t) => <TipCard key={t.id} tip={t} />)}
         </div>

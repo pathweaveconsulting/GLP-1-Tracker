@@ -15,7 +15,7 @@ interface Props {
 }
 
 const inputCls = 'w-full px-3.5 py-2.5 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-sm font-medium focus:ring-2 focus:ring-purple-500 focus:outline-none';
-const labelCls = 'block text-xs font-semibold text-[#667085] mb-1.5';
+const labelCls = 'block text-xs font-semibold text-muted mb-1.5';
 
 /** Convert a typed weight when the unit toggle changes, leaving blank / non-numeric text alone. */
 export function convertTyped(text: string, from: WeightUnit, to: WeightUnit): string {
@@ -55,7 +55,7 @@ function ProfileForm({ onClose }: { onClose: () => void }) {
     }));
 
   const err = (f: ProfileField) =>
-    errors[f] ? <p id={id(`${f}-err`)} role="alert" className="text-xs text-rose-600 mt-1">{errors[f]}</p> : null;
+    errors[f] ? <p id={id(`${f}-err`)} role="alert" className="text-xs text-danger mt-1">{errors[f]}</p> : null;
   const aria = (f: ProfileField) => ({ 'aria-invalid': errors[f] ? true : undefined, 'aria-describedby': errors[f] ? id(`${f}-err`) : undefined });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -97,7 +97,7 @@ function ProfileForm({ onClose }: { onClose: () => void }) {
             </button>
           ))}
         </div>
-        <p className="text-[11px] text-[#98A2B3] mt-1">Your logged weights are kept as they are and shown in this unit.</p>
+        <p className="text-[11px] text-subtle mt-1">Your logged weights are kept as they are and shown in this unit.</p>
       </fieldset>
 
       <div className="grid grid-cols-2 gap-3">

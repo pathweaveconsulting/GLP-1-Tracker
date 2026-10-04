@@ -167,14 +167,14 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
       <div className="bg-white rounded-[24px] p-6 shadow-xs border border-[#E5E7EB]">
         <div className="mb-4">
           <h2 className="text-xl font-semibold text-[#111827] tracking-tight">Weight change</h2>
-          <p className="text-xs font-semibold text-[#667085] mt-0.5">Each day vs. previous day</p>
+          <p className="text-xs font-semibold text-muted mt-0.5">Each day vs. previous day</p>
         </div>
 
         <div className="bg-[#F8F9FC]/60 rounded-[16px] p-6 border border-[#E5E7EB]/70 overflow-x-auto">
           {/* Calendar Grid Container */}
           <div className="min-w-[650px]">
             {/* Top Month Header Row */}
-            <div className="flex ml-10 mb-2 text-xs font-semibold text-[#667085]">
+            <div className="flex ml-10 mb-2 text-xs font-semibold text-muted">
               {calendarData.map((week, wIdx) => (
                 <div key={`m-head-${wIdx}`} className="w-7 text-center">
                   {week.monthHeader || ''}
@@ -185,7 +185,7 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
             {/* Grid Rows (Days of week Mon..Sun) */}
             <div className="flex">
               {/* Day Labels Column */}
-              <div className="flex flex-col justify-between w-10 pr-2 py-0.5 text-[11px] font-semibold text-[#98A2B3] select-none">
+              <div className="flex flex-col justify-between w-10 pr-2 py-0.5 text-[11px] font-semibold text-subtle select-none">
                 {dayLabels.map((lbl, idx) => (
                   <div key={`lbl-${idx}`} className="h-6 flex items-center">
                     {lbl}
@@ -221,7 +221,7 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
             </div>
 
             {/* Legend Footer (Loss green squares -> neutral grey -> Gain RED square) */}
-            <div className="mt-6 flex items-center gap-3 text-xs font-semibold text-[#667085] select-none">
+            <div className="mt-6 flex items-center gap-3 text-xs font-semibold text-muted select-none">
               <span>Loss</span>
               <div className="flex items-center gap-1.5">
                 <span className="w-4 h-4 rounded-sm bg-[#22C55E] inline-block" title="Significant Loss" />
@@ -239,14 +239,14 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
       <div className="bg-white rounded-[24px] p-6 shadow-xs border border-[#E5E7EB]">
         <div className="mb-4">
           <h2 className="text-xl font-semibold text-[#111827] tracking-tight">Logging activity</h2>
-          <p className="text-xs font-semibold text-[#667085] mt-0.5">Each cell is one day. Stronger color means more was logged.</p>
+          <p className="text-xs font-semibold text-muted mt-0.5">Each cell is one day. Stronger color means more was logged.</p>
         </div>
 
         <div className="bg-[#F8F9FC]/60 rounded-[16px] p-6 border border-[#E5E7EB]/70 overflow-x-auto">
           {/* Calendar Grid Container */}
           <div className="min-w-[650px]">
             {/* Top Month Header Row */}
-            <div className="flex ml-10 mb-2 text-xs font-semibold text-[#667085]">
+            <div className="flex ml-10 mb-2 text-xs font-semibold text-muted">
               {calendarData.map((week, wIdx) => (
                 <div key={`m-act-head-${wIdx}`} className="w-7 text-center">
                   {week.monthHeader || ''}
@@ -257,7 +257,7 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
             {/* Grid Rows (Days of week Mon..Sun) */}
             <div className="flex">
               {/* Day Labels Column */}
-              <div className="flex flex-col justify-between w-10 pr-2 py-0.5 text-[11px] font-semibold text-[#98A2B3] select-none">
+              <div className="flex flex-col justify-between w-10 pr-2 py-0.5 text-[11px] font-semibold text-subtle select-none">
                 {dayLabels.map((lbl, idx) => (
                   <div key={`lbl-act-${idx}`} className="h-6 flex items-center">
                     {lbl}
@@ -289,7 +289,7 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
             </div>
 
             {/* Legend Footer (Less -> 5 green shade squares -> More) */}
-            <div className="mt-6 flex items-center gap-3 text-xs font-semibold text-[#667085] select-none">
+            <div className="mt-6 flex items-center gap-3 text-xs font-semibold text-muted select-none">
               <span>Less</span>
               <div className="flex items-center gap-1.5">
                 <span className="w-4 h-4 rounded-sm bg-[#F1F5F9] border border-[#E5E7EB] inline-block" title="0 logs" />

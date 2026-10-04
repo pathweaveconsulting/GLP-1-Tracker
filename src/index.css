@@ -1,1 +1,15 @@
 @import "tailwindcss";
+
+/*
+ * Text colour design tokens. Each is checked by scripts/contrast.mjs (and src/test/contrast.test.ts) to reach
+ * WCAG AA (4.5:1) on the app's light surfaces and tinted backgrounds. Prefer these over raw hex values.
+ */
+@theme {
+  --color-muted: #667085;    /* secondary text            4.97:1 on white */
+  --color-subtle: #5d6a80;   /* tertiary text, captions   5.47:1 on white (was #98a2b3, 2.58:1) */
+  --color-positive: #15803d; /* good / decreasing         5.02:1 on white (was #22c55e, 2.28:1) */
+  --color-caution: #b45309;  /* warnings, amber text      5.02:1 on white (was #f59e0b, 2.15:1) */
+  --color-danger: #b42318;   /* errors, severe            6.57:1 on white (was rose-500, 3.35:1) */
+  --color-accent: #5b3fe0;   /* brand text on tinted bg   6.50:1 on white */
+  --color-info: #1d4ed8;     /* informational blue        6.70:1 on white (was blue-500, 3.36:1) */
+}

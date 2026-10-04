@@ -16,7 +16,7 @@ interface Props {
 }
 
 const field = 'w-full px-3.5 py-2.5 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-sm font-medium focus:ring-2 focus:ring-purple-500 focus:outline-none';
-const label = 'block text-xs font-semibold text-[#667085] mb-1.5';
+const label = 'block text-xs font-semibold text-muted mb-1.5';
 
 function SiteGrid({ sites, site, lastSite, recommended, onPick }: { sites: string[]; site: string; lastSite?: string; recommended: string; onPick: (s: string) => void }) {
   return (
@@ -36,7 +36,7 @@ function SiteGrid({ sites, site, lastSite, recommended, onPick }: { sites: strin
             }`}
           >
             <span className="truncate">{s}</span>
-            {isLast && <span className="text-[10px] text-[#98A2B3] font-normal italic ml-1 shrink-0">(last site)</span>}
+            {isLast && <span className="text-[10px] text-subtle font-normal italic ml-1 shrink-0">(last site)</span>}
             {isRecommended && !isLast && <span className="text-[10px] text-[#6D4AFF] font-semibold ml-1 shrink-0">(suggested next)</span>}
           </button>
         );
@@ -134,11 +134,11 @@ function DoseForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
           </div>
         )}
         <div id={`${uid}-amt-help`} className="mt-1.5 space-y-1">
-          <p className="text-[11px] text-[#98A2B3]">Log the amount your prescriber told you to use. We never suggest a dose.</p>
+          <p className="text-[11px] text-subtle">Log the amount your prescriber told you to use. We never suggest a dose.</p>
           {warning && warning.level !== 'error' && (
             <p className={`text-xs rounded-[12px] px-3 py-2 ${warning.level === 'caution' ? 'bg-amber-50 text-amber-900 border border-amber-200' : 'bg-slate-50 text-slate-700 border border-slate-200'}`}>{warning.text}</p>
           )}
-          {errors.amount && <p role="alert" className="text-xs text-rose-600">{errors.amount}</p>}
+          {errors.amount && <p role="alert" className="text-xs text-danger">{errors.amount}</p>}
         </div>
         {warning?.requiresConfirmation && (
           <div className="mt-2">
@@ -146,7 +146,7 @@ function DoseForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
               <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-[#D0D5DD]" />
               <span>I’ve double-checked this amount against my prescription.</span>
             </label>
-            {errors.confirm && <p role="alert" className="text-xs text-rose-600 mt-1">{errors.confirm}</p>}
+            {errors.confirm && <p role="alert" className="text-xs text-danger mt-1">{errors.confirm}</p>}
           </div>
         )}
       </div>
@@ -160,7 +160,7 @@ function DoseForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
           <label htmlFor={`${uid}-time`} className={`${label} flex items-center gap-1`}><Clock className="w-3 h-3 text-[#6D4AFF]" aria-hidden="true" /> Time</label>
           <input id={`${uid}-time`} type="time" value={timeStr} onChange={(e) => setTimeStr(e.target.value)} className={field} aria-invalid={errors.when ? true : undefined} />
         </div>
-        {errors.when && <p role="alert" className="text-xs text-rose-600 sm:col-span-2 -mt-1">{errors.when}</p>}
+        {errors.when && <p role="alert" className="text-xs text-danger sm:col-span-2 -mt-1">{errors.when}</p>}
       </div>
 
       <div>
@@ -170,11 +170,11 @@ function DoseForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
         </div>
         <div role="group" aria-labelledby={`${uid}-site`} className="bg-[#F8F9FC] rounded-[16px] p-3 border border-[#E5E7EB] space-y-3 max-h-56 overflow-y-auto">
           <div>
-            <span className="text-[11px] font-semibold text-[#98A2B3] block mb-2">Abdomen</span>
+            <span className="text-[11px] font-semibold text-subtle block mb-2">Abdomen</span>
             <SiteGrid sites={INJECTION_SITES_ABDOMEN} site={site} lastSite={lastDose?.site} recommended={recommendedNextSite} onPick={setSite} />
           </div>
           <div>
-            <span className="text-[11px] font-semibold text-[#98A2B3] block mb-2">Other sites</span>
+            <span className="text-[11px] font-semibold text-subtle block mb-2">Other sites</span>
             <SiteGrid sites={[...INJECTION_SITES_OTHER, ...(settings.customSites ?? [])]} site={site} lastSite={lastDose?.site} recommended={recommendedNextSite} onPick={setSite} />
           </div>
           {!customOpen ? (
@@ -186,7 +186,7 @@ function DoseForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
             </div>
           )}
         </div>
-        <p className="text-[11px] text-[#98A2B3] mt-1">Selected: {site}</p>
+        <p className="text-[11px] text-subtle mt-1">Selected: {site}</p>
       </div>
 
       <div>

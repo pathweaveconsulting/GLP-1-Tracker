@@ -183,7 +183,7 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
           <div className="flex items-center gap-2 mt-0.5">
             <h4 className="text-lg font-semibold text-[#111827]">Weight</h4>
             {chartData.length > 0 && (
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-[#F1F5F9] text-[#667085]">
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-[#F1F5F9] text-muted">
                 Latest: {chartData[chartData.length - 1].weight} {chartData[0]?.unitLabel}
               </span>
             )}
@@ -193,7 +193,7 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
         {/* TOP RIGHT CONTROLS: Show/Hide Shots & Info */}
         <div className="flex items-center gap-3">
           {/* Legend */}
-          <div className="hidden md:flex items-center gap-3 text-xs font-semibold text-[#667085] mr-2">
+          <div className="hidden md:flex items-center gap-3 text-xs font-semibold text-muted mr-2">
             <span className="flex items-center gap-1.5">
               <span className="w-3 h-0.5 bg-[#0284c7] inline-block" />
               Weight
@@ -223,7 +223,7 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
               type="button"
               onClick={onOpenInfo}
               aria-label="Weight and shot correlation details"
-              className="text-[#98A2B3] hover:text-[#6D4AFF] transition-colors p-1.5 rounded-full hover:bg-[#F1F5F9] cursor-pointer"
+              className="text-subtle hover:text-[#6D4AFF] transition-colors p-1.5 rounded-full hover:bg-[#F1F5F9] cursor-pointer"
             >
               <Info className="w-4 h-4" aria-hidden="true" />
             </button>
@@ -234,7 +234,7 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
       {/* CHART CANVAS */}
       <div className="h-[300px] w-full relative">
         {chartData.length === 0 && (
-          <p className="absolute inset-0 flex items-center justify-center text-xs text-[#667085] text-center px-6 z-10">No weigh-ins yet. Record a weight to see your progress here.</p>
+          <p className="absolute inset-0 flex items-center justify-center text-xs text-muted text-center px-6 z-10">No weigh-ins yet. Record a weight to see your progress here.</p>
         )}
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData} margin={{ top: 35, right: 20, left: -10, bottom: 5 }}>
@@ -243,7 +243,7 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
               dataKey="dateStr" 
               axisLine={false} 
               tickLine={false} 
-              tick={{ fontSize: 11, fill: '#64748b', fontWeight: 500 }} 
+              tick={{ fontSize: 11, fill: '#475569', fontWeight: 500 }} 
               dy={10}
               minTickGap={25}
             />
@@ -251,7 +251,7 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
               domain={yDomain} 
               axisLine={false} 
               tickLine={false} 
-              tick={{ fontSize: 11, fill: '#64748b', fontWeight: 500 }}
+              tick={{ fontSize: 11, fill: '#475569', fontWeight: 500 }}
               tickFormatter={(val) => `${val} ${unit}`}
             />
             <Tooltip
@@ -312,7 +312,7 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
               className={`px-4 py-2 rounded-[16px] transition-all cursor-pointer whitespace-nowrap ${
                 timeframe === t 
                   ? 'bg-[#582967] text-white shadow-xs' 
-                  : 'text-[#667085] hover:text-[#111827] hover:bg-[#E5E7EB]/50'
+                  : 'text-muted hover:text-[#111827] hover:bg-[#E5E7EB]/50'
               }`}
             >
               {t}
