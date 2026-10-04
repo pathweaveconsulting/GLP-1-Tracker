@@ -358,3 +358,17 @@ describe('F7: no weekly guidance for oral/unknown medications', () => {
     expect(screen.getByText(/aren’t available for this medication/i)).toBeInTheDocument();
   });
 });
+
+// ---------------------------------------------------------------- F8
+import { SafetyNotice } from '../components/SafetyNotice';
+import { MemoryRouter } from 'react-router-dom';
+
+describe('F8: the safety list does not read as exhaustive', () => {
+  const LINE = /These are examples, not a complete list\. Follow your medication leaflet and call a healthcare professional or emergency services if you are worried\./;
+  for (const variant of ['full', 'compact'] as const) {
+    it(`${variant} variant says so`, () => {
+      render(<MemoryRouter><SafetyNotice variant={variant} /></MemoryRouter>);
+      expect(document.body.textContent).toMatch(LINE);
+    });
+  }
+});

@@ -5,6 +5,9 @@ import { useStore } from '../store/useStore';
 import { MEDICATION_INFO } from '../lib/medications';
 import type { Medication } from '../types';
 
+/** Shown with the list so it is never read as complete. Clinical content needs human review. */
+export const EXAMPLES_NOT_EXHAUSTIVE = 'These are examples, not a complete list. Follow your medication leaflet and call a healthcare professional or emergency services if you are worried.';
+
 export const RED_FLAGS: readonly string[] = [
   'Severe or persistent belly pain, with or without vomiting',
   'Vomiting that won’t stop, or signs of dehydration (very dry mouth, dizziness, very little urine)',
@@ -33,7 +36,7 @@ export function SafetyNotice({ variant = 'full', medication, className = '' }: P
     return (
       <p className={`text-[11px] text-[#667085] leading-relaxed ${className}`} data-testid="safety-compact">
         <ShieldAlert className="inline w-3 h-3 mr-1 -mt-0.5 text-[#98A2B3]" aria-hidden="true" />
-        Not medical advice. Severe or lasting belly pain, repeated vomiting, an allergic reaction or thoughts of self-harm need urgent care.{' '}
+        Not medical advice. Severe or lasting belly pain, repeated vomiting, an allergic reaction or thoughts of self-harm need urgent care. {EXAMPLES_NOT_EXHAUSTIVE}{' '}
         <Link to="/health#safety" className="text-[#6D4AFF] font-semibold hover:underline">When to get help</Link>
       </p>
     );
@@ -50,6 +53,7 @@ export function SafetyNotice({ variant = 'full', medication, className = '' }: P
       <ul className="text-xs mt-2 space-y-1 list-disc pl-5 leading-relaxed">
         {RED_FLAGS.map((f) => <li key={f}>{f}</li>)}
       </ul>
+      <p className="text-xs mt-2 font-medium leading-relaxed">{EXAMPLES_NOT_EXHAUSTIVE}</p>
 
       <h3 className="text-xs font-semibold mt-4">If you miss a dose</h3>
       <p className="text-xs mt-1 leading-relaxed">
