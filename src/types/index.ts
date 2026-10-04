@@ -42,20 +42,31 @@ export interface EffectEntry {
 
 export interface UserSettings {
   medication: Medication;
+  /** Pounds (canonical storage unit). */
   startingWeight: number;
+  /** Pounds (canonical storage unit). */
   targetWeight: number;
   heightInches: number;
   startDate: string; // ISO format
+  /** Display preference only; stored weights are always pounds. Defaults to 'lbs'. */
   weightUnit?: 'lbs' | 'kg';
   customSites?: string[];
   customEffectNames?: string[];
 }
 
-export interface AppState {
+export interface PersistedData {
   doses: DoseEvent[];
   weights: WeightEntry[];
   effects: EffectEntry[];
   settings: UserSettings;
+  hasOnboarded: boolean;
+}
+
+export interface AppState extends PersistedData {
+  /** Saves the profile, flags onboarding done and seeds the starting weight as the first weight entry. */
+  completeOnboarding: (settings: UserSettings) => void;
+  /** Wipes every log and the profile and returns the app to first-run state. */
+  resetAllData: () => void;
   addDose: (dose: Omit<DoseEvent, 'id'>) => void;
   updateDose: (id: string, dose: Partial<DoseEvent>) => void;
   deleteDose: (id: string) => void;

@@ -3,10 +3,12 @@ import { useStore } from '../store/useStore';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Lock, Download, Trash2, Shield, User, Sparkles } from 'lucide-react';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { EditProfileModal } from '../components/modals/EditProfileModal';
 
 export function Settings() {
-  const { settings, doses, weights, effects } = useStore();
+  const { settings, doses, weights, effects, resetAllData } = useStore();
+  const [confirmErase, setConfirmErase] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -41,10 +43,8 @@ export function Settings() {
   };
 
   const handleEraseData = () => {
-    if (confirm("Are you sure you want to erase all stored local health data? This action cannot be undone.")) {
-      localStorage.clear();
-      window.location.reload();
-    }
+    setConfirmErase(false);
+    resetAllData();
   };
 
   return (
@@ -109,7 +109,7 @@ export function Settings() {
               <Download className="w-4 h-4 text-[#667085]" />
               Export All Data (CSV Download)
             </Button>
-            <Button onClick={handleEraseData} variant="outline" className="w-full justify-start gap-2.5 rounded-[14px] border-rose-100 text-rose-600 hover:text-rose-700 hover:bg-rose-50 font-semibold text-xs py-3">
+            <Button onClick={() => setConfirmErase(true)} variant="outline" className="w-full justify-start gap-2.5 rounded-[14px] border-rose-100 text-rose-600 hover:text-rose-700 hover:bg-rose-50 font-semibold text-xs py-3">
               <Trash2 className="w-4 h-4" />
               Erase Local Data
             </Button>
@@ -122,6 +122,16 @@ export function Settings() {
            GLP-1 Intelligence v2.0 • Medical Disclaimer: Always consult your physician.
          </p>
       </div>
+
+      <ConfirmDialog
+        open={confirmErase}
+        title="Erase all data on this device?"
+        description="This permanently deletes your profile, weights, doses and symptom logs from this browser. It cannot be undone. Export a backup first if you want to keep them."
+        confirmLabel="Erase everything"
+        destructive
+        onConfirm={handleEraseData}
+        onCancel={() => setConfirmErase(false)}
+      />
 
       <EditProfileModal 
         isOpen={isEditProfileOpen} 

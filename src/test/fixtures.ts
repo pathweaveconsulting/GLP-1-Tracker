@@ -56,7 +56,7 @@ export function seedStore(mode: 'empty' | 'populated', unit: Unit) {
     weightUnit: unit,
   };
   const data = mode === 'populated' ? buildPopulated() : { weights: [], doses: [], effects: [] };
-  useStore.setState({ ...data, settings });
+  useStore.setState({ ...data, settings, hasOnboarded: true });
 }
 
 export { DAY };

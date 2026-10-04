@@ -17,9 +17,15 @@ import { Settings } from './pages/Settings';
 import { Recommendations } from './pages/Recommendations';
 import { HealthCenter } from './pages/HealthCenter';
 import { ThisWeekPage } from './pages/ThisWeekPage';
+import { Onboarding } from './pages/Onboarding';
+import { useStore } from './store/useStore';
+import { ToastProvider } from './components/ui/Toast';
 
 export default function App() {
+  const hasOnboarded = useStore((s) => s.hasOnboarded);
+  if (!hasOnboarded) return <Onboarding />;
   return (
+    <ToastProvider>
     <Router>
       <Routes>
         <Route path="/" element={<Layout />}>
@@ -41,5 +47,6 @@ export default function App() {
         </Route>
       </Routes>
     </Router>
+    </ToastProvider>
   );
 }
