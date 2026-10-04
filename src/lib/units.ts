@@ -11,7 +11,7 @@ export const LBS_PER_KG = 2.2046226218;
 /** Plausible human body-weight bounds per unit, used to catch typos (not medical limits). */
 export const WEIGHT_BOUNDS: Record<WeightUnit, { min: number; max: number }> = {
   lbs: { min: 50, max: 800 },
-  kg: { min: 23, max: 363 },
+  kg: { min: 23, max: 362 },
 };
 
 export function getWeightUnit(settings?: Pick<UserSettings, 'weightUnit'> | null): WeightUnit {

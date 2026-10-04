@@ -4,14 +4,17 @@ import { Card } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { format } from 'date-fns';
 import { Download, Trash2 } from 'lucide-react';
+import { formatWeight, getWeightUnit } from '../lib/units';
+import { sortByDate } from '../lib/insights';
 
 export function AllLogs() {
-  const { effects, weights, doses, deleteDose, deleteWeight } = useStore();
+  const { effects, weights, doses, deleteDose, deleteWeight, settings } = useStore();
+  const unit = getWeightUnit(settings);
   const [activeTab, setActiveTab] = useState<'doses' | 'weights' | 'effects'>('doses');
 
-  const sortedWeights = [...weights].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  const sortedEffects = [...effects].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  const sortedDoses = [...doses].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const sortedWeights = sortByDate(weights, 'desc');
+  const sortedEffects = sortByDate(effects, 'desc');
+  const sortedDoses = sortByDate(doses, 'desc');
 
   const handleExportCSV = () => {
     let csvContent = "data:text/csv;charset=utf-8,";
@@ -85,7 +88,7 @@ export function AllLogs() {
               ) : activeTab === 'weights' ? (
                 <tr>
                   <th className="px-6 py-3.5">Date</th>
-                  <th className="px-6 py-3.5">Weight (lbs)</th>
+                  <th className="px-6 py-3.5">Weight ({unit})</th>
                   <th className="px-6 py-3.5 text-right">Actions</th>
                 </tr>
               ) : (
@@ -116,7 +119,7 @@ export function AllLogs() {
                 sortedWeights.map(w => (
                   <tr key={w.id} className="hover:bg-[#F8F9FC] transition-colors">
                     <td className="px-6 py-3.5 text-[#111827] font-semibold">{format(new Date(w.date), 'MMM d, yyyy')}</td>
-                    <td className="px-6 py-3.5 font-semibold text-[#22C55E]">{w.weightLbs.toFixed(1)} lbs</td>
+                    <td className="px-6 py-3.5 font-semibold text-[#22C55E]">{formatWeight(w.weightLbs, unit)}</td>
                     <td className="px-6 py-3.5 text-right">
                       <button onClick={() => deleteWeight(w.id)} className="text-[#98A2B3] hover:text-rose-500 p-1.5 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer">
                         <Trash2 className="w-4 h-4" />

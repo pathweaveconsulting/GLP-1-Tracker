@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
-import { X, Scale, Check } from 'lucide-react';
+import React, { useId, useState } from 'react';
+import { Scale, Check } from 'lucide-react';
 import { useStore } from '../../store/useStore';
+import { Modal } from '../ui/Modal';
+import { WEIGHT_BOUNDS, displayToLbs, getWeightUnit, lbsToDisplay } from '../../lib/units';
+import { dateOnlyToIso, parseDateOnly, todayLocalDateString } from '../../lib/dates';
+import { latestWeight } from '../../lib/insights';
 
 interface Props {
   isOpen: boolean;
@@ -8,91 +12,97 @@ interface Props {
   onSuccess?: () => void;
 }
 
-export function LogWeightModal({ isOpen, onClose, onSuccess }: Props) {
+function WeightForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
   const { addWeight, weights, settings } = useStore();
-  const latestWeight = weights.length > 0 ? weights[0].weightLbs : settings.startingWeight || 175.4;
-  
-  const [weightLbs, setWeightLbs] = useState<number>(latestWeight);
-  const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
-
-  if (!isOpen) return null;
+  const unit = getWeightUnit(settings);
+  const { min, max } = WEIGHT_BOUNDS[unit];
+  const latest = latestWeight(weights);
+  const [value, setValue] = useState<string>(latest ? String(lbsToDisplay(latest.weightLbs, unit)) : '');
+  const [date, setDate] = useState<string>(todayLocalDateString());
+  const [error, setError] = useState<string>();
+  const [dateError, setDateError] = useState<string>();
+  const uid = useId();
+  const today = todayLocalDateString();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    addWeight({
-      weightLbs: Number(weightLbs),
-      date: new Date(date).toISOString()
-    });
-    if (onSuccess) onSuccess();
+    const n = Number(value);
+    let ok = true;
+    if (!value.trim() || !Number.isFinite(n) || n < min || n > max) {
+      setError(`Enter a weight between ${min} and ${max} ${unit}.`);
+      ok = false;
+    } else setError(undefined);
+    if (!parseDateOnly(date) || date > today) {
+      setDateError('Choose a valid date that is not in the future.');
+      ok = false;
+    } else setDateError(undefined);
+    if (!ok) return;
+    // Canonical storage is pounds; the date is anchored at local noon so it stays on the chosen day.
+    addWeight({ weightLbs: displayToLbs(n, unit), date: dateOnlyToIso(date) });
+    onSuccess?.();
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-white w-full max-w-md rounded-[24px] p-6 shadow-2xl border border-[#E5E7EB] relative">
-        <button 
-          onClick={onClose}
-          className="absolute top-5 right-5 w-8 h-8 rounded-full bg-[#F1F5F9] hover:bg-[#E5E7EB] flex items-center justify-center text-[#667085] transition-colors"
-        >
-          <X className="w-4 h-4" />
-        </button>
-
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-[16px] bg-emerald-50 flex items-center justify-center text-[#22C55E]">
-            <Scale className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold text-[#111827]">Log Weight</h2>
-            <p className="text-xs text-[#667085]">Record your current body weight</p>
-          </div>
+    <form onSubmit={handleSubmit} noValidate className="space-y-4">
+      <div>
+        <label htmlFor={`${uid}-w`} className="block text-xs font-semibold text-[#667085] mb-1.5">Weight ({unit})</label>
+        <div className="relative">
+          <input
+            id={`${uid}-w`}
+            type="number"
+            inputMode="decimal"
+            step="0.1"
+            min={min}
+            max={max}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${uid}-w-err` : undefined}
+            className="w-full px-4 py-3 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-lg font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+          />
+          <span className="absolute right-4 top-3.5 text-sm font-semibold text-[#98A2B3]" aria-hidden="true">{unit}</span>
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-semibold tracking-wider text-[#667085] mb-1.5">Weight (lbs)</label>
-            <div className="relative">
-              <input
-                type="number"
-                step="0.1"
-                min="50"
-                max="800"
-                required
-                value={weightLbs}
-                onChange={(e) => setWeightLbs(parseFloat(e.target.value) || 0)}
-                className="w-full px-4 py-3 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-lg font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-              />
-              <span className="absolute right-4 top-3.5 text-sm font-semibold text-[#98A2B3]">lbs</span>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold tracking-wider text-[#667085] mb-1.5">Date</label>
-            <input
-              type="date"
-              required
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-            />
-          </div>
-
-          <div className="pt-2 flex gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 py-3 px-4 rounded-[16px] border border-[#E5E7EB] text-[#344054] font-semibold text-sm hover:bg-[#F8F9FC] transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="flex-1 py-3 px-4 rounded-[16px] bg-[#22C55E] text-white font-semibold text-sm hover:bg-[#16A34A] transition-colors shadow-md shadow-emerald-200 flex items-center justify-center gap-2"
-            >
-              <Check className="w-4 h-4" /> Save Weight
-            </button>
-          </div>
-        </form>
+        {error && <p id={`${uid}-w-err`} role="alert" className="text-xs text-rose-600 mt-1">{error}</p>}
       </div>
-    </div>
+
+      <div>
+        <label htmlFor={`${uid}-d`} className="block text-xs font-semibold text-[#667085] mb-1.5">Date</label>
+        <input
+          id={`${uid}-d`}
+          type="date"
+          max={today}
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          aria-invalid={dateError ? true : undefined}
+          aria-describedby={dateError ? `${uid}-d-err` : undefined}
+          className="w-full px-3.5 py-2.5 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-sm font-medium focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+        />
+        {dateError && <p id={`${uid}-d-err`} role="alert" className="text-xs text-rose-600 mt-1">{dateError}</p>}
+      </div>
+
+      <div className="pt-2 flex gap-3">
+        <button type="button" onClick={onClose} className="flex-1 py-3 px-4 rounded-[16px] border border-[#E5E7EB] text-[#344054] font-semibold text-sm hover:bg-[#F8F9FC] transition-colors">
+          Cancel
+        </button>
+        <button type="submit" className="flex-1 py-3 px-4 rounded-[16px] bg-[#16A34A] text-white font-semibold text-sm hover:bg-[#15803D] transition-colors shadow-md shadow-emerald-200 flex items-center justify-center gap-2">
+          <Check className="w-4 h-4" aria-hidden="true" /> Save Weight
+        </button>
+      </div>
+    </form>
+  );
+}
+
+export function LogWeightModal({ isOpen, onClose, onSuccess }: Props) {
+  return (
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      title="Log Weight"
+      subtitle="Record your current body weight"
+      icon={<div className="w-10 h-10 rounded-[16px] bg-emerald-50 flex items-center justify-center text-[#22C55E]"><Scale className="w-5 h-5" aria-hidden="true" /></div>}
+    >
+      <WeightForm onClose={onClose} onSuccess={onSuccess} />
+    </Modal>
   );
 }

@@ -4,10 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button';
 import { Lock, Download, Trash2, Shield, User, Sparkles } from 'lucide-react';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
+import { formatHeight, formatWeight, getWeightUnit } from '../lib/units';
 import { EditProfileModal } from '../components/modals/EditProfileModal';
 
 export function Settings() {
   const { settings, doses, weights, effects, resetAllData } = useStore();
+  const unit = getWeightUnit(settings);
   const [confirmErase, setConfirmErase] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -79,15 +81,15 @@ export function Settings() {
             </div>
             <div className="bg-[#F8F9FC] p-4 rounded-[16px] border border-[#E5E7EB]">
               <label className="text-xs font-medium text-[#667085] block mb-1">Starting Weight</label>
-              <div className="text-sm font-semibold text-[#111827]">{settings.startingWeight} lbs</div>
+              <div className="text-sm font-semibold text-[#111827]">{settings.startingWeight > 0 ? formatWeight(settings.startingWeight, unit) : '–'}</div>
             </div>
             <div className="bg-[#F8F9FC] p-4 rounded-[16px] border border-[#E5E7EB]">
               <label className="text-xs font-medium text-[#667085] block mb-1">Target Weight</label>
-              <div className="text-sm font-semibold text-[#111827]">{settings.targetWeight} lbs</div>
+              <div className="text-sm font-semibold text-[#111827]">{settings.targetWeight > 0 ? formatWeight(settings.targetWeight, unit) : '–'}</div>
             </div>
             <div className="bg-[#F8F9FC] p-4 rounded-[16px] border border-[#E5E7EB]">
               <label className="text-xs font-medium text-[#667085] block mb-1">Height</label>
-              <div className="text-sm font-semibold text-[#111827]">{Math.floor(settings.heightInches / 12)}'{settings.heightInches % 12}"</div>
+              <div className="text-sm font-semibold text-[#111827]">{formatHeight(settings.heightInches)}</div>
             </div>
           </div>
         </CardContent>
