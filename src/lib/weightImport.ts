@@ -28,10 +28,16 @@ export const MAX_IMPORT_ROWS = 50_000;
 /** Two weights on the same day closer than this (lb) count as the same reading. */
 const DUPLICATE_TOLERANCE_LBS = 0.1;
 
+/** Lines in `text`, counting \n, \r and \r\n (as one) as breaks, so no line-ending style slips past the row cap. */
 function countLines(text: string): number {
   let n = 0;
-  for (let i = text.indexOf('\n'); i !== -1; i = text.indexOf('\n', i + 1)) n++;
-  return text.length > 0 && text[text.length - 1] !== '\n' ? n + 1 : n;
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i);
+    if (c === 13 && text.charCodeAt(i + 1) === 10) i++;
+    if (c === 10 || c === 13) n++;
+  }
+  const last = text.charCodeAt(text.length - 1);
+  return text.length > 0 && last !== 10 && last !== 13 ? n + 1 : n;
 }
 
 const pad = (n: number) => String(n).padStart(2, '0');

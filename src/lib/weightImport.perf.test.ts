@@ -49,6 +49,17 @@ describe('F3: weight import scales linearly and is capped', () => {
     expect(importWeightsCsv(csvOf(MAX_IMPORT_ROWS), { existing: [], defaultUnit: 'lbs' }).errors).toEqual([]);
   });
 
+  it('R8: the row cap also applies to CR-only (old Mac) and mixed line endings; CRLF counts once', () => {
+    const run = (text: string) => importWeightsCsv(text, { existing: [], defaultUnit: 'lbs' });
+    expect(run(csvOf(60000).replace(/\n/g, '\r')).errors[0]).toMatch(/50,000 rows/);
+    expect(run(csvOf(MAX_IMPORT_ROWS + 1).replace(/\n/g, '\r\n')).errors[0]).toMatch(/50,000 rows/);
+    expect(run(csvOf(MAX_IMPORT_ROWS + 1).replace(/\n/g, '\r')).errors[0]).toMatch(/50,000 rows/);
+    // exactly at the cap is fine in every style, including a trailing line break
+    expect(run(csvOf(MAX_IMPORT_ROWS).replace(/\n/g, '\r')).errors).toEqual([]);
+    expect(run(csvOf(MAX_IMPORT_ROWS).replace(/\n/g, '\r\n') + '\r\n').errors).toEqual([]);
+    expect(run(csvOf(MAX_IMPORT_ROWS) + '\r').errors).toEqual([]);
+  });
+
   it('duplicate rule is unchanged: same day and same weight (within 0.1 lb) are skipped, other weights kept', () => {
     const existing = [{ id: 'a', date: new Date(2026, 2, 1, 9).toISOString(), weightLbs: 200 }];
     const r = importWeightsCsv('date,weight (lbs)\n2026-03-01,200.01\n2026-03-01,200.09\n2026-03-01,200.2\n2026-03-02,200\n2026-03-02,200', { existing, defaultUnit: 'lbs' });
