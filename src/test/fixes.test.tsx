@@ -515,3 +515,32 @@ describe('F15: dose time inside a DST gap (TZ=America/New_York)', () => {
     expect([saved.getHours(), saved.getMinutes()]).toEqual([3, 30]);
   });
 });
+
+describe('F16: restoring a backup with a different unit says so', () => {
+  const backupWith = (unit: 'kg' | 'lbs') => JSON.stringify({
+    format: 'glp1-tracker-backup', version: 1, exportedAt: new Date().toISOString(),
+    data: { settings: { medication: 'Tirzepatide', startingWeight: 220, targetWeight: 180, heightInches: 68, startDate: '2026-01-05T12:00:00.000Z', weightUnit: unit }, doses: [], effects: [], weights: [{ id: 'k', date: new Date().toISOString(), weightLbs: 198.416 }] },
+  });
+
+  it('mentions the unit change only when it differs, and the stored pounds are untouched', async () => {
+    seed7('empty', 'lbs');
+    const user = userEvent.setup();
+    await open7('/settings');
+    const input = screen.getByLabelText(/choose a backup file/i);
+    await user.upload(input, new File([backupWith('kg')], 'b.json', { type: 'application/json' }));
+    let dlg = await screen.findByRole('alertdialog');
+    expect(dlg).toHaveTextContent('Your display unit will change to kg.');
+    await user.click(within(dlg).getByRole('button', { name: /cancel/i }));
+    expect(useStore.getState().settings.weightUnit).toBe('lbs');
+
+    await user.upload(input, new File([backupWith('lbs')], 'b.json', { type: 'application/json' }));
+    dlg = await screen.findByRole('alertdialog');
+    expect(dlg.textContent).not.toMatch(/display unit will change/);
+    await user.click(within(dlg).getByRole('button', { name: /cancel/i }));
+
+    await user.upload(input, new File([backupWith('kg')], 'b.json', { type: 'application/json' }));
+    await user.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: /replace my data/i }));
+    expect(useStore.getState().settings.weightUnit).toBe('kg');
+    expect(useStore.getState().weights[0].weightLbs).toBe(198.416);
+  });
+});

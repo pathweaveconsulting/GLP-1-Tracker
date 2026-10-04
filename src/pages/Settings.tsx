@@ -150,6 +150,7 @@ export function Settings() {
             <>
               The backup contains {pendingRestore.counts.doses} {pendingRestore.counts.doses === 1 ? 'dose' : 'doses'}, {pendingRestore.counts.weights} {pendingRestore.counts.weights === 1 ? 'weight' : 'weights'} and {pendingRestore.counts.effects} symptom {pendingRestore.counts.effects === 1 ? 'log' : 'logs'}.
               Everything currently stored here (including your profile) will be <strong>replaced</strong>. This can’t be undone.
+              {getWeightUnit(pendingRestore.data.settings) !== unit && <> Your display unit will change to {getWeightUnit(pendingRestore.data.settings)}.</>}
             </>
           )
         }
