@@ -75,3 +75,10 @@ export function bmiCategory(value: number | null): string | null {
   if (value < 30) return 'Overweight range';
   return 'Obesity range';
 }
+
+/** Convert a typed weight when a unit toggle changes, leaving blank / non-numeric text alone. */
+export function convertTyped(text: string, from: WeightUnit, to: WeightUnit): string {
+  const n = Number(text);
+  if (!text.trim() || !Number.isFinite(n) || from === to) return text;
+  return String(lbsToInput(displayToLbs(n, from), to));
+}

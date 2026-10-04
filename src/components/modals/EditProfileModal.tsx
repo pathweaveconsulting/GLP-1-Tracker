@@ -5,7 +5,7 @@ import { Medication } from '../../types';
 import { Modal } from '../ui/Modal';
 import { OtherMedicationNote } from '../OtherMedicationNote';
 import { MEDICATION_OPTIONS } from '../../lib/medications';
-import { WeightUnit, displayToLbs, getWeightUnit, lbsToInput } from '../../lib/units';
+import { WeightUnit, convertTyped, getWeightUnit, lbsToInput } from '../../lib/units';
 import { ProfileField, ProfileFormInput, validateProfile } from '../../lib/profile';
 import { isoToLocalDateString } from '../../lib/dates';
 
@@ -17,12 +17,7 @@ interface Props {
 const inputCls = 'w-full px-3.5 py-2.5 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-sm font-medium focus:ring-2 focus:ring-purple-500 focus:outline-none';
 const labelCls = 'block text-xs font-semibold text-muted mb-1.5';
 
-/** Convert a typed weight when the unit toggle changes, leaving blank / non-numeric text alone. */
-export function convertTyped(text: string, from: WeightUnit, to: WeightUnit): string {
-  const n = Number(text);
-  if (!text.trim() || !Number.isFinite(n) || from === to) return text;
-  return String(lbsToInput(displayToLbs(n, from), to));
-}
+export { convertTyped };
 
 function ProfileForm({ onClose }: { onClose: () => void }) {
   const { settings, updateSettings } = useStore();

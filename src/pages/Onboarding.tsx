@@ -1,4 +1,4 @@
-import React, { useId, useState } from 'react';
+import React, { useId, useRef, useState } from 'react';
 import { useStore } from '../store/useStore';
 import { MEDICATION_OPTIONS } from '../lib/medications';
 import { ProfileField, ProfileFormInput, earliestEntryDefaults, validateProfile } from '../lib/profile';
@@ -6,7 +6,7 @@ import { todayLocalDateString } from '../lib/dates';
 import { OtherMedicationNote } from '../components/OtherMedicationNote';
 import { SafetyNotice } from '../components/SafetyNotice';
 import type { Medication } from '../types';
-import { lbsToDisplay, type WeightUnit } from '../lib/units';
+import { convertTyped, displayToLbs, lbsToDisplay, lbsToInput, type WeightUnit } from '../lib/units';
 
 const inputCls =
   'w-full px-3.5 py-2.5 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-sm font-medium focus:ring-2 focus:ring-purple-500 focus:outline-none';
@@ -51,6 +51,24 @@ export function Onboarding() {
   const [errors, setErrors] = useState<Partial<Record<ProfileField, string>>>({});
 
   const set = <K extends ProfileField>(key: K, value: ProfileFormInput[K]) => setForm((f) => ({ ...f, [key]: value }));
+  // The exact pounds behind a converted number, so toggling back restores what was typed instead of a rounded copy.
+  const exact = useRef<Partial<Record<'startingWeight' | 'goalWeight', { text: string; lbs: number }>>>({});
+  const setUnit = (to: WeightUnit) => {
+    if (form.unit === to) return;
+    // Computed outside the state updater: it touches the ref, and updaters may run twice.
+    const convert = (field: 'startingWeight' | 'goalWeight') => {
+      const text = form[field];
+      const stash = exact.current[field];
+      const known = stash && stash.text === text ? stash.lbs : null;
+      const out = known != null ? String(lbsToInput(known, to)) : convertTyped(text, form.unit, to);
+      const n = Number(text);
+      if (text.trim() && Number.isFinite(n)) exact.current[field] = { text: out, lbs: known ?? displayToLbs(n, form.unit) };
+      return out;
+    };
+    const startingWeight = convert('startingWeight');
+    const goalWeight = convert('goalWeight');
+    setForm((f) => ({ ...f, unit: to, startingWeight, goalWeight }));
+  };
   const id = (name: string) => `${uid}-${name}`;
   const errProps = (field: ProfileField) => ({
     'aria-invalid': errors[field] ? true : undefined,
@@ -103,7 +121,7 @@ export function Onboarding() {
                   key={u}
                   type="button"
                   aria-pressed={form.unit === u}
-                  onClick={() => set('unit', u)}
+                  onClick={() => setUnit(u)}
                   className={`px-4 py-2 rounded-[14px] text-sm font-semibold border transition-colors ${form.unit === u ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-[#344054] border-[#E5E7EB] hover:bg-[#F8F9FC]'}`}
                 >
                   {u}
