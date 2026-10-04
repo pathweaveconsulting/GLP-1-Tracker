@@ -13,7 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         # Date handling is the classic source of off-by-one-day bugs, so the suite runs in several timezones.
-        tz: [UTC, America/Los_Angeles, Pacific/Auckland, Asia/Kolkata]
+        tz: [UTC, America/Los_Angeles, Pacific/Auckland, Asia/Kolkata, America/New_York]
     env:
       TZ: ${{ matrix.tz }}
     steps:
