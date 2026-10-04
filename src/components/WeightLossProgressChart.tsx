@@ -5,7 +5,7 @@ import {
 } from 'recharts';
 import { format, subDays, subMonths, subYears, isAfter, isBefore } from 'date-fns';
 import { useStore } from '../store/useStore';
-import { DoseEvent, WeightEntry } from '../types';
+import { getWeightUnit, lbsToDisplay } from '../lib/units';
 
 export type TimeframeOption = '2 weeks' | '1 month' | '3 months' | '6 months' | '1 year' | 'All time';
 
@@ -14,7 +14,7 @@ interface Props {
   onOpenInfo?: () => void;
 }
 
-// Dose color badge resolver matching glapp.io design
+// Dose color badge resolver
 function getDoseBadgeColor(amountMg: number): { bg: string; text: string; dotColor: string } {
   if (amountMg <= 2.5) return { bg: '#64748b', text: '#ffffff', dotColor: '#64748b' };
   if (amountMg <= 3.5) return { bg: '#8b5cf6', text: '#ffffff', dotColor: '#8b5cf6' };
@@ -27,13 +27,13 @@ function getDoseBadgeColor(amountMg: number): { bg: string; text: string; dotCol
 
 export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
   const { weights, doses, settings } = useStore();
+  const unit = getWeightUnit(settings);
   const [showShots, setShowShots] = useState(true);
   const [timeframe, setTimeframe] = useState<TimeframeOption>('All time');
 
   // Filter weights and map with doses
   const chartData = useMemo(() => {
     if (!weights || weights.length === 0) {
-      // Return synthetic sample data matching real tracking if user has no weights logged yet
       return [];
     }
 
@@ -78,25 +78,20 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
         return dDateStr === wDateStr;
       });
 
-      // Weight conversion if metric setting is kg vs lbs
-      const weightValueLbs = w.weightLbs;
-      const weightValueKg = parseFloat((w.weightLbs * 0.453592).toFixed(1));
-
       return {
         id: w.id,
         rawDate: w.date,
         dateStr: format(new Date(w.date), 'MMM d'),
-        weightLbs: weightValueLbs,
-        weightKg: weightValueKg,
-        weight: settings.weightUnit === 'kg' ? weightValueKg : weightValueLbs,
-        unitLabel: settings.weightUnit === 'kg' ? 'kg' : 'lbs',
+        weightLbs: w.weightLbs,
+        weight: lbsToDisplay(w.weightLbs, unit),
+        unitLabel: unit,
         hasDose: !!matchingDose,
         doseAmountMg: matchingDose ? matchingDose.amountMg : null,
         medication: matchingDose ? matchingDose.medication || settings.medication : null,
         site: matchingDose ? matchingDose.site : null
       };
     });
-  }, [weights, doses, timeframe, settings.weightUnit, settings.medication]);
+  }, [weights, doses, timeframe, unit, settings.medication]);
 
   // Y-Axis Domain calculation
   const yDomain = useMemo(() => {
@@ -161,12 +156,12 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
 
   return (
     <div className={`bg-white rounded-[24px] p-6 shadow-xs border border-[#E5E7EB] ${className}`}>
-      {/* HEADER SECTION (Matches glapp.io "View progress - Weight") */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h2 className="text-xl font-semibold text-[#111827] tracking-tight">View progress</h2>
+          <h3 className="text-xl font-semibold text-[#111827] tracking-tight">View progress</h3>
           <div className="flex items-center gap-2 mt-0.5">
-            <h3 className="text-lg font-semibold text-[#111827]">Weight</h3>
+            <h4 className="text-lg font-semibold text-[#111827]">Weight</h4>
             {chartData.length > 0 && (
               <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-[#F1F5F9] text-[#667085]">
                 Latest: {chartData[chartData.length - 1].weight} {chartData[0]?.unitLabel}
@@ -192,6 +187,7 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
           </div>
 
           <button
+            aria-pressed={showShots}
             onClick={() => setShowShots(!showShots)}
             className={`px-4 py-1.5 rounded-[16px] text-xs font-semibold transition-all cursor-pointer shadow-xs flex items-center gap-1.5 ${
               showShots
@@ -204,21 +200,19 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
 
           <button
             onClick={onOpenInfo}
+            aria-label="Weight and shot correlation details"
             className="text-[#98A2B3] hover:text-[#6D4AFF] transition-colors p-1.5 rounded-full hover:bg-[#F1F5F9] cursor-pointer"
-            title="Weight & Shot Correlation details"
           >
-            <Info className="w-4.5 h-4.5" />
+            <Info className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
       </div>
 
       {/* CHART CANVAS */}
       <div className="h-[300px] w-full relative">
-        {/* glapp.io watermark background label */}
-        <div className="absolute top-2 right-4 text-[#D0D5DD] font-semibold text-xs pointer-events-none select-none opacity-60">
-          glapp.io
-        </div>
-
+        {chartData.length === 0 && (
+          <p className="absolute inset-0 flex items-center justify-center text-xs text-[#667085] text-center px-6 z-10">No weigh-ins yet. Record a weight to see your progress here.</p>
+        )}
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData} margin={{ top: 35, right: 20, left: -10, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -235,7 +229,7 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
               axisLine={false} 
               tickLine={false} 
               tick={{ fontSize: 11, fill: '#64748b', fontWeight: 500 }}
-              tickFormatter={(val) => `${val} ${settings.weightUnit}`}
+              tickFormatter={(val) => `${val} ${unit}`}
             />
             <Tooltip
               contentStyle={{
@@ -290,6 +284,7 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
           {(['2 weeks', '1 month', '3 months', '6 months', '1 year', 'All time'] as const).map((t) => (
             <button
               key={t}
+              aria-pressed={timeframe === t}
               onClick={() => setTimeframe(t)}
               className={`px-4 py-2 rounded-[16px] transition-all cursor-pointer whitespace-nowrap ${
                 timeframe === t 

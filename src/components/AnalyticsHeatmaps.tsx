@@ -3,13 +3,15 @@ import {
   format, subDays, startOfWeek, addDays, differenceInDays, isSameMonth, startOfMonth 
 } from 'date-fns';
 import { useStore } from '../store/useStore';
+import { formatWeightChange, getWeightUnit } from '../lib/units';
 
 interface Props {
   className?: string;
 }
 
 export function AnalyticsHeatmaps({ className = '' }: Props) {
-  const { weights, doses, effects } = useStore();
+  const { weights, doses, effects, settings } = useStore();
+  const unit = getWeightUnit(settings);
   const [hoveredCellInfo, setHoveredCellInfo] = useState<string | null>(null);
 
   // Generate calendar grid for the past ~16 weeks (approx 112 days) up to today
@@ -198,8 +200,8 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
                     {week.days.map((day) => {
                       const colorClass = getWeightChangeColor(day.weightChange?.type, day.hasWeightLog);
                       const tooltipText = `${format(day.date, 'MMM d, yyyy')}: ${
-                        day.weightChange?.type === 'gain' ? `+${Math.abs(day.weightChange.diffLbs).toFixed(1)} lbs (Gain)`
-                        : day.weightChange?.type?.startsWith('loss') ? `${day.weightChange.diffLbs.toFixed(1)} lbs (Loss)`
+                        day.weightChange?.type === 'gain' ? `${formatWeightChange(day.weightChange.diffLbs, unit)} (higher than last weigh-in)`
+                        : day.weightChange?.type?.startsWith('loss') ? `${formatWeightChange(day.weightChange.diffLbs, unit)} (lower than last weigh-in)`
                         : day.hasWeightLog ? 'No net change' : 'No weight log'
                       }`;
 

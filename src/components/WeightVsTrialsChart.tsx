@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import { subDays, subMonths, subYears, differenceInDays } from 'date-fns';
 import { useStore } from '../store/useStore';
+import { getWeightUnit, lbsToDisplay } from '../lib/units';
 
 export type DrugOption = 'Retatrutide' | 'Tirzepatide' | 'Semaglutide';
 export type TimeframeOption = '2 weeks' | '1 month' | '3 months' | '6 months' | '1 year' | 'All time';
@@ -15,6 +16,7 @@ interface Props {
 }
 
 // Benchmark curves based on clinical trials (SURMOUNT-1 for Tirzepatide, STEP-1 for Semaglutide, TRIUMPH Phase 2 for Retatrutide)
+// Approximate; verify against the published trial reports. The curve shapes between the endpoints are an interpolation.
 const TRIAL_CURVES: Record<DrugOption, {
   name: string;
   type: 'band' | 'line';
@@ -60,6 +62,7 @@ const TRIAL_CURVES: Record<DrugOption, {
 
 export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
   const { weights, settings } = useStore();
+  const unit = getWeightUnit(settings);
   const [isPercentMode, setIsPercentMode] = useState(true);
   const [selectedDrug, setSelectedDrug] = useState<DrugOption>('Retatrutide');
   const [timeframe, setTimeframe] = useState<TimeframeOption>('All time');
@@ -111,14 +114,10 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
       const currentDate = new Date(w.date);
       const daysElapsed = Math.max(0, differenceInDays(currentDate, firstDate));
 
-      const weightLbs = w.weightLbs;
-      const weightKg = parseFloat((weightLbs * 0.453592).toFixed(1));
+      const startWeight = lbsToDisplay(startingWeightLbs, unit);
+      const currentVal = lbsToDisplay(w.weightLbs, unit);
 
-      const startWeight = settings.weightUnit === 'kg' ? startingWeightLbs * 0.453592 : startingWeightLbs;
-      const currentVal = settings.weightUnit === 'kg' ? weightKg : weightLbs;
-
-      const percentChange = parseFloat((((currentVal - startWeight) / startWeight) * 100).toFixed(1));
-      const absChange = parseFloat((currentVal - startWeight).toFixed(1));
+      const percentChange = parseFloat((((w.weightLbs - startingWeightLbs) / startingWeightLbs) * 100).toFixed(1));
 
       const trialPkt = drugConfig.getExpectedPercentLoss(daysElapsed);
 
@@ -155,11 +154,11 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
           trialBand: bandMin !== undefined && bandMax !== undefined 
             ? [parseFloat(bandMin.toFixed(1)), parseFloat(bandMax.toFixed(1))] 
             : undefined,
-          unitLabel: settings.weightUnit === 'kg' ? 'kg' : 'lbs'
+          unitLabel: unit
         };
       }
     });
-  }, [weights, settings.startingWeight, settings.weightUnit, isPercentMode, selectedDrug, timeframe]);
+  }, [weights, settings.startingWeight, unit, isPercentMode, selectedDrug, timeframe]);
 
   // Compute dynamic Y domain so chart fits bounds tightly in absolute or % mode
   const yDomain = useMemo(() => {
@@ -184,10 +183,13 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
 
   return (
     <div className={`bg-white rounded-[24px] p-6 shadow-xs border border-[#E5E7EB] ${className}`}>
-      {/* HEADER SECTION (Matches glapp.io "Weight vs trials") */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
         <div>
-          <h2 className="text-xl font-semibold text-[#111827] tracking-tight">Weight vs trials</h2>
+          <h3 className="text-xl font-semibold text-[#111827] tracking-tight">Weight vs trials</h3>
+          <p className="text-xs text-[#667085] mt-1 max-w-xl">
+            Illustrative reference curves shaped around published average results, not a forecast for you. Trial participants, doses and support differ from real life, so your own line may sit anywhere around them.
+          </p>
         </div>
 
         {/* TOP CONTROLS: % Toggle, Drug Dropdown & Info Icon */}
@@ -195,6 +197,10 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
           {/* Percentage / Absolute Mode Switch */}
           <div className="flex items-center gap-2">
             <button
+              type="button"
+              role="switch"
+              aria-checked={isPercentMode}
+              aria-label="Show percent change"
               onClick={() => setIsPercentMode(!isPercentMode)}
               className={`w-11 h-6 flex items-center rounded-full p-1 cursor-pointer transition-colors ${
                 isPercentMode ? 'bg-[#582967]' : 'bg-slate-300'
@@ -211,6 +217,7 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
 
           {/* Drug Selection Dropdown */}
           <select
+            aria-label="Reference trial"
             value={selectedDrug}
             onChange={(e) => setSelectedDrug(e.target.value as DrugOption)}
             className="bg-[#F1F5F9] hover:bg-[#E5E7EB]/80 border border-[#E5E7EB] text-[#111827] text-xs font-semibold py-1.5 px-3 rounded-[16px] cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
@@ -251,11 +258,7 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
 
       {/* CHART CANVAS */}
       <div className="h-[300px] w-full relative">
-        {/* glapp.io watermark background label */}
-        <div className="absolute top-2 right-4 text-[#D0D5DD] font-semibold text-xs pointer-events-none select-none opacity-60">
-          glapp.io
-        </div>
-        <div className="absolute top-2 right-14 text-[#D0D5DD] font-medium text-xs pointer-events-none select-none opacity-60">
+        <div className="absolute top-2 right-4 text-[#D0D5DD] font-medium text-xs pointer-events-none select-none opacity-60">
           days
         </div>
 

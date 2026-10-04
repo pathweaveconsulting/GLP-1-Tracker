@@ -11,7 +11,7 @@ const navSections = [
   {
     title: 'Today',
     items: [
-      { name: 'This Week ✨', href: '/this-week', icon: Sparkles, highlight: true },
+      { name: 'This Week', href: '/this-week', icon: Sparkles, highlight: true },
       { name: 'Overview', href: '/', icon: Home },
     ]
   },
@@ -35,7 +35,7 @@ const navSections = [
     title: 'Reports & Guidance',
     items: [
       { name: 'Weekly & Monthly Reports', href: '/reports', icon: FileText },
-      { name: 'AI Insights & Guidance', href: '/recommendations', icon: Lightbulb },
+      { name: 'Insights & Guidance', href: '/recommendations', icon: Lightbulb },
       { name: 'Health Metrics', href: '/health', icon: HeartPulse },
     ]
   },
@@ -62,7 +62,7 @@ export function MobileMenuDrawer({ isOpen, onClose }: Props) {
             <div className="w-8 h-8 bg-[#6D4AFF] text-white flex items-center justify-center rounded-[16px] font-semibold text-sm">
               GLP
             </div>
-            <span className="font-semibold text-[#111827] tracking-tight">Intelligence</span>
+            <span className="font-semibold text-[#111827] tracking-tight">GLP-1 Companion</span>
           </div>
           <button 
             onClick={onClose}
@@ -102,7 +102,7 @@ export function MobileMenuDrawer({ isOpen, onClose }: Props) {
         </nav>
 
         <div className="p-4 border-t border-[#E5E7EB] text-center">
-          <p className="text-xs text-[#98A2B3] font-medium">GLP-1 Intelligence v2.0</p>
+          <p className="text-xs text-[#98A2B3] font-medium">GLP-1 Companion</p>
         </div>
       </div>
     </div>

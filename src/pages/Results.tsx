@@ -8,11 +8,14 @@ import { AnalyticsHeatmaps } from '../components/AnalyticsHeatmaps';
 import { SideEffectsAnalyticsDashboard } from '../components/SideEffectsAnalyticsDashboard';
 import { WeightJourneyDashboard } from '../components/WeightJourneyDashboard';
 import { format } from 'date-fns';
+import { bmi as calcBmi, bmiCategory, formatWeight, formatWeightChange, getWeightUnit } from '../lib/units';
+import { dosesBySite, doseCountsByAmount, latestWeight, weeklyRate } from '../lib/insights';
+import { SEVERITY_RANK, sevOf, sortEffects } from '../lib/symptoms';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { Activity, Sparkles, TrendingUp, Compass } from 'lucide-react';
 
 export function Results() {
-  const { weights, settings, effects } = useStore();
+  const { weights, settings, effects, doses } = useStore();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialTab = (searchParams.get('tab') as 'journey' | 'sideEffects' | 'progress') || 'journey';
   const [activeTab, setActiveTab] = useState<'journey' | 'sideEffects' | 'progress'>(initialTab);
@@ -23,19 +26,24 @@ export function Results() {
     setSearchParams({ tab });
   };
   
-  const severityValue = { 'none': 0, 'mild': 1, 'moderate': 2, 'severe': 3 };
-  const effectData = effects
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    .map(e => ({
-      date: format(new Date(e.date), 'MMM d'),
-      hunger: severityValue[e.hunger],
-      foodNoise: severityValue[e.foodNoise],
-      nausea: severityValue[e.nausea],
-      fatigue: severityValue[e.fatigue]
-    }));
+  const unit = getWeightUnit(settings);
+  const effectData = sortEffects(effects).map(e => ({
+    date: format(new Date(e.date), 'MMM d'),
+    hunger: SEVERITY_RANK[sevOf(e, 'hunger')],
+    foodNoise: SEVERITY_RANK[sevOf(e, 'foodNoise')],
+    nausea: SEVERITY_RANK[sevOf(e, 'nausea')],
+    fatigue: SEVERITY_RANK[sevOf(e, 'fatigue')]
+  }));
 
-  const currentWeight = weights.length > 0 ? weights[weights.length - 1].weightLbs : settings.startingWeight;
-  const bmi = (currentWeight / (settings.heightInches * settings.heightInches)) * 703;
+  const latest = latestWeight(weights);
+  const currentWeight = latest ? latest.weightLbs : null;
+  const bmi = calcBmi(currentWeight, settings.heightInches);
+  const bmiLabel = bmiCategory(bmi);
+  const rate = weeklyRate(weights);
+  const goalRemaining = currentWeight != null && settings.targetWeight > 0 ? Math.max(0, currentWeight - settings.targetWeight) : null;
+  const doseCounts = doseCountsByAmount(doses);
+  const siteCounts = dosesBySite(doses);
+  const DOSE_COLORS = ['#cbd5e1', '#8b5cf6', '#582967', '#0d9488', '#f43f5e', '#059669'];
 
   return (
     <div className="space-y-6">
@@ -114,20 +122,22 @@ export function Results() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Card className="rounded-[16px] border-[#E5E7EB] shadow-xs">
               <CardContent className="p-4 flex flex-col justify-center items-center text-center">
-                <span className="text-xs font-semibold text-[#98A2B3] tracking-wider mb-1">Current BMI</span>
-                <span className="text-3xl font-black text-[#111827] tracking-tight">{bmi.toFixed(1)}</span>
+                <span className="text-xs font-semibold text-[#667085] mb-1">Current BMI</span>
+                <span className="text-3xl font-black text-[#111827] tracking-tight">{bmi == null ? '–' : bmi.toFixed(1)}</span>
+                <span className="text-[11px] text-[#98A2B3] mt-0.5">{bmiLabel ?? (settings.heightInches > 0 ? 'Log a weight' : 'Add your height in Settings')}</span>
               </CardContent>
             </Card>
             <Card className="rounded-[16px] border-[#E5E7EB] shadow-xs">
               <CardContent className="p-4 flex flex-col justify-center items-center text-center">
-                <span className="text-xs font-semibold text-[#98A2B3] tracking-wider mb-1">Weekly Avg Loss</span>
-                <span className="text-3xl font-black text-[#22C55E] tracking-tight">-1.4<span className="text-xs font-semibold text-[#667085]">lbs</span></span>
+                <span className="text-xs font-semibold text-[#667085] mb-1">Recent weekly trend</span>
+                <span className="text-3xl font-black text-[#111827] tracking-tight">{rate ? formatWeightChange(rate.lbsPerWeek, unit, { unit: false }) : '–'}<span className="text-xs font-semibold text-[#667085]"> {unit}/wk</span></span>
+                <span className="text-[11px] text-[#98A2B3] mt-0.5">{rate ? `${rate.points} weigh-ins, ${rate.spanDays} days` : 'Needs 3+ weigh-ins over 2+ weeks'}</span>
               </CardContent>
             </Card>
             <Card className="col-span-2 rounded-[16px] border-[#E5E7EB] shadow-xs">
               <CardContent className="p-4 flex flex-col justify-center items-center text-center">
-                <span className="text-xs font-semibold text-[#98A2B3] tracking-wider mb-1">Goal Remaining</span>
-                <span className="text-3xl font-black text-[#111827] tracking-tight">{(currentWeight - settings.targetWeight).toFixed(1)} <span className="text-xs font-semibold text-[#667085]">lbs</span></span>
+                <span className="text-xs font-semibold text-[#667085] mb-1">Goal remaining</span>
+                <span className="text-3xl font-black text-[#111827] tracking-tight">{goalRemaining == null ? '–' : formatWeight(goalRemaining, unit, { unit: false })} <span className="text-xs font-semibold text-[#667085]">{unit}</span></span>
               </CardContent>
             </Card>
           </div>
@@ -187,61 +197,49 @@ export function Results() {
 
             <Card className="rounded-[24px] border-[#E5E7EB] shadow-xs">
               <CardHeader>
-                <CardTitle className="text-base font-semibold text-[#111827]">Shot Site Analytics</CardTitle>
+                <CardTitle className="text-base font-semibold text-[#111827]">Injection sites used</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-[250px] w-full mt-2">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={[
-                      { site: 'Left Thigh', shots: 4, loss: 5.2 },
-                      { site: 'Right Thigh', shots: 4, loss: 4.8 },
-                    ]} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                      <XAxis dataKey="site" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} dy={10} />
-                      <YAxis yAxisId="left" orientation="left" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
-                      <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
-                      <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                      <Bar yAxisId="left" dataKey="shots" name="Total Shots" fill="#582967" radius={[6, 6, 0, 0]} barSize={32} />
-                      <Bar yAxisId="right" dataKey="loss" name="Avg Loss (lbs)" fill="#10b981" radius={[6, 6, 0, 0]} barSize={32} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
+                {siteCounts.length === 0 ? (
+                  <p className="text-xs text-[#667085] py-10 text-center">Log a dose to see which sites you've used.</p>
+                ) : (
+                  <div className="h-[250px] w-full mt-2" role="img" aria-label={`Injections per site: ${siteCounts.map((x) => `${x.site} ${x.count}`).join(', ')}`}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={siteCounts} layout="vertical" margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                        <XAxis type="number" allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+                        <YAxis type="category" dataKey="site" width={110} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
+                        <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                        <Bar dataKey="count" name="Injections" fill="#582967" radius={[0, 6, 6, 0]} barSize={18} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
             <Card className="rounded-[24px] border-[#E5E7EB] shadow-xs">
               <CardHeader>
-                <CardTitle className="text-base font-semibold text-[#111827]">Dose Breakdown</CardTitle>
+                <CardTitle className="text-base font-semibold text-[#111827]">Dose breakdown</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-[250px] w-full mt-2 flex items-center justify-center">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={[
-                          { name: '2.5mg', value: 4 },
-                          { name: '5.0mg', value: 5 }
-                        ]}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        paddingAngle={5}
-                        dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {[
-                          { name: '2.5mg', value: 4 },
-                          { name: '5.0mg', value: 5 }
-                        ].map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={index === 0 ? '#cbd5e1' : '#582967'} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
+                {doseCounts.length === 0 ? (
+                  <p className="text-xs text-[#667085] py-10 text-center">Log a dose to see how many injections you've had at each dose.</p>
+                ) : (
+                  <div className="h-[250px] w-full mt-2 flex items-center justify-center" role="img" aria-label={`Injections by dose: ${doseCounts.map((x) => `${x.label} ${x.count}`).join(', ')}`}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={doseCounts} cx="50%" cy="50%" innerRadius={55} outerRadius={80} paddingAngle={4} dataKey="count" nameKey="label"
+                          label={({ name, value }) => `${name}: ${value}`}>
+                          {doseCounts.map((_, index) => (
+                            <Cell key={`cell-${index}`} fill={DOSE_COLORS[index % DOSE_COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

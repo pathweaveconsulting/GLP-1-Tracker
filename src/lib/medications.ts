@@ -15,3 +15,8 @@ export function normalizeMedication(value: unknown): Medication {
   if (v === 'retatrutide') return 'Retatrutide';
   return 'Other';
 }
+
+/** Days between scheduled doses. All tracked drugs are once-weekly; unknown for "Other". */
+export function dosingIntervalDays(medication: Medication): number | null {
+  return medication === 'Other' ? null : 7;
+}

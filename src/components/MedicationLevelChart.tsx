@@ -17,7 +17,7 @@ export function MedicationLevelChart({ className = '', onOpenSources }: Props) {
 
   const pkData = generatePKCurve(doses, pkTimeline);
 
-  // Medication colors mapping matching glapp.io
+  // Medication colors
   const medColors: Record<string, { stroke: string; fill: string; dot: string }> = {
     tirzepatide: { stroke: '#22C55E', fill: '#22C55E', dot: '#22C55E' },
     retatrutide: { stroke: '#F59E0B', fill: '#F59E0B', dot: '#F59E0B' },
