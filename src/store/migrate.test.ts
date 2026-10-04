@@ -25,14 +25,27 @@ describe('migrateStore from the unversioned build', () => {
     expect(out.settings.weightUnit).toBe('lbs');
   });
 
-  it('keeps real (UUID) rows next to demo rows and marks the user onboarded', () => {
+  it('keeps real (UUID) rows next to demo rows but never carries over the demo profile (F1)', () => {
     const real = { id: '3f2b8c1e-aaaa-4bbb-8ccc-1234567890ab', weightLbs: 201.2, date: '2026-02-01T12:00:00Z' };
     const out = migrateStore({ doses: [demoDose], weights: [demoWeight, real], effects: [demoEffect], settings: oldSettings }, 0);
     expect(out.weights).toEqual([real]);
     expect(out.doses).toEqual([]);
-    expect(out.hasOnboarded).toBe(true);
-    expect(out.settings.startingWeight).toBe(220);
+    // Real data survives, but the user must confirm a profile: the old 220 / 170 / 68 was generated.
+    expect(out.hasOnboarded).toBe(false);
+    expect(out.settings.startingWeight).toBe(0);
+    expect(out.settings.targetWeight).toBe(0);
+    expect(out.settings.heightInches).toBe(0);
+    expect(out.settings.startDate).not.toBe(oldSettings.startDate);
     expect(out.settings.weightUnit).toBe('lbs');
+    expect(JSON.stringify(out)).not.toMatch(/"(startingWeight|targetWeight|heightInches)":(220|170|68)\b/);
+  });
+
+  it('leaves already-versioned data untouched', () => {
+    const v1 = { doses: [], weights: [{ id: 'a', weightLbs: 180, date: '2026-02-01T12:00:00Z' }], effects: [], settings: { ...oldSettings, weightUnit: 'kg' }, hasOnboarded: true };
+    const out = migrateStore(v1, 1);
+    expect(out.settings.startingWeight).toBe(220); // the user's own, confirmed profile
+    expect(out.hasOnboarded).toBe(true);
+    expect(out.weights).toEqual(v1.weights);
   });
 
   it('maps brand names to generics on settings and doses', () => {

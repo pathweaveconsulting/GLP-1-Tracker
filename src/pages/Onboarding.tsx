@@ -1,11 +1,11 @@
 import React, { useId, useState } from 'react';
 import { useStore } from '../store/useStore';
 import { MEDICATION_OPTIONS } from '../lib/medications';
-import { ProfileField, ProfileFormInput, validateProfile } from '../lib/profile';
+import { ProfileField, ProfileFormInput, earliestEntryDefaults, validateProfile } from '../lib/profile';
 import { todayLocalDateString } from '../lib/dates';
 import { SafetyNotice } from '../components/SafetyNotice';
 import type { Medication } from '../types';
-import type { WeightUnit } from '../lib/units';
+import { lbsToDisplay, type WeightUnit } from '../lib/units';
 
 const inputCls =
   'w-full px-3.5 py-2.5 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-sm font-medium focus:ring-2 focus:ring-purple-500 focus:outline-none';
@@ -22,17 +22,28 @@ function FieldError({ id, message }: { id: string; message?: string }) {
 
 export function Onboarding() {
   const completeOnboarding = useStore((s) => s.completeOnboarding);
+  const keptWeights = useStore((s) => s.weights);
+  const keptDoses = useStore((s) => s.doses);
+  const keptEffects = useStore((s) => s.effects);
+  const keptSettings = useStore((s) => s.settings);
+  const kept = { weights: keptWeights, doses: keptDoses, effects: keptEffects, settings: keptSettings };
   const uid = useId();
   const today = todayLocalDateString();
 
+  // "Welcome back": real entries survived an upgrade, so pre-fill from them instead of starting blank.
+  const keptCount = kept.weights.length + kept.doses.length + kept.effects.length;
+  const welcomeBack = keptCount > 0;
+  const defaults = earliestEntryDefaults(kept);
+  const unit0: WeightUnit = welcomeBack && kept.settings.weightUnit === 'kg' ? 'kg' : 'lbs';
+
   const [form, setForm] = useState<ProfileFormInput>({
-    medication: 'Tirzepatide',
-    unit: 'lbs',
-    startingWeight: '',
+    medication: welcomeBack ? kept.settings.medication : 'Tirzepatide',
+    unit: unit0,
+    startingWeight: welcomeBack && defaults.startingWeightLbs != null ? String(lbsToDisplay(defaults.startingWeightLbs, unit0)) : '',
     goalWeight: '',
     heightFt: '',
     heightIn: '',
-    startDate: today,
+    startDate: welcomeBack && defaults.startDate ? defaults.startDate : today,
   });
   const [acknowledged, setAcknowledged] = useState(false);
   const [ackError, setAckError] = useState<string>();
@@ -54,15 +65,17 @@ export function Onboarding() {
     } else {
       setAckError(undefined);
     }
-    if (result.value && acknowledged) completeOnboarding(result.value);
+    if (result.value && acknowledged) completeOnboarding(result.value, { seedStartingWeight: !welcomeBack });
   };
 
   return (
     <div className="min-h-screen bg-[#F8F9FC] text-[#111827] font-sans antialiased flex items-start md:items-center justify-center p-4">
       <main className="w-full max-w-xl bg-white rounded-[24px] border border-[#E5E7EB] shadow-xs p-6 md:p-8 my-6">
-        <h1 className="text-2xl font-semibold tracking-tight">Welcome. Let's set up your journey.</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{welcomeBack ? 'Welcome back. Let’s confirm your details.' : 'Welcome. Let’s set up your journey.'}</h1>
         <p className="text-sm text-[#667085] mt-1.5 leading-relaxed">
-          A few details so every number you see is based on you. Everything stays on this device. Nothing is uploaded.
+          {welcomeBack
+            ? `We kept your ${keptCount} ${keptCount === 1 ? 'entry' : 'entries'}. This version needs your goal and height again so every number is based on you. We pre-filled what we could from your earliest entries; please check it.`
+            : 'A few details so every number you see is based on you. Everything stays on this device. Nothing is uploaded.'}
         </p>
 
         <form onSubmit={submit} noValidate className="mt-6 space-y-4">

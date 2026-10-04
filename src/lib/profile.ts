@@ -1,6 +1,6 @@
 import type { Medication, UserSettings } from '../types';
 import { WEIGHT_BOUNDS, WeightUnit, displayToLbs } from './units';
-import { dateOnlyToIso, parseDateOnly, todayLocalDateString } from './dates';
+import { dateOnlyToIso, isoToLocalDateString, parseDateOnly, todayLocalDateString } from './dates';
 import { MEDICATION_OPTIONS } from './medications';
 
 export interface ProfileFormInput {
@@ -69,4 +69,20 @@ export function validateProfile(input: ProfileFormInput, today: string = todayLo
       weightUnit: input.unit,
     },
   };
+}
+
+/** Pre-fill values for "welcome back" onboarding, taken from the user's earliest real entries. */
+export function earliestEntryDefaults(args: {
+  weights: Array<{ date: string; weightLbs: number }>;
+  doses: Array<{ date: string }>;
+  effects: Array<{ date: string }>;
+}): { startDate: string | null; startingWeightLbs: number | null } {
+  const byDate = <T extends { date: string }>(rows: T[]) => [...rows].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const w = byDate(args.weights)[0];
+  const d = byDate(args.doses)[0];
+  const e = byDate(args.effects)[0];
+  const candidates = [w, d].filter(Boolean) as Array<{ date: string }>;
+  const pool = candidates.length > 0 ? candidates : ([e].filter(Boolean) as Array<{ date: string }>);
+  const earliest = byDate(pool)[0];
+  return { startDate: earliest ? isoToLocalDateString(earliest.date) : null, startingWeightLbs: w ? w.weightLbs : null };
 }

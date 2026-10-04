@@ -31,8 +31,8 @@ const isRow = (v: unknown): v is { id: string } => !!v && typeof v === 'object' 
  * Upgrade state persisted by an older build.
  *
  * From the unversioned build (version 0) this removes the generated demo rows, maps brand names
- * to generics and defaults the display unit. `hasOnboarded` is only true when real data survives;
- * otherwise the user is sent through onboarding with a blank profile (the old profile was demo data too).
+ * to generics and defaults the display unit. The old profile is dropped and the user always goes through
+ * onboarding again; when real entries survive, onboarding opens in "welcome back" mode and is pre-filled from them.
  */
 export function migrateStore(persisted: unknown, fromVersion: number): PersistedData {
   const raw = (persisted && typeof persisted === 'object' ? persisted : {}) as Partial<PersistedData> & Record<string, unknown>;
@@ -48,16 +48,17 @@ export function migrateStore(persisted: unknown, fromVersion: number): Persisted
   const effects = keep<EffectEntry>(raw.effects);
   const hasRealData = doses.length + weights.length + effects.length > 0;
 
-  const base = emptySettings();
+  // The old profile (startingWeight / targetWeight / heightInches / startDate) was generated demo data, or at best
+  // unconfirmed, so it is never carried over. Only the medication and display unit are kept.
   const oldSettings = (raw.settings && typeof raw.settings === 'object' ? raw.settings : {}) as Partial<UserSettings>;
   const settings: UserSettings = hasRealData
     ? {
-        ...base,
-        ...oldSettings,
+        ...emptySettings(),
         medication: normalizeMedication(oldSettings.medication),
         weightUnit: oldSettings.weightUnit === 'kg' ? 'kg' : 'lbs',
       }
-    : base;
+    : emptySettings();
 
-  return { doses, weights, effects, settings, hasOnboarded: hasRealData };
+  // Real entries are kept, but onboarding still runs (in "welcome back" mode) so the user confirms a profile.
+  return { doses, weights, effects, settings, hasOnboarded: false };
 }

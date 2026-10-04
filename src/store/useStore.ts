@@ -11,18 +11,15 @@ export const useStore = create<AppState>()(
     (set) => ({
       ...emptyData(),
 
-      completeOnboarding: (settings) =>
+      completeOnboarding: (settings, opts) =>
         set((state) => ({
           settings,
           hasOnboarded: true,
-          weights: [
-            ...state.weights,
-            {
-              id: newId(),
-              weightLbs: settings.startingWeight,
-              date: settings.startDate,
-            },
-          ],
+          // A returning user already has real weigh-ins; seeding another would duplicate their data.
+          weights:
+            opts?.seedStartingWeight === false
+              ? state.weights
+              : [...state.weights, { id: newId(), weightLbs: settings.startingWeight, date: settings.startDate }],
         })),
 
       resetAllData: () => {

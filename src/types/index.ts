@@ -64,7 +64,7 @@ export interface PersistedData {
 
 export interface AppState extends PersistedData {
   /** Saves the profile, flags onboarding done and seeds the starting weight as the first weight entry. */
-  completeOnboarding: (settings: UserSettings) => void;
+  completeOnboarding: (settings: UserSettings, opts?: { seedStartingWeight?: boolean }) => void;
   /** Wipes every log and the profile and returns the app to first-run state. */
   resetAllData: () => void;
   /** Replaces everything with a validated backup. */
