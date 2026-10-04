@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { Home, Syringe, Activity, FileText, Settings, Calendar, Scale, Database, Lightbulb, CircleDashed, HeartPulse, MoreHorizontal, Sparkles, Compass, UserRound } from 'lucide-react';
 import { format } from 'date-fns';
@@ -52,6 +52,10 @@ export function Layout() {
   const settings = useStore((s) => s.settings);
 
   return (
+    <>
+    <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[80] focus:bg-white focus:text-[#111827] focus:px-4 focus:py-2 focus:rounded-[12px] focus:shadow-lg focus:ring-2 focus:ring-[#6D4AFF]">
+      Skip to main content
+    </a>
     <div className="flex h-screen print:h-auto bg-[#F8F9FC] text-[#111827] font-sans antialiased selection:bg-purple-100 selection:text-purple-900">
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex print:hidden flex-col w-[260px] bg-white border-r border-[#E5E7EB] z-20">
@@ -66,7 +70,7 @@ export function Layout() {
             </div>
           </NavLink>
         </div>
-        <nav className="flex-1 px-4 py-5 space-y-5 overflow-y-auto">
+        <nav aria-label="Main" className="flex-1 px-4 py-5 space-y-5 overflow-y-auto">
           {navSections.map((section, idx) => (
             <div key={idx} className="space-y-1">
               <span className="px-3 text-[11px] font-semibold text-[#98A2B3] tracking-normal block mb-1">
@@ -108,9 +112,11 @@ export function Layout() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto print:overflow-visible pb-24 md:pb-8">
+      <main id="main-content" tabIndex={-1} className="flex-1 overflow-y-auto print:overflow-visible pb-24 md:pb-8 focus:outline-none">
         <div className="max-w-6xl mx-auto p-4 md:p-8">
-          <Outlet />
+          <Suspense fallback={<p role="status" className="py-24 text-center text-sm text-[#667085]">Loading…</p>}>
+            <Outlet />
+          </Suspense>
           <footer className="mt-10 pt-4 border-t border-[#E5E7EB] print:hidden">
             <SafetyNotice variant="compact" />
           </footer>
@@ -121,7 +127,7 @@ export function Layout() {
       <MobileMenuDrawer isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
 
       {/* Mobile Persistent Bottom Navigation */}
-      <nav className="md:hidden print:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-[#E5E7EB]/80 px-2 pb-safe pt-2 flex justify-around z-40 shadow-lg">
+      <nav aria-label="Quick navigation" className="md:hidden print:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-[#E5E7EB]/80 px-2 pb-safe pt-2 flex justify-around z-40 shadow-lg">
         <NavLink
           to="/"
           className={({ isActive }) =>
@@ -163,6 +169,7 @@ export function Layout() {
         </NavLink>
 
         <button
+          type="button"
           onClick={() => setIsMenuOpen(true)}
           className="flex flex-col items-center p-2 rounded-[16px] text-[#98A2B3] hover:text-[#667085] transition-colors"
         >
@@ -171,5 +178,6 @@ export function Layout() {
         </button>
       </nav>
     </div>
+    </>
   );
 }

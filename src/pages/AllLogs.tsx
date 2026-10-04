@@ -34,18 +34,21 @@ export function AllLogs() {
 
       <div className="flex gap-2 p-1 bg-[#F8F9FC] border border-[#E5E7EB] rounded-[14px]">
         <button 
+          aria-pressed={activeTab === 'doses'}
           onClick={() => setActiveTab('doses')}
           className={`flex-1 py-2 text-xs font-semibold rounded-[10px] transition-all cursor-pointer ${activeTab === 'doses' ? 'bg-white shadow-xs text-[#111827]' : 'text-[#667085] hover:text-[#111827]'}`}
         >
           Shots ({doses.length})
         </button>
         <button 
+          aria-pressed={activeTab === 'weights'}
           onClick={() => setActiveTab('weights')}
           className={`flex-1 py-2 text-xs font-semibold rounded-[10px] transition-all cursor-pointer ${activeTab === 'weights' ? 'bg-white shadow-xs text-[#111827]' : 'text-[#667085] hover:text-[#111827]'}`}
         >
           Weight ({weights.length})
         </button>
         <button 
+          aria-pressed={activeTab === 'effects'}
           onClick={() => setActiveTab('effects')}
           className={`flex-1 py-2 text-xs font-semibold rounded-[10px] transition-all cursor-pointer ${activeTab === 'effects' ? 'bg-white shadow-xs text-[#111827]' : 'text-[#667085] hover:text-[#111827]'}`}
         >
@@ -89,8 +92,8 @@ export function AllLogs() {
                     <td className="px-6 py-3.5 font-semibold text-[#6D4AFF]">{d.amountMg} mg</td>
                     <td className="px-6 py-3.5 text-[#667085] font-normal">{d.site}</td>
                     <td className="px-6 py-3.5 text-right">
-                      <button onClick={() => deleteDose(d.id)} className="text-[#98A2B3] hover:text-rose-500 p-1.5 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer">
-                        <Trash2 className="w-4 h-4" />
+                      <button onClick={() => deleteDose(d.id)} aria-label={`Delete ${d.amountMg} mg dose from ${format(new Date(d.date), 'MMM d, yyyy')}`} className="text-[#98A2B3] hover:text-rose-500 p-1.5 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer">
+                        <Trash2 className="w-4 h-4" aria-hidden="true" />
                       </button>
                     </td>
                   </tr>
@@ -101,8 +104,8 @@ export function AllLogs() {
                     <td className="px-6 py-3.5 text-[#111827] font-semibold">{format(new Date(w.date), 'MMM d, yyyy')}</td>
                     <td className="px-6 py-3.5 font-semibold text-[#22C55E]">{formatWeight(w.weightLbs, unit)}</td>
                     <td className="px-6 py-3.5 text-right">
-                      <button onClick={() => deleteWeight(w.id)} className="text-[#98A2B3] hover:text-rose-500 p-1.5 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer">
-                        <Trash2 className="w-4 h-4" />
+                      <button onClick={() => deleteWeight(w.id)} aria-label={`Delete weight entry from ${format(new Date(w.date), 'MMM d, yyyy')}`} className="text-[#98A2B3] hover:text-rose-500 p-1.5 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer">
+                        <Trash2 className="w-4 h-4" aria-hidden="true" />
                       </button>
                     </td>
                   </tr>

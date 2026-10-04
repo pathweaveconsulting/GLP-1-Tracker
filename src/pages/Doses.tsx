@@ -89,9 +89,9 @@ export function Doses() {
                 <button
                   onClick={() => deleteDose(dose.id)}
                   className="p-2 rounded-[16px] text-[#98A2B3] hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-                  title="Delete Injection"
+                  aria-label={`Delete ${dose.amountMg} mg injection from ${format(new Date(dose.date), 'MMM d, yyyy')}`}
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-4 h-4" aria-hidden="true" />
                 </button>
               </div>
             </CardContent>

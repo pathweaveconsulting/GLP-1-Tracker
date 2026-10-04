@@ -1,6 +1,5 @@
 {
-  "name": "GLP-1 Tracker",
-  "description": "An AI-powered GLP-1 companion built to reduce uncertainty, increase understanding, and guide users through their health transformation.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "name": "GLP-1 Companion",
+  "description": "A local-first companion that explains what is happening on a GLP-1 journey, using only the user's own logs.",
+  "requestFramePermissions": []
 }

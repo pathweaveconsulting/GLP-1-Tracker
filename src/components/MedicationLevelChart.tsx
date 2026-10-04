@@ -110,7 +110,7 @@ export function MedicationLevelChart({ className = '', onOpenSources }: Props) {
             />
             <Tooltip 
               contentStyle={{ borderRadius: '16px', border: '1px solid #E5E7EB', boxShadow: '0 4px 20px rgba(16,24,40,0.05)' }}
-              formatter={(value: any, name: any) => [`${value} mg`, String(name)]}
+              formatter={(value, name) => [`${value} mg`, String(name)]}
             />
             {activeMeds.map((med) => {
               const medLower = med.toLowerCase();

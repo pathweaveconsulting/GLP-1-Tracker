@@ -31,13 +31,13 @@ export function CalendarView() {
           <p className="text-[#667085] text-sm mt-0.5">View your doses, weight logs, and symptoms on a monthly grid</p>
         </div>
         <div className="flex items-center gap-3 bg-white p-1.5 rounded-[14px] border border-[#E5E7EB] shadow-xs">
-          <Button variant="outline" size="icon" onClick={prevMonth} className="rounded-[10px] border-0 h-8 w-8">
+          <Button variant="outline" size="icon" onClick={prevMonth} aria-label="Previous month" className="rounded-[10px] border-0 h-8 w-8">
             <ChevronLeft className="w-4 h-4 text-[#667085]" />
           </Button>
           <span className="font-semibold text-sm min-w-[110px] text-center text-[#111827]">
             {format(currentDate, "MMMM yyyy")}
           </span>
-          <Button variant="outline" size="icon" onClick={nextMonth} className="rounded-[10px] border-0 h-8 w-8">
+          <Button variant="outline" size="icon" onClick={nextMonth} aria-label="Next month" className="rounded-[10px] border-0 h-8 w-8">
             <ChevronRight className="w-4 h-4 text-[#667085]" />
           </Button>
         </div>

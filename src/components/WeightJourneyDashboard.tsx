@@ -45,8 +45,8 @@ export function WeightJourneyDashboard({ className = '' }: Props) {
   const projection = projectGoal({ weights, startLbs, targetLbs, now });
   const best = bestMonth(weights);
   const plateaus = useMemo(() => detectPlateaus(weights), [weights]);
-  const velocity = useMemo(() => weeklyChanges(weights).slice(-10).map((c) => ({ week: format(c.weekStart, 'MMM d'), change: toDisplay(c.deltaLbs) })), [weights, unit]); // eslint-disable-line react-hooks/exhaustive-deps
-  const doseRows = useMemo(() => doseLevelHistory(doses, weights, now), [doses, weights]); // eslint-disable-line react-hooks/exhaustive-deps
+  const velocity = useMemo(() => weeklyChanges(weights).slice(-10).map((c) => ({ week: format(c.weekStart, 'MMM d'), change: toDisplay(c.deltaLbs) })), [weights, unit]);
+  const doseRows = useMemo(() => doseLevelHistory(doses, weights, now), [doses, weights]);
   const milestones = useMemo(() => weightMilestones({ weights, startLbs, targetLbs }), [weights, startLbs, targetLbs]);
 
   const trendWord = rate ? (rate.lbsPerWeek <= -0.1 ? 'Trending down' : rate.lbsPerWeek >= 0.1 ? 'Trending up' : 'Holding steady') : null;
@@ -73,7 +73,7 @@ export function WeightJourneyDashboard({ className = '' }: Props) {
           dose: dose ? `${dose.amountMg} mg ${dose.medication}` : null,
         };
       });
-  }, [sorted, doses, timeframe, last, unit]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [sorted, doses, timeframe, last, unit]);
 
   const forecast = useMemo(() => {
     if (projection.status !== 'projected' || !last || targetLbs == null) return [];
@@ -81,7 +81,7 @@ export function WeightJourneyDashboard({ className = '' }: Props) {
     const end = { t: projection.date.getTime(), actual: null as number | null, projected: toDisplay(targetLbs) };
     const join = { ...recent[recent.length - 1], projected: recent[recent.length - 1].actual };
     return [...recent.slice(0, -1), join, end];
-  }, [projection, sorted, last, targetLbs, unit]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [projection, sorted, last, targetLbs, unit]);
 
   const chapters = useMemo(() => {
     const m = new Map<string, { name: string; start: number; end: number; n: number }>();

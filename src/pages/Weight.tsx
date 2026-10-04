@@ -62,6 +62,7 @@ export function Weight() {
           {/* View Tab Selector */}
           <div className="flex bg-[#F8F9FC] p-1 rounded-[14px] border border-[#E5E7EB] shadow-xs">
             <button
+              aria-pressed={activeTab === 'journey'}
               onClick={() => setActiveTab('journey')}
               className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-[10px] transition-all ${
                 activeTab === 'journey'
@@ -73,6 +74,7 @@ export function Weight() {
               <span>Weight Journey Dashboard</span>
             </button>
             <button
+              aria-pressed={activeTab === 'table'}
               onClick={() => setActiveTab('table')}
               className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-[10px] transition-all ${
                 activeTab === 'table'
@@ -192,9 +194,9 @@ export function Weight() {
                           <button 
                             onClick={() => deleteWeight(w.id)} 
                             className="text-[#98A2B3] hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition-colors"
-                            title="Delete entry"
+                            aria-label={`Delete weight entry from ${format(new Date(w.date), 'MMM d, yyyy')}`}
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-4 h-4" aria-hidden="true" />
                           </button>
                         </td>
                       </tr>

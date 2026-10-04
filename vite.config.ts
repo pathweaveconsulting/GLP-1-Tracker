@@ -11,6 +11,16 @@ export default defineConfig(() => {
         '@': path.resolve(__dirname, '.'),
       },
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            react: ['react', 'react-dom', 'react-router-dom'],
+            recharts: ['recharts'],
+          },
+        },
+      },
+    },
     test: {
       environment: 'jsdom',
       globals: true,
@@ -18,10 +28,8 @@ export default defineConfig(() => {
       css: false,
     },
     server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
+      // HMR can be disabled (DISABLE_HMR=true) for hosted editors that watch files themselves.
       hmr: process.env.DISABLE_HMR !== 'true',
-      // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
   };

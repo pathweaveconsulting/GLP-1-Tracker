@@ -6,6 +6,7 @@ import {
 import { subDays, subMonths, subYears, differenceInDays } from 'date-fns';
 import { useStore } from '../store/useStore';
 import { getWeightUnit, lbsToDisplay } from '../lib/units';
+import { Modal } from './ui/Modal';
 
 export type DrugOption = 'Retatrutide' | 'Tirzepatide' | 'Semaglutide';
 export type TimeframeOption = '2 weeks' | '1 month' | '3 months' | '6 months' | '1 year' | 'All time';
@@ -229,14 +230,15 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
 
           {/* Info Button */}
           <button
+            type="button"
             onClick={() => {
               if (onOpenInfo) onOpenInfo();
               else setShowInfoModal(true);
             }}
             className="text-[#98A2B3] hover:text-[#6D4AFF] transition-colors p-1.5 rounded-full hover:bg-[#F1F5F9] cursor-pointer"
-            title="Trial comparison info"
+            aria-label="About the trial reference curves"
           >
-            <Info className="w-4.5 h-4.5" />
+            <Info className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -292,9 +294,9 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
                 boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
                 padding: '12px 16px'
               }}
-              formatter={(val: any, name: any) => [
+              formatter={(val, name) => [
                 isPercentMode ? `${val}%` : `${val} ${chartData[0]?.unitLabel || ''}`,
-                name === 'userWeight' ? 'Your Weight' : `Trial Benchmark (${selectedDrug})`
+                String(name) === 'userWeight' ? 'Your Weight' : `Trial Benchmark (${selectedDrug})`
               ]}
               labelFormatter={(label) => `Duration: ${label}`}
             />
@@ -341,6 +343,8 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
           {(['2 weeks', '1 month', '3 months', '6 months', '1 year', 'All time'] as const).map((t) => (
             <button
               key={t}
+              type="button"
+              aria-pressed={timeframe === t}
               onClick={() => setTimeframe(t)}
               className={`px-4 py-2 rounded-[16px] transition-all cursor-pointer whitespace-nowrap ${
                 timeframe === t 
@@ -354,34 +358,26 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
         </div>
       </div>
 
-      {/* INFO MODAL FOR TRIALS EXPLANATION */}
-      {showInfoModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-[24px] max-w-lg w-full p-6 shadow-2xl space-y-4">
-            <h3 className="text-lg font-semibold text-[#111827]">Clinical Trial Benchmarks</h3>
-            <p className="text-xs text-[#667085] leading-relaxed">
-              Your real weight trajectory is compared against published peer-reviewed GLP-1/GIP/Glucagon clinical trials:
-            </p>
-            <ul className="text-xs space-y-2 text-[#344054] font-medium">
-              <li className="p-2.5 rounded-[16px] bg-emerald-50 text-emerald-900 border border-emerald-100">
-                <strong>Retatrutide (TRIUMPH Phase 2):</strong> Average weight loss of ~24.2% at 48 weeks (336 days) with triple agonist mechanism.
-              </li>
-              <li className="p-2.5 rounded-[16px] bg-sky-50 text-sky-900 border border-sky-100">
-                <strong>Tirzepatide (SURMOUNT-1):</strong> Average weight loss of ~20.9% at 72 weeks (504 days) dual GIP/GLP-1 receptor agonist.
-              </li>
-              <li className="p-2.5 rounded-[16px] bg-indigo-50 text-indigo-900 border border-indigo-100">
-                <strong>Semaglutide (STEP 1):</strong> Average weight loss of ~14.9% at 68 weeks (476 days) GLP-1 receptor agonist.
-              </li>
-            </ul>
-            <button
-              onClick={() => setShowInfoModal(false)}
-              className="w-full py-2.5 rounded-[16px] bg-[#582967] text-white font-semibold text-xs cursor-pointer hover:bg-[#4a2257] transition-all"
-            >
-              Close
-            </button>
-          </div>
+      <Modal open={showInfoModal} onClose={() => setShowInfoModal(false)} title="About the reference curves" widthClass="max-w-lg">
+        <div className="space-y-3">
+          <p className="text-xs text-[#667085] leading-relaxed">
+            The curves are drawn between approximate average results reported by these trials. The shape between those points is an interpolation, not trial data, and trial participants received structured support that real life rarely matches. Your own line may sit anywhere around them. Please don't read it as a target or a forecast.
+          </p>
+          <ul className="text-xs space-y-2 text-[#344054] font-medium">
+            <li className="p-2.5 rounded-[16px] bg-emerald-50 text-emerald-900 border border-emerald-100">
+              <strong>Retatrutide (phase 2 trial, investigational):</strong> average loss of about 24% at 48 weeks at the highest dose studied.
+            </li>
+            <li className="p-2.5 rounded-[16px] bg-sky-50 text-sky-900 border border-sky-100">
+              <strong>Tirzepatide (SURMOUNT-1):</strong> average loss of about 21% at 72 weeks at the highest dose.
+            </li>
+            <li className="p-2.5 rounded-[16px] bg-indigo-50 text-indigo-900 border border-indigo-100">
+              <strong>Semaglutide (STEP 1):</strong> average loss of about 15% at 68 weeks at 2.4 mg.
+            </li>
+          </ul>
+          <p className="text-[11px] text-[#98A2B3]">Approximate; verify against the published trial reports.</p>
+          <button type="button" onClick={() => setShowInfoModal(false)} className="w-full py-2.5 rounded-[16px] bg-[#582967] text-white font-semibold text-xs hover:bg-[#4a2257] transition-all">Close</button>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }

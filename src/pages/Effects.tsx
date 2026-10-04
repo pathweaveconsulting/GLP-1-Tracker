@@ -43,6 +43,7 @@ export function Effects() {
           {/* View Tab Selector */}
           <div className="flex bg-[#F8F9FC] p-1 rounded-[14px] border border-[#E5E7EB] shadow-xs">
             <button
+              aria-pressed={activeTab === 'analytics'}
               onClick={() => setActiveTab('analytics')}
               className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-[10px] transition-all ${
                 activeTab === 'analytics'
@@ -54,6 +55,7 @@ export function Effects() {
               <span>Analytics Dashboard</span>
             </button>
             <button
+              aria-pressed={activeTab === 'log'}
               onClick={() => setActiveTab('log')}
               className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-[10px] transition-all ${
                 activeTab === 'log'

@@ -25,6 +25,26 @@ function getDoseBadgeColor(amountMg: number): { bg: string; text: string; dotCol
   return { bg: '#db2777', text: '#ffffff', dotColor: '#db2777' };
 }
 
+interface ChartPoint {
+  id: string;
+  rawDate: string;
+  dateStr: string;
+  weightLbs: number;
+  weight: number;
+  unitLabel: string;
+  hasDose: boolean;
+  doseAmountMg: number | null;
+  medication: string | null;
+  site: string | null;
+}
+
+interface DotProps {
+  cx?: number;
+  cy?: number;
+  index?: number;
+  payload: ChartPoint;
+}
+
 export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
   const { weights, doses, settings } = useStore();
   const unit = getWeightUnit(settings);
@@ -103,9 +123,9 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
   }, [chartData]);
 
   // Custom Dot renderer for rendering dose pill badges directly on the line
-  const renderCustomDot = (props: any) => {
+  const renderCustomDot = (props: DotProps) => {
     const { cx, cy, payload } = props;
-    if (!showShots || !payload.hasDose || !cx || !cy) {
+    if (!showShots || !payload.hasDose || payload.doseAmountMg == null || !cx || !cy) {
       return <circle key={`dot-blank-${props.index}`} cx={cx} cy={cy} r={0} />;
     }
 
@@ -198,13 +218,16 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
             {showShots ? 'Hide shots' : 'Show shots'}
           </button>
 
-          <button
-            onClick={onOpenInfo}
-            aria-label="Weight and shot correlation details"
-            className="text-[#98A2B3] hover:text-[#6D4AFF] transition-colors p-1.5 rounded-full hover:bg-[#F1F5F9] cursor-pointer"
-          >
-            <Info className="w-4 h-4" aria-hidden="true" />
-          </button>
+          {onOpenInfo && (
+            <button
+              type="button"
+              onClick={onOpenInfo}
+              aria-label="Weight and shot correlation details"
+              className="text-[#98A2B3] hover:text-[#6D4AFF] transition-colors p-1.5 rounded-full hover:bg-[#F1F5F9] cursor-pointer"
+            >
+              <Info className="w-4 h-4" aria-hidden="true" />
+            </button>
+          )}
         </div>
       </div>
 
@@ -238,8 +261,8 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
                 boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
                 padding: '12px 16px'
               }}
-              formatter={(val: any, name: any, item: any) => {
-                const p = item.payload;
+              formatter={(val, _name, item) => {
+                const p = item.payload as ChartPoint;
                 const weightStr = `${val} ${p.unitLabel}`;
                 if (p.hasDose) {
                   return [

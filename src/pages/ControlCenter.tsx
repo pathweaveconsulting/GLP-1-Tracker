@@ -356,6 +356,7 @@ export function ControlCenter() {
               {(['Weekly', 'Monthly', '3 Months', 'All Time'] as const).map((t) => (
                 <button
                   key={t}
+                  aria-pressed={weightTimeline === t}
                   onClick={() => setWeightTimeline(t)}
                   className={`px-3 py-1.5 rounded-[10px] transition-all ${
                     weightTimeline === t ? 'bg-white text-[#111827] shadow-xs font-semibold' : 'text-[#667085] hover:text-[#111827]'

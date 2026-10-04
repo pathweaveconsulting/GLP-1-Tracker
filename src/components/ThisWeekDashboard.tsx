@@ -41,7 +41,7 @@ export function ThisWeekDashboard({ className = '' }: Props) {
   const dateRange = `${format(startOfWeek(now, { weekStartsOn: 0 }), 'MMM d')} – ${format(endOfWeek(now, { weekStartsOn: 0 }), 'MMM d, yyyy')}`;
 
   const latest = latestEffectWithin(effects, now, 3);
-  const summary = useMemo(() => recentSymptomSummary(effects, now, 7), [effects]); // eslint-disable-line react-hooks/exhaustive-deps
+  const summary = useMemo(() => recentSymptomSummary(effects, now, 7), [effects]);
 
   const checkIn = latest
     ? [

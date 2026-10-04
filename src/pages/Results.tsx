@@ -56,6 +56,7 @@ export function Results() {
         {/* 3-Tab Selector */}
         <div className="flex bg-[#F8F9FC] p-1 rounded-[14px] border border-[#E5E7EB] shadow-xs overflow-x-auto">
           <button
+            aria-pressed={activeTab === 'journey'}
             onClick={() => handleTabChange('journey')}
             className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-[10px] transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'journey'
@@ -68,6 +69,7 @@ export function Results() {
           </button>
 
           <button
+            aria-pressed={activeTab === 'sideEffects'}
             onClick={() => handleTabChange('sideEffects')}
             className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-[10px] transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'sideEffects'
@@ -80,6 +82,7 @@ export function Results() {
           </button>
 
           <button
+            aria-pressed={activeTab === 'progress'}
             onClick={() => handleTabChange('progress')}
             className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-[10px] transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'progress'
@@ -108,6 +111,7 @@ export function Results() {
               {['2w', '1m', '3m', '90d', 'All'].map(filter => (
                 <button
                   key={filter}
+                  aria-pressed={timeFilter === filter}
                   onClick={() => setTimeFilter(filter)}
                   className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
                     timeFilter === filter ? 'bg-white shadow-xs text-[#111827] font-semibold' : 'hover:text-[#111827]'

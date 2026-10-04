@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useId, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
+import { useDialog } from '../../hooks/useDialog';
 import { X, Home, Syringe, Scale, ClipboardList, Activity, Lightbulb, CircleDashed, HeartPulse, Database, Calendar, FileText, Settings, Sparkles, Compass } from 'lucide-react';
 
 interface Props {
@@ -48,31 +49,36 @@ const navSections = [
 ];
 
 export function MobileMenuDrawer({ isOpen, onClose }: Props) {
+  const titleId = useId();
+  const panelRef = useRef<HTMLDivElement>(null);
+  useDialog(isOpen, onClose, panelRef);
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex animate-in fade-in duration-200">
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose}></div>
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} aria-hidden="true"></div>
 
       {/* Drawer */}
-      <div className="relative w-4/5 max-w-xs bg-white h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-left duration-200">
+      <div ref={panelRef} role="dialog" aria-modal="true" aria-labelledby={titleId} className="relative w-4/5 max-w-xs bg-white h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-left duration-200">
         <div className="p-6 border-b border-[#E5E7EB] flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-[#6D4AFF] text-white flex items-center justify-center rounded-[16px] font-semibold text-sm">
               GLP
             </div>
-            <span className="font-semibold text-[#111827] tracking-tight">GLP-1 Companion</span>
+            <h2 id={titleId} className="font-semibold text-[#111827] tracking-tight">GLP-1 Companion menu</h2>
           </div>
           <button 
+            type="button"
             onClick={onClose}
+            aria-label="Close menu"
             className="w-8 h-8 rounded-full bg-[#F1F5F9] flex items-center justify-center text-[#667085] hover:bg-[#E5E7EB]"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4" aria-hidden="true" />
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-4 space-y-4">
+        <nav aria-label="Main menu" className="flex-1 overflow-y-auto p-4 space-y-4">
           {navSections.map((section, idx) => (
             <div key={idx} className="space-y-1">
               <span className="px-3.5 text-[10px] font-semibold text-[#98A2B3] tracking-wider block mb-1">
