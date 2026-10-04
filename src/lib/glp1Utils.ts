@@ -1,4 +1,5 @@
 import { DoseEvent, Medication } from '../types';
+import { addCalendarDays } from './dates';
 import { medicationInfo, normalizeMedication } from './medications';
 
 export const INJECTION_SITES_ABDOMEN = [
@@ -232,7 +233,7 @@ export function calculateShotPhase(doses: DoseEvent[], nowDate: Date = new Date(
   const now = nowDate;
 
   const diffDays = (now.getTime() - lastDoseTime.getTime()) / DAY_MS;
-  const nextDoseDate = new Date(lastDoseTime.getTime() + 7 * DAY_MS);
+  const nextDoseDate = addCalendarDays(lastDoseTime, 7);
   const daysUntilNext = Math.max(0, Math.ceil((nextDoseDate.getTime() - now.getTime()) / DAY_MS));
   const percentComplete = Math.min(100, Math.max(0, Math.round((diffDays / 7) * 100)));
 

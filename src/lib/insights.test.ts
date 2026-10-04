@@ -54,7 +54,8 @@ describe('projectGoal', () => {
     expect(p.status).toBe('projected');
     if (p.status === 'projected') {
       expect(p.weeks).toBeCloseTo(16, 5); // 16 lb to go at 1 lb/week
-      expect(p.date.getTime() - new Date(at(0)).getTime()).toBeCloseTo(16 * 7 * 86_400_000, -3);
+      // 112 calendar days at the same local time (not 112 x 24 elapsed hours, which drifts across a clock change)
+      expect(p.date.getTime()).toBe(new Date(2026, 5, 15 + 112, 12, 0).getTime());
     }
   });
   it('says reached when already at or below goal', () => {

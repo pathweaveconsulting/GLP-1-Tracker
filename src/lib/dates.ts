@@ -14,6 +14,17 @@ export function toLocalDateString(date: Date): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
+/**
+ * `date` plus `days` calendar days, keeping the local wall-clock time (so a clock change in between
+ * doesn't move it a day). Any fraction of a day is added as elapsed time.
+ */
+export function addCalendarDays(date: Date, days: number): Date {
+  const whole = Math.floor(days);
+  const d = new Date(date.getTime());
+  d.setDate(d.getDate() + whole);
+  return new Date(d.getTime() + (days - whole) * 86_400_000);
+}
+
 export function todayLocalDateString(now: Date = new Date()): string {
   return toLocalDateString(now);
 }

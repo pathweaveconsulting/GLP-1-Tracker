@@ -1,5 +1,5 @@
 import type { DoseEvent, Medication, WeightEntry } from '../types';
-import { localDayDiff } from './dates';
+import { addCalendarDays, localDayDiff } from './dates';
 import { dosingIntervalDays } from './medications';
 
 const DAY_MS = 86_400_000;
@@ -98,7 +98,7 @@ export function projectGoal(args: {
   const weeks = Math.abs(latest.weightLbs - targetLbs) / towardGoal;
   if (weeks > MAX_PROJECTION_WEEKS) return { status: 'unknown', reason: 'At your recent pace the goal is more than 3 years away, too far to estimate' };
 
-  return { status: 'projected', date: new Date(new Date(latest.date).getTime() + weeks * 7 * DAY_MS), weeks, lbsPerWeek: rate.lbsPerWeek };
+  return { status: 'projected', date: addCalendarDays(new Date(latest.date), weeks * 7), weeks, lbsPerWeek: rate.lbsPerWeek };
 }
 
 export interface Milestone {
@@ -249,7 +249,7 @@ export function nextDoseInfo(doses: DoseEvent[], now: Date = new Date()): NextDo
   if (!lastDose) return { lastDose: null, medication: null, dueDate: null, daysUntil: null };
   const interval = dosingIntervalDays(lastDose.medication);
   if (interval == null) return { lastDose, medication: lastDose.medication, dueDate: null, daysUntil: null };
-  const dueDate = new Date(new Date(lastDose.date).getTime() + interval * DAY_MS);
+  const dueDate = addCalendarDays(new Date(lastDose.date), interval);
   return { lastDose, medication: lastDose.medication, dueDate, daysUntil: localDayDiff(now, dueDate) };
 }
 
