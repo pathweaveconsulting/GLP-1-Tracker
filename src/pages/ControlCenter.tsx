@@ -17,6 +17,7 @@ import { LogEffectsModal } from '../components/modals/LogEffectsModal';
 import { NotificationsModal } from '../components/modals/NotificationsModal';
 import { MobileMenuDrawer } from '../components/modals/MobileMenuDrawer';
 import { OtherMedicationNote } from '../components/OtherMedicationNote';
+import { NO_ESTIMATE_TEXT, medicationInfo } from '../lib/medications';
 import { PkInfoModal } from '../components/PkInfoModal';
 import { MedicationLevelChart } from '../components/MedicationLevelChart';
 import { generatePKCurve, calculateShotPhase } from '../lib/glp1Utils';
@@ -191,9 +192,11 @@ export function ControlCenter() {
                 Phase
               </span>
               <span className="text-xs font-medium text-purple-200">
-                {shotPhaseInfo.lastDose
-                  ? `Day ${Math.min(7, Math.floor(Math.max(0, (new Date().getTime() - new Date(shotPhaseInfo.lastDose.date).getTime()) / (1000 * 3600 * 24))) + 1)} of 7 • ${shotPhaseInfo.title}`
-                  : 'No Dose Logged'}
+                {!shotPhaseInfo.lastDose
+                  ? 'No Dose Logged'
+                  : !medicationInfo(shotPhaseInfo.lastDose.medication).modelled
+                    ? NO_ESTIMATE_TEXT // no weekly cycle to place the user in, so no day count or phase
+                    : `Day ${Math.min(7, Math.floor(Math.max(0, (new Date().getTime() - new Date(shotPhaseInfo.lastDose.date).getTime()) / (1000 * 3600 * 24))) + 1)} of 7 • ${shotPhaseInfo.title}`}
               </span>
             </div>
             <h2 className="text-2xl font-semibold tracking-tight text-white group-hover:text-purple-100 transition-colors">
