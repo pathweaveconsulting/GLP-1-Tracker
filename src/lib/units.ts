@@ -76,7 +76,7 @@ export const BMI_FOOTNOTE = 'BMI is a screening measure, not a diagnosis, and is
  */
 export function bmiCategory(value: number | null): string | null {
   if (value == null) return null;
-  if (value < 18.5) return 'Below healthy range';
+  if (value < 18.5) return 'Below 18.5';
   if (value < 25) return '18.5 to 24.9';
   if (value < 30) return 'Overweight range';
   return 'Obesity range';
