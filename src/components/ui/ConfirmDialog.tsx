@@ -1,5 +1,6 @@
 import React, { useId, useRef } from 'react';
 import { useDialog } from '../../hooks/useDialog';
+import { useBackdropClose } from '../../hooks/useBackdropClose';
 
 interface Props {
   open: boolean;
@@ -20,11 +21,12 @@ export function ConfirmDialog({ open, title, description, confirmLabel, cancelLa
   const panelRef = useRef<HTMLDivElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
   useDialog(open, onCancel, panelRef, cancelRef);
+  const backdrop = useBackdropClose(onCancel);
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={onCancel}>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" {...backdrop}>
       <div
         ref={panelRef}
         role="alertdialog"
