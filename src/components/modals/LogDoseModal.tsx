@@ -60,7 +60,7 @@ function DoseForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
   const [dateStr, setDateStr] = useState<string>(today);
   const [timeStr, setTimeStr] = useState<string>(nowLocalTimeString());
   const [site, setSite] = useState<string>(recommendedNextSite);
-  const [painLevel, setPainLevel] = useState<number>(0);
+  const [painLevel, setPainLevel] = useState<number | null>(null); // null = not recorded
   const [notes, setNotes] = useState<string>('');
   const [confirmed, setConfirmed] = useState(false);
   const [customOpen, setCustomOpen] = useState(false);
@@ -194,11 +194,17 @@ function DoseForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
       </div>
 
       <div>
-        <label htmlFor={`${uid}-pain`} className={label}>Injection-site discomfort (0 – 10)</label>
-        <div className="flex items-center gap-3">
-          <input id={`${uid}-pain`} type="range" min="0" max="10" value={painLevel} onChange={(e) => setPainLevel(parseInt(e.target.value, 10))} className="w-full accent-purple-600" />
-          <span className="text-sm font-semibold text-[#6D4AFF] w-6 text-center" aria-hidden="true">{painLevel}</span>
-        </div>
+        <label htmlFor={`${uid}-pain`} className={label}>Injection-site discomfort (optional)</label>
+        <select
+          id={`${uid}-pain`}
+          value={painLevel == null ? '' : String(painLevel)}
+          onChange={(e) => setPainLevel(e.target.value === '' ? null : parseInt(e.target.value, 10))}
+          className={field}
+        >
+          <option value="">Not recorded</option>
+          <option value="0">0 – none</option>
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => <option key={n} value={n}>{n}{n === 10 ? ' – worst' : ''}</option>)}
+        </select>
       </div>
 
       <div>

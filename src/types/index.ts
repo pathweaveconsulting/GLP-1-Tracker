@@ -6,7 +6,8 @@ export interface DoseEvent {
   amountMg: number;
   date: string; // ISO format
   site: string; // e.g., 'Left Thigh', 'Right Stomach'
-  painLevel: number; // 0-10
+  /** Injection-site discomfort 0-10, or null when the user did not record it (never defaulted to 0). */
+  painLevel: number | null;
   notes: string;
 }
 

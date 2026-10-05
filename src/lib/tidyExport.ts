@@ -18,7 +18,7 @@ export function buildTidyRows(args: { doses: DoseEvent[]; weights: WeightEntry[]
   for (const d of doses) {
     out.push({
       t: ms(d.date),
-      row: ['Dose', isoToLocalDateString(d.date), d.medication, d.amountMg, 'mg', `Site: ${d.site}; Time: ${isoToLocalTimeString(d.date)}; Discomfort: ${d.painLevel}/10`, d.notes ?? ''],
+      row: ['Dose', isoToLocalDateString(d.date), d.medication, d.amountMg, 'mg', `Site: ${d.site}; Time: ${isoToLocalTimeString(d.date)}; Discomfort: ${d.painLevel == null ? 'not recorded' : `${d.painLevel}/10`}`, d.notes ?? ''],
     });
   }
   for (const e of effects) {

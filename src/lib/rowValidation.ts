@@ -18,8 +18,9 @@ export function checkDose(r: unknown): RowResult<DoseEvent> {
   if (!idOk(r.id)) reasons.push('missing id.');
   if (!isIso(r.date)) reasons.push('“date” isn’t a valid date.');
   if (typeof r.amountMg !== 'number' || !Number.isFinite(r.amountMg) || r.amountMg <= 0 || r.amountMg > 1000) reasons.push('“amountMg” must be a positive number.');
-  const pain = r.painLevel == null ? 0 : r.painLevel;
-  if (typeof pain !== 'number' || !Number.isFinite(pain) || pain < 0 || pain > 10) reasons.push('“painLevel” must be 0 to 10.');
+  // Optional: a missing or null pain level means "not recorded" and stays null (it is never turned into 0).
+  const pain = r.painLevel == null ? null : r.painLevel;
+  if (pain !== null && (typeof pain !== 'number' || !Number.isFinite(pain) || pain < 0 || pain > 10)) reasons.push('“painLevel” must be 0 to 10 when present.');
   if (reasons.length) return { ok: false, reasons };
   return {
     ok: true,
@@ -29,7 +30,7 @@ export function checkDose(r: unknown): RowResult<DoseEvent> {
       amountMg: r.amountMg as number,
       date: r.date as string,
       site: typeof r.site === 'string' ? r.site : '',
-      painLevel: pain as number,
+      painLevel: pain as number | null,
       notes: typeof r.notes === 'string' ? r.notes : '',
     },
   };
