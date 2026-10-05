@@ -37,7 +37,7 @@ describe('F11: text colour contrast (WCAG AA 4.5:1)', () => {
 });
 
 
-type NonText = { file: string; line: number; kind: string; cls: string; ratio: number; unresolved?: boolean };
+type NonText = { file: string; line: number; kind: string; cls: string; ratio: number; pass: boolean; unresolved?: boolean };
 
 describe('R6/R7: chart colours, focus rings, placeholders and text on tinted parents', () => {
   const real = audit() as unknown as { nonText: NonText[]; nonTextFailures: NonText[]; placeholder: { hasGlobalRule: boolean; failures: unknown[]; checked: unknown[] } };
@@ -46,6 +46,7 @@ describe('R6/R7: chart colours, focus rings, placeholders and text on tinted par
     expect(real.nonText.length).toBeGreaterThan(50); // the scan really found the charts and rings
     expect(real.nonText.some((u) => u.kind === 'ring')).toBe(true);
     expect(real.nonText.some((u) => u.kind === 'chart')).toBe(true);
+    expect(real.nonText.filter((u) => u.kind === 'heatmap').length).toBeGreaterThanOrEqual(8); // the heatmap fills are covered
     expect(real.nonTextFailures.map((f) => `${f.file}:${f.line} ${f.kind} ${f.cls} ${f.unresolved ? 'UNRESOLVED' : f.ratio.toFixed(2)}`)).toEqual([]);
   });
 
@@ -123,6 +124,23 @@ describe('R6/R7: chart colours, focus rings, placeholders and text on tinted par
         ['focus:ring-purple-700/20', false],
         ['focus-visible:ring-purple-700', true],
         ['focus:ring-nope-500', 'unresolved'],
+      ]);
+    });
+
+    it('heatmap cell fills must reach 3:1 against the card and carry white marks at 4.5:1; the empty cell is the only pale fill', () => {
+      const tokens = write('Heatmap.tsx', [
+        'export const a = (n: number) => (n ? "bg-emerald-200" : "bg-[#F1F5F9]");',
+        'export const b = () => <span className="w-4 h-4 bg-emerald-800">1</span>;',
+        'export const c = () => <div className="bg-white bg-[#F8F9FC]/60 bg-slate-500" />;',
+      ].join('\n'));
+      const r = (collectNonText(src, tokens) as NonText[]).map((u) => [u.kind, u.cls, u.pass]);
+      expect(r).toEqual([
+        ['heatmap', 'bg-emerald-200', false],
+        ['heatmap-mark', 'white on bg-emerald-200', false],
+        ['heatmap', 'bg-emerald-800', true],
+        ['heatmap-mark', 'white on bg-emerald-800', true],
+        ['heatmap', 'bg-slate-500', true],
+        ['heatmap-mark', 'white on bg-slate-500', true],
       ]);
     });
 

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useId, useMemo } from 'react';
 import { 
   format, subDays, startOfWeek, addDays 
 } from 'date-fns';
@@ -54,7 +54,8 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
             weightChangeMap[dStr] = { diffLbs: 0, type: 'neutral' };
           }
         } else {
-          weightChangeMap[dStr] = { diffLbs: 0, type: 'neutral' };
+          // Nothing earlier to compare with: not "no change".
+          weightChangeMap[dStr] = { diffLbs: 0, type: 'none' };
         }
         lastWeight = currentWeight;
       } else {
@@ -71,7 +72,7 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
     });
     doses.forEach(d => {
       const dStr = format(new Date(d.date), 'yyyy-MM-dd');
-      activityMap[dStr] = (activityMap[dStr] || 0) + 2; // Injections weigh heavily in activity
+      activityMap[dStr] = (activityMap[dStr] || 0) + 1; // every recorded entry counts once
     });
     effects.forEach(e => {
       const dStr = format(new Date(e.date), 'yyyy-MM-dd');
@@ -131,32 +132,65 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
     return weeks;
   }, [weights, doses, effects]);
 
-  // Color mapper for Weight Change Heatmap
-  // User instruction: "weight change vs previous day, if is below its green if its above make it red and not orange as shown in the image"
+  // Fills are dark enough to meet 3:1 against the card and to carry white marks at 4.5:1 (scripts/contrast.mjs checks
+  // every bg-* class in this file). The empty "no data" cell is the only pale fill and carries no meaning.
   const getWeightChangeColor = (type?: string, hasLog?: boolean) => {
     switch (type) {
       case 'loss-high':
-        return 'bg-[#15803d]'; // Dark green
+        return 'bg-emerald-900'; // lower by more than 0.6 lb than the previous recorded weigh-in
       case 'loss-low':
-        return 'bg-emerald-400'; // Light green
+        return 'bg-emerald-700'; // lower, by a smaller amount
       case 'gain':
-        return 'bg-red-500'; // RED (as specifically requested)
+        return 'bg-red-700'; // higher
       case 'neutral':
-        return 'bg-slate-300'; // Neutral grey
+        return 'bg-slate-500'; // unchanged
       case 'none':
       default:
-        return hasLog ? 'bg-slate-300' : 'bg-[#F1F5F9]';
+        return hasLog ? 'bg-slate-500' : 'bg-[#F1F5F9]'; // first weigh-in in view / nothing logged
     }
   };
 
-  // Color mapper for Logging Activity Heatmap
   const getActivityColor = (count: number) => {
     if (count === 0) return 'bg-[#F1F5F9]';
-    if (count === 1) return 'bg-emerald-200';
-    if (count === 2) return 'bg-emerald-400';
-    if (count === 3) return 'bg-[#15803d]';
-    return 'bg-emerald-800';
+    if (count === 1) return 'bg-emerald-700';
+    if (count === 2) return 'bg-emerald-800';
+    if (count === 3) return 'bg-emerald-900';
+    return 'bg-emerald-950';
   };
+
+  /** The visible mark inside a weight cell, so direction does not depend on colour. */
+  const weightMark = (type?: string, hasLog?: boolean) =>
+    type === 'gain' ? '▲' : type?.startsWith('loss') ? '▼' : type === 'neutral' ? '=' : hasLog ? '•' : '';
+
+  const entriesText = (n: number) => `${n} ${n === 1 ? 'entry' : 'entries'}`;
+  const weightText = (day: { date: Date; hasWeightLog: boolean; weightChange?: { diffLbs: number; type: string } }) => {
+    const t = day.weightChange?.type;
+    if (t === 'gain') return `${formatWeightChange(day.weightChange!.diffLbs, unit)} (higher than the previous recorded weigh-in)`;
+    if (t?.startsWith('loss')) return `${formatWeightChange(day.weightChange!.diffLbs, unit)} (lower than the previous recorded weigh-in)`;
+    if (t === 'neutral') return 'No change from the previous recorded weigh-in';
+    return day.hasWeightLog ? 'First weigh-in in this view (no earlier one to compare with)' : 'No weight log';
+  };
+
+  // Plain-language versions of both grids, for anyone who can't (or doesn't want to) read colours.
+  const allDays = calendarData.flatMap((w) => w.days);
+  const weighDays = allDays.filter((d) => d.hasWeightLog);
+  const lowerCount = weighDays.filter((d) => d.weightChange?.type.startsWith('loss')).length;
+  const higherCount = weighDays.filter((d) => d.weightChange?.type === 'gain').length;
+  const loggedDays = allDays.filter((d) => d.activityCount > 0);
+  const totalEntries = allDays.reduce((n, d) => n + d.activityCount, 0);
+  const weightSummary = weighDays.length === 0
+    ? 'No weigh-ins were recorded in the last 16 weeks.'
+    : `You recorded ${weighDays.length} ${weighDays.length === 1 ? 'weigh-in' : 'weigh-ins'} in the last 16 weeks; ${lowerCount} lower and ${higherCount} higher than the previous recorded weigh-in.`;
+  const activitySummary = totalEntries === 0
+    ? 'Nothing was recorded in the last 16 weeks.'
+    : `${loggedDays.length} of the last 16 weeks' days have at least one entry, ${entriesText(totalEntries)} in all (weight, dose and symptom logs).`;
+
+  const weightHeadId = useId();
+  const weightSumId = useId();
+  const actHeadId = useId();
+  const actSumId = useId();
+  const cellBase = 'w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold leading-none text-white transition-all hover:ring-2 hover:ring-purple-400 hover:scale-105';
+  const swatch = 'w-4 h-4 rounded-sm inline-flex items-center justify-center text-[9px] font-bold leading-none text-white';
 
   const dayLabels = ['', 'Mon', '', 'Wed', '', 'Fri', ''];
 
@@ -165,11 +199,12 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
       {/* 1. WEIGHT CHANGE HEATMAP */}
       <div className="bg-white rounded-[24px] p-6 shadow-xs border border-[#E5E7EB]">
         <div className="mb-4">
-          <h2 className="text-xl font-semibold text-[#111827] tracking-tight">Weight change</h2>
-          <p className="text-xs font-semibold text-muted mt-0.5">Each day vs. previous day</p>
+          <h2 id={weightHeadId} className="text-xl font-semibold text-[#111827] tracking-tight">Weight change</h2>
+          <p className="text-xs font-semibold text-muted mt-0.5">Each weigh-in vs. the previous recorded weigh-in</p>
+          <p id={weightSumId} className="text-xs text-muted mt-1">{weightSummary}</p>
         </div>
 
-        <div className="bg-[#F8F9FC]/60 rounded-[16px] p-6 border border-[#E5E7EB]/70 overflow-x-auto">
+        <div role="group" aria-labelledby={weightHeadId} aria-describedby={weightSumId} className="bg-[#F8F9FC]/60 rounded-[16px] p-6 border border-[#E5E7EB]/70 overflow-x-auto">
           {/* Calendar Grid Container */}
           <div className="min-w-[650px]">
             {/* Top Month Header Row */}
@@ -198,18 +233,17 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
                   <div key={`w-col-${wIdx}`} className="flex flex-col gap-1.5">
                     {week.days.map((day) => {
                       const colorClass = getWeightChangeColor(day.weightChange?.type, day.hasWeightLog);
-                      const tooltipText = `${format(day.date, 'MMM d, yyyy')}: ${
-                        day.weightChange?.type === 'gain' ? `${formatWeightChange(day.weightChange.diffLbs, unit)} (higher than last weigh-in)`
-                        : day.weightChange?.type?.startsWith('loss') ? `${formatWeightChange(day.weightChange.diffLbs, unit)} (lower than last weigh-in)`
-                        : day.hasWeightLog ? 'No net change' : 'No weight log'
-                      }`;
+                      const tooltipText = `${format(day.date, 'MMM d, yyyy')}: ${weightText(day)}`;
 
                       return (
                         <div
                           key={day.dateStr}
+                          aria-hidden="true"
                           title={tooltipText}
-                          className={`w-6 h-6 rounded-md transition-all cursor-pointer ${colorClass} hover:ring-2 hover:ring-purple-400 hover:scale-105`}
-                        />
+                          className={`${cellBase} ${colorClass}`}
+                        >
+                          {weightMark(day.weightChange?.type, day.hasWeightLog)}
+                        </div>
                       );
                     })}
                   </div>
@@ -219,27 +253,41 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
 
             {/* Legend Footer (Loss green squares -> neutral grey -> Gain RED square) */}
             <div className="mt-6 flex items-center gap-3 text-xs font-semibold text-muted select-none">
-              <span>Loss</span>
+              <span>Lower</span>
               <div className="flex items-center gap-1.5">
-                <span className="w-4 h-4 rounded-sm bg-[#15803d] inline-block" title="Significant Loss" />
-                <span className="w-4 h-4 rounded-sm bg-emerald-400 inline-block" title="Moderate Loss" />
-                <span className="w-4 h-4 rounded-sm bg-slate-300 inline-block" title="No Change / Logged" />
-                <span className="w-4 h-4 rounded-sm bg-red-500 inline-block" title="Weight Gain (Red)" />
+                <span aria-hidden="true" className={`${swatch} bg-emerald-900`} title="Lower by more than 0.6 lb">▼</span>
+                <span aria-hidden="true" className={`${swatch} bg-emerald-700`} title="Lower">▼</span>
+                <span aria-hidden="true" className={`${swatch} bg-slate-500`} title="Unchanged (=) or first weigh-in in view (•)">=</span>
+                <span aria-hidden="true" className={`${swatch} bg-red-700`} title="Higher">▲</span>
               </div>
-              <span>Gain</span>
+              <span>Higher</span>
             </div>
           </div>
         </div>
+
+        <details className="mt-4 text-xs text-muted">
+          <summary className="cursor-pointer font-semibold text-[#344054]">Show weight change as a table</summary>
+          <table className="mt-2 w-full text-left">
+            <caption className="sr-only">Weight change per recorded weigh-in</caption>
+            <thead><tr><th scope="col" className="py-1 pr-4">Date</th><th scope="col" className="py-1">Change</th></tr></thead>
+            <tbody>
+              {weighDays.map((d) => (
+                <tr key={d.dateStr}><td className="py-0.5 pr-4">{format(d.date, 'MMM d, yyyy')}</td><td>{weightText(d)}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </details>
       </div>
 
       {/* 2. LOGGING ACTIVITY HEATMAP */}
       <div className="bg-white rounded-[24px] p-6 shadow-xs border border-[#E5E7EB]">
         <div className="mb-4">
-          <h2 className="text-xl font-semibold text-[#111827] tracking-tight">Logging activity</h2>
-          <p className="text-xs font-semibold text-muted mt-0.5">Each cell is one day. Stronger color means more was logged.</p>
+          <h2 id={actHeadId} className="text-xl font-semibold text-[#111827] tracking-tight">Logging activity</h2>
+          <p className="text-xs font-semibold text-muted mt-0.5">Each cell is one day. The number is how many entries were recorded that day.</p>
+          <p id={actSumId} className="text-xs text-muted mt-1">{activitySummary}</p>
         </div>
 
-        <div className="bg-[#F8F9FC]/60 rounded-[16px] p-6 border border-[#E5E7EB]/70 overflow-x-auto">
+        <div role="group" aria-labelledby={actHeadId} aria-describedby={actSumId} className="bg-[#F8F9FC]/60 rounded-[16px] p-6 border border-[#E5E7EB]/70 overflow-x-auto">
           {/* Calendar Grid Container */}
           <div className="min-w-[650px]">
             {/* Top Month Header Row */}
@@ -268,14 +316,17 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
                   <div key={`w-act-col-${wIdx}`} className="flex flex-col gap-1.5">
                     {week.days.map((day) => {
                       const colorClass = getActivityColor(day.activityCount);
-                      const tooltipText = `${format(day.date, 'MMM d, yyyy')}: ${day.activityCount} log entry/entries recorded`;
+                      const tooltipText = `${format(day.date, 'MMM d, yyyy')}: ${entriesText(day.activityCount)} (weight, dose and symptom logs)`;
 
                       return (
                         <div
                           key={`act-${day.dateStr}`}
+                          aria-hidden="true"
                           title={tooltipText}
-                          className={`w-6 h-6 rounded-md transition-all cursor-pointer ${colorClass} hover:ring-2 hover:ring-purple-400 hover:scale-105`}
-                        />
+                          className={`${cellBase} ${colorClass}`}
+                        >
+                          {day.activityCount > 0 ? (day.activityCount > 3 ? '4+' : day.activityCount) : ''}
+                        </div>
                       );
                     })}
                   </div>
@@ -287,16 +338,29 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
             <div className="mt-6 flex items-center gap-3 text-xs font-semibold text-muted select-none">
               <span>Less</span>
               <div className="flex items-center gap-1.5">
-                <span className="w-4 h-4 rounded-sm bg-[#F1F5F9] border border-[#E5E7EB] inline-block" title="0 logs" />
-                <span className="w-4 h-4 rounded-sm bg-emerald-200 inline-block" title="1 log" />
-                <span className="w-4 h-4 rounded-sm bg-emerald-400 inline-block" title="2 logs" />
-                <span className="w-4 h-4 rounded-sm bg-[#15803d] inline-block" title="3 logs" />
-                <span className="w-4 h-4 rounded-sm bg-emerald-800 inline-block" title="4+ logs" />
+                <span aria-hidden="true" className="w-4 h-4 rounded-sm bg-[#F1F5F9] border border-[#E5E7EB] inline-block" title="0 entries" />
+                <span aria-hidden="true" className={`${swatch} bg-emerald-700`} title="1 entry">1</span>
+                <span aria-hidden="true" className={`${swatch} bg-emerald-800`} title="2 entries">2</span>
+                <span aria-hidden="true" className={`${swatch} bg-emerald-900`} title="3 entries">3</span>
+                <span aria-hidden="true" className={`${swatch} bg-emerald-950`} title="4 or more entries">4+</span>
               </div>
               <span>More</span>
             </div>
           </div>
         </div>
+
+        <details className="mt-4 text-xs text-muted">
+          <summary className="cursor-pointer font-semibold text-[#344054]">Show logging activity as a table</summary>
+          <table className="mt-2 w-full text-left">
+            <caption className="sr-only">Logging activity per day</caption>
+            <thead><tr><th scope="col" className="py-1 pr-4">Date</th><th scope="col" className="py-1">Entries</th></tr></thead>
+            <tbody>
+              {loggedDays.map((d) => (
+                <tr key={d.dateStr}><td className="py-0.5 pr-4">{format(d.date, 'MMM d, yyyy')}</td><td>{entriesText(d.activityCount)}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </details>
       </div>
     </div>
   );

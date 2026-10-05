@@ -168,6 +168,9 @@ export function blend(fg, bg, alpha) {
   return '#' + [0, 1, 2].map((i) => Math.round(ch(fg, i) * alpha + ch(bg, i) * (1 - alpha)).toString(16).padStart(2, '0')).join('');
 }
 
+/** Fills a heatmap may use without a contrast check: the card surfaces and the empty "no data" cell. */
+const HEATMAP_EXEMPT_FILLS = new Set(['white', '[#F8F9FC]', '[#f8f9fc]', '[#F1F5F9]', '[#f1f5f9]']);
+
 const FOCUS_RING = /^(?:focus|focus-visible|focus-within):ring-(?!offset|inset|0$|1$|2$|4$|8$)(.+)$/;
 
 /**
@@ -195,6 +198,21 @@ export function collectNonText(srcDir, tokens) {
       }
     });
     if (!file.endsWith('.tsx')) continue;
+    // Heatmap cells carry meaning by fill, so every bg-* class in a heatmap component must reach 3:1 against the card and
+    // carry white marks (counts, arrows) at 4.5:1. The surfaces themselves and the empty "no data" cell are exempt.
+    if (/Heatmap/i.test(path.basename(file))) {
+      for (const lit of literalsIn(src)) {
+        for (const c of lit.text.split(/\s+/)) {
+          const m = /^bg-(.+)$/.exec(c);
+          if (!m || /\//.test(m[1]) || HEATMAP_EXEMPT_FILLS.has(m[1])) continue;
+          const hex = resolve(m[1], tokens);
+          const base = { file, line: lineOf(src, lit.index), bg: LIGHT_SURFACES };
+          if (!hex) { results.push({ ...base, kind: 'heatmap', cls: c, fg: null, need: AA_NON_TEXT }); continue; }
+          results.push({ ...base, kind: 'heatmap', cls: c, fg: hex, need: AA_NON_TEXT });
+          results.push({ ...base, kind: 'heatmap-mark', cls: `white on ${c}`, fg: hex, onFill: true, need: AA_NORMAL });
+        }
+      }
+    }
     for (const lit of literalsIn(src)) {
       for (const c of lit.text.split(/\s+/)) {
         const r = FOCUS_RING.exec(c);
@@ -209,6 +227,7 @@ export function collectNonText(srcDir, tokens) {
   }
   return results.map((u) => {
     if (!u.fg) return { ...u, ratio: 0, pass: false, unresolved: true };
+    if (u.onFill) { const ratio = contrast('#ffffff', u.fg); return { ...u, ratio, pass: ratio >= u.need }; }
     const worst = Math.min(...u.bg.map((b) => contrast(u.alpha != null && u.alpha < 1 ? blend(u.fg, b, u.alpha) : u.fg, b)));
     return { ...u, ratio: worst, pass: worst >= u.need };
   });
