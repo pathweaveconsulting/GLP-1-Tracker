@@ -67,6 +67,8 @@ export interface AppState extends PersistedData {
   skippedEntries: number;
   /** False when the copy of unreadable data could not be stored (storage full), so the notice must not claim one. Not persisted. */
   rescueKept: boolean;
+  /** True when the whole stored blob could not be read (truncated or not JSON), so the app started empty. Not persisted. */
+  unreadable: boolean;
   dismissSkippedNotice: () => void;
   /** True while the browser refuses to save (storage full or blocked); data then lives in memory only. Not persisted. */
   storageError: boolean;

@@ -4,7 +4,7 @@ import { isObj } from '../lib/rowValidation';
 import { sanitizePersistedState } from './sanitize';
 
 /** What the last read of storage found; consumed by the store when it hydrates. */
-export const storageReport = { skipped: 0, rescueKept: true };
+export const storageReport = { skipped: 0, rescueKept: true, unreadable: false };
 
 /** Hooks the store installs so the adapter can report write failures without importing the store. */
 export const storageEvents: { onWriteError?: () => void; onWriteOk?: () => void } = {};
@@ -29,6 +29,7 @@ export function createSafeStorage<S>(): PersistStorage<S> {
     getItem: (name) => {
       storageReport.skipped = 0;
       storageReport.rescueKept = true;
+      storageReport.unreadable = false;
       let raw: string | null = null;
       try {
         raw = localStorage.getItem(name);
@@ -41,10 +42,12 @@ export function createSafeStorage<S>(): PersistStorage<S> {
       try {
         parsed = JSON.parse(raw);
       } catch {
+        storageReport.unreadable = true;
         storageReport.rescueKept = copyToCorrupt(raw);
         return null;
       }
       if (!isObj(parsed) || !isObj(parsed.state)) {
+        storageReport.unreadable = true;
         storageReport.rescueKept = copyToCorrupt(raw);
         return null;
       }

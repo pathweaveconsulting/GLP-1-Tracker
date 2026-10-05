@@ -17,12 +17,13 @@ export const useStore = create<AppState>()(
       ...emptyData(),
       skippedEntries: 0,
       rescueKept: true,
+      unreadable: false,
       storageError: false,
       dismissStorageError: () => {
         storageErrorDismissed = true;
         set({ storageError: false });
       },
-      dismissSkippedNotice: () => set({ skippedEntries: 0 }),
+      dismissSkippedNotice: () => set({ skippedEntries: 0, unreadable: false }),
 
       completeOnboarding: (settings, opts) =>
         set((state) => ({
@@ -36,7 +37,7 @@ export const useStore = create<AppState>()(
         })),
 
       resetAllData: () => {
-        set({ ...emptyData(), skippedEntries: 0 });
+        set({ ...emptyData(), skippedEntries: 0, unreadable: false });
         useStore.persist.clearStorage();
         // "Erase" must remove everything the app keeps, including a rescue copy of unreadable data.
         try {
@@ -72,7 +73,7 @@ export const useStore = create<AppState>()(
       name: STORAGE_KEY,
       version: STORE_VERSION,
       storage: createSafeStorage<PersistedData>(),
-      merge: (persisted, current) => ({ ...current, ...(persisted as object), skippedEntries: storageReport.skipped, rescueKept: storageReport.rescueKept }),
+      merge: (persisted, current) => ({ ...current, ...(persisted as object), skippedEntries: storageReport.skipped, rescueKept: storageReport.rescueKept, unreadable: storageReport.unreadable }),
       migrate: (persisted, version) => migrateStore(persisted, version) as unknown as AppState,
       // Persist data only, never the action functions.
       partialize: (state): PersistedData => ({
