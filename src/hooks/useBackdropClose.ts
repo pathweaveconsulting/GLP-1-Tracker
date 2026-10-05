@@ -12,6 +12,11 @@ export function useBackdropClose(onClose: () => void) {
     onMouseDown: (e: React.MouseEvent<HTMLElement>) => {
       pressOnBackdrop.current = e.target === e.currentTarget;
     },
+    // A press that is released inside the panel never produces a backdrop click, so clear the flag here; otherwise it would
+    // stay false and swallow the next backdrop click that has no mousedown (keyboard / assistive technology).
+    onMouseUp: (e: React.MouseEvent<HTMLElement>) => {
+      if (e.target !== e.currentTarget) pressOnBackdrop.current = null;
+    },
     onClick: (e: React.MouseEvent<HTMLElement>) => {
       const closes = e.target === e.currentTarget && pressOnBackdrop.current !== false;
       pressOnBackdrop.current = null;

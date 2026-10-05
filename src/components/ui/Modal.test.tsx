@@ -50,4 +50,22 @@ describe('R5: backdrop click closes only when the press also began on the backdr
     fireEvent.click(screen.getByRole('button', { name: 'Close dialog' }));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
+
+  it('F7: a press that starts and ends inside the panel does not leave a stale flag that blocks a later keyboard/assistive-tech backdrop click', () => {
+    const { onClose, dialog, overlay } = setup();
+    fireEvent.mouseDown(dialog);
+    fireEvent.mouseUp(dialog);
+    fireEvent.click(dialog);
+    expect(onClose).not.toHaveBeenCalled();
+    fireEvent.click(overlay); // no mousedown: counts as a backdrop click
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('F7: a drag that starts in the panel and is released on the backdrop still does not close', () => {
+    const { onClose, dialog, overlay } = setup();
+    fireEvent.mouseDown(dialog);
+    fireEvent.mouseUp(overlay);
+    fireEvent.click(overlay);
+    expect(onClose).not.toHaveBeenCalled();
+  });
 });
