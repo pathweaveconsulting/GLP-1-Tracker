@@ -1,0 +1,14 @@
+# Cloudflare Pages response headers (copied from public/ into dist/ by `npm run build`).
+# Test-site defaults: to go public, delete the X-Robots-Tag line below (see README, "Deploy").
+
+/*
+  X-Robots-Tag: noindex, nofollow
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  X-Frame-Options: DENY
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+# Vite gives every file in /assets a content hash in its name, so these never change under the same URL.
+# index.html is deliberately not cached this way, so a new deploy is picked up on the next load.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable

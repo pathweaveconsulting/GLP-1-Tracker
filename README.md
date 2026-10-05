@@ -74,6 +74,23 @@ Weights can also be imported from a CSV (up to 5 MB / 50,000 rows) (Weight page 
 
 Every new assertion should be mutation-checked at least once (break the code, watch the test fail, restore it).
 
+## Deploy
+
+The app is a static site with no server, database or network calls: `npm run build` writes everything to `dist` and any static host can serve it. Saved data lives in each visitor's own browser (`localStorage`) and is per address, so a new domain starts empty.
+
+Cloudflare Pages (these steps are from Cloudflare's documentation and have not been run for this repo):
+
+1. Workers & Pages → Create → Pages → connect this GitHub repository.
+2. Build command `npm run build`, output directory `dist`, Node 20 or later.
+3. Production branch `main`; other branches get preview URLs. Add the domain under Custom domains.
+
+Notes:
+
+- `public/_headers` is copied into `dist` by the build. It sends `X-Robots-Tag: noindex, nofollow` so a test site stays out of search results, plus a few hardening headers and long caching for the hashed files in `/assets`. **Delete the `X-Robots-Tag` line before the site is meant to be public.**
+- The app uses browser-history routing, so deep links such as `/results` need the host to fall back to `index.html`. Cloudflare Pages does this when the project has no top-level `404.html`; confirm it on the first deploy by opening a deep link and refreshing.
+- No `Content-Security-Policy` is set, because one was never tested against the app (charts and styles may need specific allowances). Add one only after testing it in a real browser.
+- The medication values and safety wording still need clinician review (see the next section) before the site is shared beyond testers.
+
 ## Review medication reference data
 
 `src/lib/medications.ts` holds approximate half-lives, dose steps, maximums and missed-dose notes. They were written conservatively and are marked *approximate; verify against current prescribing information*. **A clinician or pharmacist should review them against current prescribing information before release.** They are used only to draw the simplified level estimate and to warn about unusual amounts; the app never tells anyone what dose to take.
