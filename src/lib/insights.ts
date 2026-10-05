@@ -1,5 +1,5 @@
 import type { DoseEvent, Medication, WeightEntry } from '../types';
-import { addCalendarDays, localDayDiff } from './dates';
+import { addCalendarDays, localDayDiff, toLocalDateString } from './dates';
 import { dosingIntervalDays } from './medications';
 
 const DAY_MS = 86_400_000;
@@ -7,6 +7,8 @@ const DAY_MS = 86_400_000;
 export const RATE_WINDOW_DAYS = 56;
 export const MIN_RATE_POINTS = 3;
 export const MIN_RATE_SPAN_DAYS = 14;
+/** Distinct local calendar days the weigh-ins must fall on (three rows on two days are not three measurements of a trend). */
+export const MIN_RATE_DISTINCT_DAYS = 3;
 /** Below this pace (lb/week) a trend is indistinguishable from scale noise, so no goal date is offered. */
 export const MIN_PROJECTABLE_RATE = 0.1;
 export const MAX_PROJECTION_WEEKS = 156;
@@ -37,8 +39,8 @@ export interface WeeklyRate {
 }
 
 /**
- * Least-squares weight trend over the last 56 days. Requires at least 3 weigh-ins that span at
- * least 14 days; otherwise returns null (we say so instead of guessing).
+ * Least-squares weight trend over the last 56 days. Requires at least 3 weigh-ins on 3 different
+ * local days that span at least 14 days; otherwise returns null (we say so instead of guessing).
  */
 export function weeklyRate(weights: WeightEntry[], now: Date = new Date()): WeeklyRate | null {
   const nowMs = now.getTime();
@@ -46,6 +48,7 @@ export function weeklyRate(weights: WeightEntry[], now: Date = new Date()): Week
     .map((w) => ({ t: new Date(w.date).getTime(), y: w.weightLbs }))
     .filter((p) => Number.isFinite(p.t) && Number.isFinite(p.y) && p.t >= nowMs - RATE_WINDOW_DAYS * DAY_MS && p.t <= nowMs + DAY_MS);
   if (pts.length < MIN_RATE_POINTS) return null;
+  if (new Set(pts.map((p) => toLocalDateString(new Date(p.t)))).size < MIN_RATE_DISTINCT_DAYS) return null;
   const t0 = pts[0].t;
   // Days on the local calendar: a clock change in between must not turn 14 calendar days into 13.96 or 14.04.
   const off0 = new Date(t0).getTimezoneOffset();
