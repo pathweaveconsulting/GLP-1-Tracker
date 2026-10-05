@@ -25,7 +25,7 @@ describe('LogDoseModal', () => {
     expect(within(dialog).getByLabelText(/dose amount/i)).toHaveValue(7.5);
     await user.selectOptions(within(dialog).getByLabelText(/^medication/i), 'Semaglutide');
     expect(within(dialog).getByLabelText(/dose amount/i)).toHaveValue(null); // no semaglutide history: blank, not a reference step
-    const names = within(dialog).getAllByRole('option').map((o) => o.textContent);
+    const names = within(within(dialog).getByLabelText(/^medication/i)).getAllByRole('option').map((o) => o.textContent); // scoped to the medication select (the form now has a second select, for pain)
     expect(names).toEqual(['Tirzepatide', 'Semaglutide', 'Retatrutide', 'Other']);
   });
 
