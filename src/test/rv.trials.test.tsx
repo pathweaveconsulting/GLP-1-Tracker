@@ -1,7 +1,8 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { WeightVsTrialsChart, TRIAL_CURVES } from '../components/WeightVsTrialsChart';
+import { WeightVsTrialsChart } from '../components/WeightVsTrialsChart';
+import { TRIAL_CURVES } from '../lib/trialCurves';
 import { seedStore } from './fixtures';
 
 afterEach(cleanup);

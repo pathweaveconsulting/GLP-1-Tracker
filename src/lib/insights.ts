@@ -8,7 +8,7 @@ export const RATE_WINDOW_DAYS = 56;
 export const MIN_RATE_POINTS = 3;
 export const MIN_RATE_SPAN_DAYS = 14;
 /** Distinct local calendar days the weigh-ins must fall on (three rows on two days are not three measurements of a trend). */
-export const MIN_RATE_DISTINCT_DAYS = 3;
+const MIN_RATE_DISTINCT_DAYS = 3;
 /** Below this pace (lb/week) a trend is indistinguishable from scale noise, so no goal date is offered. */
 export const MIN_PROJECTABLE_RATE = 0.1;
 export const MAX_PROJECTION_WEEKS = 156;
