@@ -352,7 +352,7 @@ describe('F7: no weekly guidance for oral/unknown medications', () => {
     expect(text).not.toMatch(/above the usual maximum|if you dose weekly/);
     expect(text).toMatch(/No set schedule for this medication/);
     expect(text).toMatch(/aren’t available for this medication/);
-    expect(text).toMatch(/No estimate is available/);
+    expect(text).toMatch(/No estimate available/);
   });
 
   it('Onboarding shows the note when "Other" is chosen', async () => {

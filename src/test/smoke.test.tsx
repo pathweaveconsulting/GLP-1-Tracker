@@ -7,6 +7,7 @@ const BAD = /NaN|Infinity|undefined|\[object Object\]/;
 
 const MODES = [
   ['empty', 'lbs'], ['empty', 'kg'], ['populated', 'lbs'], ['populated', 'kg'],
+  ['retatrutide', 'lbs'], ['retatrutide', 'kg'], // a Retatrutide-only dose log (RV04)
 ] as const;
 
 describe('smoke: every route renders sane content', () => {

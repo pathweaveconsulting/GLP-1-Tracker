@@ -15,14 +15,13 @@ describe('R13: approximate values say so, and missed-dose windows point to the l
     expect(LEAFLET_LINE).toBe('Check your leaflet or ask your pharmacist.');
   });
 
-  for (const [med, window] of [['Tirzepatide', /about 4 days \(96 hours\)/], ['Semaglutide', /about 5 days/]] as const) {
-    it(`${med}: the missed-dose window is unchanged, marked approximate, and followed by the leaflet line`, () => {
+  for (const med of ['Tirzepatide', 'Semaglutide'] as const) {
+    it(`${med}: the missed-dose text is marked approximate and followed by the leaflet line (day counts removed in RV04a)`, () => {
       render(<MemoryRouter><SafetyNotice variant="full" medication={med} /></MemoryRouter>);
       const section = screen.getByText('If you miss a dose').parentElement as HTMLElement;
-      expect(within(section).getByText(window, { exact: false })).toBeInTheDocument();
+      expect(within(section).getByText(MEDICATION_INFO[med].missedDoseNote, { exact: false })).toBeInTheDocument();
       expect(section.textContent).toContain(APPROXIMATE_NOTE);
       expect(section.textContent).toContain(LEAFLET_LINE);
-      expect(MEDICATION_INFO[med].missedDoseNote).toMatch(window); // numbers untouched
     });
   }
 

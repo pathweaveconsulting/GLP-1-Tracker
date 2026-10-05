@@ -135,10 +135,10 @@ export function generatePKCurve(
   const sortedDoses = [...doses].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   const now = nowDate;
   const headline = sortedDoses[sortedDoses.length - 1].medication;
-  const modelled = medicationInfo(headline).halfLifeDays != null;
+  const modelled = medicationInfo(headline).modelled;
 
   const distinctMeds = Array.from(new Set(sortedDoses.map((d) => d.medication.toLowerCase())))
-    .filter((m) => medicationInfo(normalizeMedication(m)).halfLifeDays != null);
+    .filter((m) => medicationInfo(normalizeMedication(m)).modelled);
   const mixedMedications = distinctMeds.length > 1;
 
   const currentLevel = calculateMedicationLevelAtDate(sortedDoses, now, headline);
@@ -239,7 +239,7 @@ export function calculateShotPhase(doses: DoseEvent[], nowDate: Date = new Date(
 
   const base = { totalPhases: 6, percentComplete, daysUntilNext, nextDoseDate, lastDose };
 
-  if (medicationInfo(lastDose.medication).intervalDays == null) {
+  if (!medicationInfo(lastDose.medication).modelled) {
     return {
       ...base,
       phaseNumber: 0,

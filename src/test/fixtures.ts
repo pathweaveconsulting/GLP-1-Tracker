@@ -46,16 +46,20 @@ export function buildPopulated() {
 
 export type Unit = 'lbs' | 'kg';
 
-export function seedStore(mode: 'empty' | 'populated', unit: Unit) {
+/** 'retatrutide' = the populated log with every dose recorded as Retatrutide (investigational, not modelled). */
+export function seedStore(mode: 'empty' | 'populated' | 'retatrutide', unit: Unit) {
   const settings = {
-    medication: 'Tirzepatide' as const,
+    medication: (mode === 'retatrutide' ? 'Retatrutide' : 'Tirzepatide') as 'Retatrutide' | 'Tirzepatide',
     startingWeight: 220,
     targetWeight: 170,
     heightInches: 68,
     startDate: isoDaysAgo(84),
     weightUnit: unit,
   };
-  const data = mode === 'populated' ? buildPopulated() : { weights: [], doses: [], effects: [] };
+  const populated = mode === 'empty' ? null : buildPopulated();
+  const data = populated
+    ? { ...populated, doses: mode === 'retatrutide' ? populated.doses.map((d) => ({ ...d, medication: 'Retatrutide' as const })) : populated.doses }
+    : { weights: [], doses: [], effects: [] };
   useStore.setState({ ...data, settings, hasOnboarded: true });
 }
 

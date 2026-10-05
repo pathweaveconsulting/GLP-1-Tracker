@@ -25,13 +25,13 @@ describe('reference data', () => {
     expect(MEDICATION_INFO.Semaglutide.halfLifeDays).toBe(7);
     expect(MEDICATION_INFO.Semaglutide.doseSteps).toEqual([0.25, 0.5, 1, 1.7, 2, 2.4]);
     expect(MEDICATION_INFO.Retatrutide.investigational).toBe(true);
-    expect(MEDICATION_INFO.Retatrutide.halfLifeDays).toBe(6);
+    expect(MEDICATION_INFO.Retatrutide.halfLifeDays).toBeNull(); // no placeholder pharmacology (RV04b)
     expect(MEDICATION_INFO.Tirzepatide.investigational).toBe(false);
     expect(dosingIntervalDays('Other')).toBeNull();
     expect(dosingIntervalDays('Tirzepatide')).toBe(7);
   });
-  it('every missed-dose note says never to double up', () => {
-    for (const m of MEDICATION_OPTIONS) expect(MEDICATION_INFO[m].missedDoseNote).toMatch(/never take (two|a double)/i);
+  it('every missed-dose note says never to double up, or that the app does not tell you to take a late or extra dose (RV04a)', () => {
+    for (const m of MEDICATION_OPTIONS) expect(MEDICATION_INFO[m].missedDoseNote).toMatch(/never take (two|a double)|does not tell you to take a late or extra dose/i);
   });
 });
 

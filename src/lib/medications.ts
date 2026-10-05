@@ -12,6 +12,12 @@ export const APPROXIMATE_NOTE = 'approximate; verify against current prescribing
 /** Shown wherever a missed-dose window appears. */
 export const LEAFLET_LINE = 'Check your leaflet or ask your pharmacist.';
 
+/** Wording for products with a weekly schedule: no day counts and no permission to dose late or twice. */
+export const MISSED_DOSE_NOTE =
+  'Missed-dose instructions depend on your exact product. Check your leaflet or ask your pharmacist. This app does not tell you to take a late or extra dose.';
+/** Shown instead of a level curve, phase or due date when a medication is not modelled. */
+export const NO_ESTIMATE_TEXT = 'No estimate available for this medication.';
+
 export interface MedicationInfo {
   name: Medication;
   /** Approximate elimination half-life in days (approximate; verify against current prescribing information). */
@@ -20,6 +26,11 @@ export interface MedicationInfo {
   doseSteps: readonly number[];
   /** Highest standard dose in mg, or null when no standard maximum applies. */
   maxStandardMg: number | null;
+  /**
+   * True only when the app has a half-life and a dosing interval it is willing to model. When false the app shows no
+   * level curve, percent of peak, phase text or due date for this medication ("No estimate available").
+   */
+  modelled: boolean;
   /** Not an approved medicine: no approved doses, schedule or missed-dose guidance exist. */
   investigational: boolean;
   /** Days between scheduled doses; null when unknown. */
@@ -36,31 +47,33 @@ export const MEDICATION_INFO: Record<Medication, MedicationInfo> = {
     halfLifeDays: 5,
     doseSteps: [2.5, 5, 7.5, 10, 12.5, 15],
     maxStandardMg: 15,
+    modelled: true,
     investigational: false,
     intervalDays: 7,
     missedDoseNote:
-      'Prescribing information for tirzepatide products generally says a missed weekly dose can be taken within about 4 days (96 hours) of when it was due. After that, skip it and take the next dose on your usual day. Never take two doses to catch up. Confirm with your prescriber or pharmacist.',
+      MISSED_DOSE_NOTE,
   },
   Semaglutide: {
     name: 'Semaglutide',
     halfLifeDays: 7,
     doseSteps: [0.25, 0.5, 1, 1.7, 2, 2.4],
     maxStandardMg: 2.4,
+    modelled: true,
     investigational: false,
     intervalDays: 7,
     missedDoseNote:
-      'Prescribing information for once-weekly semaglutide products generally says a missed dose can be taken within about 5 days of when it was due. After that, skip it and take the next dose on your usual day. Never take two doses to catch up. Confirm with your prescriber or pharmacist.',
+      MISSED_DOSE_NOTE,
     notes: 'Different semaglutide products use different dose ladders, so your own prescription is the authority.',
   },
   Retatrutide: {
     name: 'Retatrutide',
-    // Low confidence: investigational, so both the 6-day half-life and the weekly interval are placeholders for the
-    // illustrative curve only (approximate; verify against current prescribing information, which does not exist yet).
-    halfLifeDays: 6,
+    // Investigational: there is no established half-life or schedule to model, so none is invented here.
+    halfLifeDays: null,
     doseSteps: [],
     maxStandardMg: null,
+    modelled: false,
     investigational: true,
-    intervalDays: 7,
+    intervalDays: null,
     missedDoseNote:
       'Retatrutide is investigational, so there is no approved missed-dose guidance. Follow the instructions from your study team or prescriber, and never take two doses to catch up.',
     notes: 'Investigational: not approved, with no approved doses. This app cannot tell you whether a dose is appropriate.',
@@ -70,6 +83,7 @@ export const MEDICATION_INFO: Record<Medication, MedicationInfo> = {
     halfLifeDays: null,
     doseSteps: [],
     maxStandardMg: null,
+    modelled: false,
     investigational: false,
     intervalDays: null,
     missedDoseNote: 'Follow the missed-dose instructions that came with your medication or ask your prescriber or pharmacist. Never take two doses to catch up.',

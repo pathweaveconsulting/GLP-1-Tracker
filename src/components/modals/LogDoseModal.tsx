@@ -101,7 +101,6 @@ function DoseForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
         <select id={`${uid}-med`} value={medication} onChange={(e) => changeMedication(e.target.value as Medication)} className={field}>
           {MEDICATION_OPTIONS.map((m) => <option key={m} value={m}>{m}</option>)}
         </select>
-        {info.investigational && <p className="text-xs text-amber-800 mt-1">{info.notes}</p>}
         <OtherMedicationNote medication={medication} className="mt-2" />
       </div>
 

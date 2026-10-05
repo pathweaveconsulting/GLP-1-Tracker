@@ -7,6 +7,8 @@ import { useStore } from '../store/useStore';
 import { calculateShotPhase, generatePKCurve } from '../lib/glp1Utils';
 import { latestEffectWithin, recentSymptomSummary, severityLabel, sevOf } from '../lib/symptoms';
 import { Modal } from './ui/Modal';
+import { OtherMedicationNote } from './OtherMedicationNote';
+import { NO_ESTIMATE_TEXT, medicationInfo } from '../lib/medications';
 
 interface Props {
   className?: string;
@@ -35,6 +37,8 @@ export function ThisWeekDashboard({ className = '' }: Props) {
   const [showGuide, setShowGuide] = useState(false);
 
   const hasDose = !!phase.lastDose;
+  // Investigational / unlisted medications have no modelled schedule: no day count, level, phase highlight or weekly pattern.
+  const unmodelled = hasDose && !medicationInfo(phase.lastDose!.medication).modelled;
   const daysSince = hasDose ? Math.max(0, (now.getTime() - new Date(phase.lastDose!.date).getTime()) / 86_400_000) : 0;
   const overdue = hasDose && daysSince > 7;
   const dayNum = hasDose ? Math.min(7, Math.floor(daysSince) + 1) : 0;
@@ -71,11 +75,12 @@ export function ThisWeekDashboard({ className = '' }: Props) {
       <section aria-labelledby="today-heading" className="bg-white p-6 rounded-[24px] border border-[#E5E7EB] shadow-xs space-y-6">
         <div>
           <div className="text-xs font-medium text-[#6D4AFF] mb-1">
-            Today • {hasDose ? (overdue ? `${Math.floor(daysSince)} days since your last dose` : `Day ${dayNum} of 7`) : 'No dose logged yet'}
+            Today • {hasDose ? (unmodelled ? 'No schedule tracked' : overdue ? `${Math.floor(daysSince)} days since your last dose` : `Day ${dayNum} of 7`) : 'No dose logged yet'}
           </div>
           <h2 id="today-heading" className="text-xl sm:text-2xl font-semibold text-[#111827] tracking-tight">{phase.title}</h2>
           <p className="text-xs font-normal text-muted mt-1.5 max-w-2xl leading-relaxed">{phase.now}</p>
-          {hasDose && (
+          {unmodelled && <OtherMedicationNote medication={phase.lastDose!.medication} className="mt-2" />}
+          {hasDose && !unmodelled && (
             <p className="text-[11px] text-subtle mt-1.5">
               Based on the typical weekly pattern and the date of your last dose. It is not a measurement of your body.
             </p>
@@ -90,7 +95,9 @@ export function ThisWeekDashboard({ className = '' }: Props) {
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
             <div className="bg-[#F8F9FC] p-4 rounded-[16px] border border-[#E5E7EB]">
               <div className="flex items-center gap-1.5 text-xs text-muted"><Activity className="w-3.5 h-3.5 text-[#6D4AFF]" aria-hidden="true" /> Medication</div>
-              {hasDose ? (
+              {unmodelled ? (
+                <p className="text-xs text-muted mt-2">{NO_ESTIMATE_TEXT}</p>
+              ) : hasDose ? (
                 <>
                   <div className="text-xl font-semibold text-[#111827] mt-2">{pk.percentOfPeak}%</div>
                   <p className="text-[11px] font-medium text-[#6D4AFF] mt-0.5">of est. peak (model)</p>
@@ -119,6 +126,7 @@ export function ThisWeekDashboard({ className = '' }: Props) {
         </div>
       </section>
 
+      {!unmodelled && (
       <section aria-labelledby="rhythm-heading" className="bg-white p-4 sm:p-6 rounded-[24px] border border-[#E5E7EB] shadow-xs">
         <div className="flex items-center gap-2 mb-1">
           <h2 id="rhythm-heading" className="text-base font-semibold text-[#111827] tracking-tight">The typical weekly rhythm</h2>
@@ -145,10 +153,12 @@ export function ThisWeekDashboard({ className = '' }: Props) {
               );
             })}
           </ol>
-        </div>
+ </div>
       </section>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {!unmodelled && (
         <section aria-labelledby="pattern-heading" className="lg:col-span-2 bg-white p-6 rounded-[24px] border border-[#E5E7EB] shadow-xs space-y-4">
           <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
             <div>
@@ -182,8 +192,9 @@ export function ThisWeekDashboard({ className = '' }: Props) {
             </button>
           </div>
         </section>
+        )}
 
-        <section aria-labelledby="logs-heading" className="bg-white p-6 rounded-[24px] border border-[#E5E7EB] shadow-xs space-y-3">
+        <section aria-labelledby="logs-heading" className={`${unmodelled ? 'lg:col-span-3 ' : ''}bg-white p-6 rounded-[24px] border border-[#E5E7EB] shadow-xs space-y-3`}>
           <h2 id="logs-heading" className="text-base font-semibold text-[#111827] tracking-tight">From your logs, last 7 days</h2>
           {summary.daysLogged === 0 ? (
             <p className="text-xs text-muted leading-relaxed">

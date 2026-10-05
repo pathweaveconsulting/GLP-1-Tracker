@@ -4,6 +4,7 @@ import { Card, CardContent } from '../components/ui/card';
 import { format } from 'date-fns';
 import { HeartPulse, TrendingDown, Target, Award, Clock, Zap } from 'lucide-react';
 import { generatePKCurve } from '../lib/glp1Utils';
+import { NO_ESTIMATE_TEXT, medicationInfo } from '../lib/medications';
 import { formatWeightChange, getWeightUnit } from '../lib/units';
 import { NEEDS_MORE_WEIGHT_DATA, latestWeight, nextDoseInfo, projectGoal, weeklyRate, weightMilestones } from '../lib/insights';
 import { recentSymptomSummary, severityLabel } from '../lib/symptoms';
@@ -62,7 +63,9 @@ export function HealthCenter() {
             </div>
             <div>
               <span className="text-xs font-medium text-muted block mb-1">Medication level{next.medication ? ` (${next.medication})` : ''}</span>
-              {next.lastDose ? (
+              {next.lastDose && !medicationInfo(next.lastDose.medication).modelled ? (
+                <span className="text-sm text-muted">{NO_ESTIMATE_TEXT}</span>
+              ) : next.lastDose ? (
                 <>
                   <div className="flex items-baseline gap-1">
                     <span className="text-2xl font-semibold tracking-tight text-[#111827]">{pk.currentLevel}</span>

@@ -80,8 +80,9 @@ Every new assertion should be mutation-checked at least once (break the code, wa
 
 Items a clinician should check (nothing here was changed in code by the wording pass; only labels were added):
 
-- `medications.ts`: Tirzepatide half-life 5 d, steps 2.5–15 mg, max 15 mg, missed-dose window "about 4 days (96 hours)"; Semaglutide half-life 7 d, steps 0.25, 0.5, 1, 1.7, 2, 2.4 mg, max 2.4 mg (newer, higher Wegovy doses may make this maximum warn wrongly), window "about 5 days"; weekly interval for all three; the generic "Other" text.
-- **Retatrutide: the 6-day half-life and the weekly interval are low confidence** (investigational, no approved labelling); they only shape the illustrative level curve.
+- `medications.ts`: Tirzepatide half-life 5 d, steps 2.5–15 mg, max 15 mg, weekly interval; Semaglutide half-life 7 d, steps 0.25, 0.5, 1, 1.7, 2, 2.4 mg, max 2.4 mg (newer, higher Wegovy doses may make this maximum warn wrongly; different semaglutide products have different ladders); the generic "Other" text. These drive only the simplified level estimate and the "unusual amount" warnings.
+- **Missed-dose wording** is now one product-neutral sentence ("Missed-dose instructions depend on your exact product. Check your leaflet or ask your pharmacist. This app does not tell you to take a late or extra dose."). The earlier 4-day/5-day windows were removed from user-facing text; reinstate them only per identified product after label review.
+- **Retatrutide is not modelled** (`modelled: false`, no half-life, no interval): no level curve, percent of peak, phase text or due date, only "No estimate available for this medication" plus the investigational note. A clinician should confirm that is the right decision, and whether the dose-form amount/maximum checks should say anything for it.
 - `SafetyNotice.tsx`: the red-flag list, the "examples, not exhaustive" sentence, and "If you miss a dose" (the windows could be read as permission to dose late, so the leaflet/pharmacist line sits directly under them).
 - `doseWarning` texts ("above the usual maximum", "isn't one of the usual steps").
 

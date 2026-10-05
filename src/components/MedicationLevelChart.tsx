@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import { useStore } from '../store/useStore';
 import { generatePKCurve } from '../lib/glp1Utils';
+import { NO_ESTIMATE_TEXT } from '../lib/medications';
 
 interface Props {
   className?: string;
@@ -54,7 +55,7 @@ export function MedicationLevelChart({ className = '', onOpenSources }: Props) {
                 <span className="text-subtle">({pkData.percentOfPeak}% of your modelled peak)</span>
               </>
             ) : (
-              'No estimate is available for this medication.'
+              NO_ESTIMATE_TEXT
             )}
           </p>
           {pkData.mixedMedications && (
