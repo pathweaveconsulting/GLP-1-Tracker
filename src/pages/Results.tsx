@@ -8,7 +8,7 @@ import { AnalyticsHeatmaps } from '../components/AnalyticsHeatmaps';
 import { SideEffectsAnalyticsDashboard } from '../components/SideEffectsAnalyticsDashboard';
 import { WeightJourneyDashboard } from '../components/WeightJourneyDashboard';
 import { format } from 'date-fns';
-import { bmi as calcBmi, bmiCategory, formatWeight, formatWeightChange, getWeightUnit } from '../lib/units';
+import { BMI_FOOTNOTE, bmi as calcBmi, bmiCategory, formatWeight, formatWeightChange, getWeightUnit } from '../lib/units';
 import { dosesBySite, doseCountsByAmount, latestWeight, weeklyRate } from '../lib/insights';
 import { SEVERITY_RANK, sevOf, sortEffects } from '../lib/symptoms';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
@@ -129,6 +129,7 @@ export function Results() {
                 <span className="text-xs font-semibold text-muted mb-1">Current BMI</span>
                 <span className="text-3xl font-black text-[#111827] tracking-tight">{bmi == null ? '–' : bmi.toFixed(1)}</span>
                 <span className="text-[11px] text-subtle mt-0.5">{bmiLabel ?? (settings.heightInches > 0 ? 'Log a weight' : 'Add your height in Settings')}</span>
+                {bmiLabel && <span className="text-[10px] text-subtle mt-1 leading-snug">{BMI_FOOTNOTE}</span>}
               </CardContent>
             </Card>
             <Card className="rounded-[16px] border-[#E5E7EB] shadow-xs">

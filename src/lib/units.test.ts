@@ -61,7 +61,7 @@ describe('bmi', () => {
   });
   it('names the category from the computed value', () => {
     expect(bmiCategory(17)).toBe('Below healthy range');
-    expect(bmiCategory(22)).toBe('Healthy range');
+    expect(bmiCategory(22)).toBe('18.5 to 24.9'); // neutral numeric range, not "Healthy range" (RV08)
     expect(bmiCategory(27.4)).toBe('Overweight range');
     expect(bmiCategory(34)).toBe('Obesity range');
     expect(bmiCategory(null)).toBeNull();

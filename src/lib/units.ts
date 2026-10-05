@@ -67,11 +67,17 @@ export function bmi(weightLbs: number | null | undefined, heightInches: number |
   return Number.isFinite(v) ? v : null;
 }
 
-/** General adult BMI categories (WHO cut-offs). BMI is a population screen, not a diagnosis. */
+/** Shown wherever a BMI category appears. */
+export const BMI_FOOTNOTE = 'BMI is a screening measure, not a diagnosis, and is less reliable for some people.';
+
+/**
+ * General adult BMI bands (WHO cut-offs). BMI is a population screen, not a diagnosis, so the middle band is
+ * labelled with its numbers rather than as "healthy".
+ */
 export function bmiCategory(value: number | null): string | null {
   if (value == null) return null;
   if (value < 18.5) return 'Below healthy range';
-  if (value < 25) return 'Healthy range';
+  if (value < 25) return '18.5 to 24.9';
   if (value < 30) return 'Overweight range';
   return 'Obesity range';
 }

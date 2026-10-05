@@ -20,7 +20,7 @@ import { OtherMedicationNote } from '../components/OtherMedicationNote';
 import { PkInfoModal } from '../components/PkInfoModal';
 import { MedicationLevelChart } from '../components/MedicationLevelChart';
 import { generatePKCurve, calculateShotPhase } from '../lib/glp1Utils';
-import { bmi as calcBmi, bmiCategory, formatWeight, formatWeightChange, getWeightUnit, lbsToDisplay } from '../lib/units';
+import { BMI_FOOTNOTE, bmi as calcBmi, bmiCategory, formatWeight, formatWeightChange, getWeightUnit, lbsToDisplay } from '../lib/units';
 import { latestWeight, nextDoseInfo, sortByDate, weeklyRate } from '../lib/insights';
 import { buildNotifications } from '../lib/notifications';
 import { useToast } from '../components/ui/Toast';
@@ -338,6 +338,7 @@ export function ControlCenter() {
                 <p className="text-xs font-normal text-muted mb-1">Current BMI</p>
                 <p className="text-xl font-semibold text-[#111827] leading-none mb-1">{bmi == null ? '–' : bmi.toFixed(1)}</p>
                 {bmiLabel && <span className="inline-block px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md text-[10px] font-semibold">{bmiLabel}</span>}
+                {bmiLabel && <p className="text-[10px] text-subtle mt-1 leading-snug">{BMI_FOOTNOTE}</p>}
               </div>
             </div>
           </Link>
