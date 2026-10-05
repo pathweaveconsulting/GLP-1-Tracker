@@ -498,6 +498,7 @@ describe('F15: dose time inside a DST gap (TZ=America/New_York)', () => {
     await open7('/doses');
     await user.click(screen.getByRole('button', { name: /record injection/i }));
     const dialog = screen.getByRole('dialog', { name: /log shot/i });
+    await user.click(within(dialog).getByRole('button', { name: '2.5 mg' })); // the amount is no longer pre-filled (RV03)
     const date = within(dialog).getByLabelText(/^date/i);
     await user.clear(date);
     await user.type(date, '2026-03-08');
