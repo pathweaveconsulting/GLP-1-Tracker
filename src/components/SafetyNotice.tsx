@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { AlertTriangle, FlaskConical, ShieldAlert } from 'lucide-react';
 import { useStore } from '../store/useStore';
-import { APPROXIMATE_NOTE, LEAFLET_LINE, MEDICATION_INFO } from '../lib/medications';
+import { LEAFLET_LINE, MEDICATION_INFO } from '../lib/medications';
 import type { Medication } from '../types';
 
 /** Shown with the list so it is never read as complete. Clinical content needs human review. */
@@ -59,9 +59,9 @@ export function SafetyNotice({ variant = 'full', medication, className = '' }: P
         Check the instructions for your medication or ask your prescriber or pharmacist. Never take a double dose to catch up.
         {' '}{MEDICATION_INFO[med]?.missedDoseNote}
       </p>
-      <p className="text-xs mt-1 leading-relaxed">
-        Time windows are {APPROXIMATE_NOTE}. <strong>{LEAFLET_LINE}</strong>
-      </p>
+      {!MEDICATION_INFO[med]?.missedDoseNote.includes(LEAFLET_LINE) && (
+        <p className="text-xs mt-1 leading-relaxed"><strong>{LEAFLET_LINE}</strong></p>
+      )}
 
       {investigational && (
         <div className="mt-4 rounded-[14px] bg-white/70 border border-amber-300 p-3 text-xs leading-relaxed flex gap-2">
