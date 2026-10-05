@@ -24,10 +24,6 @@ export const useStore = create<AppState>()(
         resumeWrites();
         set({ readFailed: false });
       },
-      resumeSaving: () => {
-        resumeWrites();
-        set({ readFailed: false });
-      },
       storageError: false,
       dismissStorageError: () => {
         storageErrorDismissed = true;

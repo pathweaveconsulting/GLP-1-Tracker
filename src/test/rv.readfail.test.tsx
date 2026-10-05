@@ -55,6 +55,7 @@ describe('RV01: an unreadable initial read never leads to overwriting the stored
     render(<App />);
     const user = userEvent.setup();
     await user.click(await screen.findByRole('button', { name: /start fresh/i }));
+    await user.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: /replace and start fresh/i })); // confirmation added in review F2
     expect(useStore.getState().readFailed).toBe(false);
     useStore.getState().addWeight({ date: new Date().toISOString(), weightLbs: 190 });
     const stored = JSON.parse(localStorage.getItem(STORAGE_KEY)!);
@@ -62,16 +63,54 @@ describe('RV01: an unreadable initial read never leads to overwriting the stored
     await waitFor(() => expect(screen.queryByText(/saving is paused/i)).not.toBeInTheDocument());
   });
 
-  it('downloading a backup is the other explicit action: it resumes saving too', async () => {
+  it('F2: downloading a backup only downloads: saving stays paused and the stored data is untouched', async () => {
     const spy = await loadWithUnreadableStorage();
     spy.mockRestore();
-    URL.createObjectURL = vi.fn(() => 'blob:x');
+    const blobs: Blob[] = [];
+    URL.createObjectURL = vi.fn((b: Blob | MediaSource) => { blobs.push(b as Blob); return 'blob:x'; });
     URL.revokeObjectURL = vi.fn();
     vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
     window.history.pushState({}, '', '/');
     render(<App />);
+    useStore.getState().addWeight({ date: new Date().toISOString(), weightLbs: 190 });
     await userEvent.setup().click(await screen.findByRole('button', { name: /download a backup/i }));
+    expect(blobs).toHaveLength(1);
+    const backup = JSON.parse(await new Promise<string>((res) => { const r = new FileReader(); r.onload = () => res(String(r.result)); r.readAsText(blobs[0]); }));
+    expect(backup.data.weights).toHaveLength(1); // the session on screen, not the unreadable blob
+    expect(useStore.getState().readFailed).toBe(true);
+    expect(localStorage.getItem(STORAGE_KEY)).toBe(PRECIOUS);
+    useStore.getState().addWeight({ date: new Date().toISOString(), weightLbs: 188 });
+    expect(localStorage.getItem(STORAGE_KEY)).toBe(PRECIOUS); // still paused
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+  });
+
+  it('F2: "Start fresh" asks before replacing; Cancel changes nothing, Confirm replaces and resumes', async () => {
+    const spy = await loadWithUnreadableStorage();
+    spy.mockRestore();
+    window.history.pushState({}, '', '/');
+    render(<App />);
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: /start fresh/i }));
+    const dialog = await screen.findByRole('alertdialog');
+    expect(dialog).toHaveTextContent(/replace/i);
+    expect(dialog).toHaveTextContent(/couldn.t be read/i);
+    await user.click(within(dialog).getByRole('button', { name: /cancel/i }));
+    expect(useStore.getState().readFailed).toBe(true);
+    expect(localStorage.getItem(STORAGE_KEY)).toBe(PRECIOUS);
+    await user.click(screen.getByRole('button', { name: /start fresh/i }));
+    await user.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: /replace and start fresh/i }));
     expect(useStore.getState().readFailed).toBe(false);
+    expect(localStorage.getItem(STORAGE_KEY)).not.toBe(PRECIOUS);
+  });
+
+  it('F2: the banner says what each button does and that changes made now are not kept after closing', async () => {
+    await loadWithUnreadableStorage();
+    window.history.pushState({}, '', '/');
+    render(<App />);
+    const banner = await screen.findByRole('alert');
+    expect(banner).toHaveTextContent(/download a backup.*saving stays paused/i);
+    expect(banner).toHaveTextContent(/start fresh.*replaces what is stored/i);
+    expect(banner).toHaveTextContent(/changes you make now.*lost when you close/i);
   });
 
   it('a normal read never sets the flag, and writes work as before', async () => {

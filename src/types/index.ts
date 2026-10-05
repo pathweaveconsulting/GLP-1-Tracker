@@ -73,8 +73,6 @@ export interface AppState extends PersistedData {
   readFailed: boolean;
   /** Explicit action: replace whatever could not be read, resume saving. */
   startFresh: () => void;
-  /** Explicit action after a backup download: resume saving. */
-  resumeSaving: () => void;
   dismissSkippedNotice: () => void;
   /** True while the browser refuses to save (storage full or blocked); data then lives in memory only. Not persisted. */
   storageError: boolean;
