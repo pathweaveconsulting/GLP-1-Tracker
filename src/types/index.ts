@@ -69,6 +69,12 @@ export interface AppState extends PersistedData {
   rescueKept: boolean;
   /** True when the whole stored blob could not be read (truncated or not JSON), so the app started empty. Not persisted. */
   unreadable: boolean;
+  /** True when reading storage threw at startup; saving is paused until the user acts. Not persisted. */
+  readFailed: boolean;
+  /** Explicit action: replace whatever could not be read, resume saving. */
+  startFresh: () => void;
+  /** Explicit action after a backup download: resume saving. */
+  resumeSaving: () => void;
   dismissSkippedNotice: () => void;
   /** True while the browser refuses to save (storage full or blocked); data then lives in memory only. Not persisted. */
   storageError: boolean;

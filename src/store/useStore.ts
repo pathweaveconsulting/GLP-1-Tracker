@@ -4,7 +4,7 @@ import { AppState, PersistedData } from '../types';
 import { newId } from '../lib/id';
 import { emptyData, migrateStore, STORE_VERSION } from './migrate';
 import { CORRUPT_KEY, STORAGE_KEY } from './keys';
-import { createSafeStorage, storageEvents, storageReport } from './storage';
+import { createSafeStorage, resumeWrites, storageEvents, storageReport } from './storage';
 
 export { STORAGE_KEY, CORRUPT_KEY };
 
@@ -18,6 +18,16 @@ export const useStore = create<AppState>()(
       skippedEntries: 0,
       rescueKept: true,
       unreadable: false,
+      readFailed: false,
+      startFresh: () => {
+        // Explicit consent to replace whatever could not be read: resume saving and write what is in memory now.
+        resumeWrites();
+        set({ readFailed: false });
+      },
+      resumeSaving: () => {
+        resumeWrites();
+        set({ readFailed: false });
+      },
       storageError: false,
       dismissStorageError: () => {
         storageErrorDismissed = true;
@@ -37,7 +47,8 @@ export const useStore = create<AppState>()(
         })),
 
       resetAllData: () => {
-        set({ ...emptyData(), skippedEntries: 0, unreadable: false });
+        resumeWrites(); // Erase is an explicit action, so saving resumes
+        set({ ...emptyData(), skippedEntries: 0, unreadable: false, readFailed: false });
         useStore.persist.clearStorage();
         // "Erase" must remove everything the app keeps, including a rescue copy of unreadable data.
         try {
@@ -73,7 +84,7 @@ export const useStore = create<AppState>()(
       name: STORAGE_KEY,
       version: STORE_VERSION,
       storage: createSafeStorage<PersistedData>(),
-      merge: (persisted, current) => ({ ...current, ...(persisted as object), skippedEntries: storageReport.skipped, rescueKept: storageReport.rescueKept, unreadable: storageReport.unreadable }),
+      merge: (persisted, current) => ({ ...current, ...(persisted as object), skippedEntries: storageReport.skipped, rescueKept: storageReport.rescueKept, unreadable: storageReport.unreadable, readFailed: storageReport.readFailed }),
       migrate: (persisted, version) => migrateStore(persisted, version) as unknown as AppState,
       // Persist data only, never the action functions.
       partialize: (state): PersistedData => ({

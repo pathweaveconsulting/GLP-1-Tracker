@@ -4,7 +4,18 @@ import { isObj } from '../lib/rowValidation';
 import { sanitizePersistedState } from './sanitize';
 
 /** What the last read of storage found; consumed by the store when it hydrates. */
-export const storageReport = { skipped: 0, rescueKept: true, unreadable: false };
+export const storageReport = { skipped: 0, rescueKept: true, unreadable: false, readFailed: false };
+
+/**
+ * True after a read of the main key THREW (storage unreadable, as opposed to empty). While true nothing is written
+ * or removed, so a transient read failure can never lead to the unread data being overwritten. Cleared only by an
+ * explicit user action via resumeWrites().
+ */
+let writesPaused = false;
+export function resumeWrites(): void {
+  writesPaused = false;
+  storageReport.readFailed = false;
+}
 
 /** Hooks the store installs so the adapter can report write failures without importing the store. */
 export const storageEvents: { onWriteError?: () => void; onWriteOk?: () => void } = {};
@@ -30,10 +41,14 @@ export function createSafeStorage<S>(): PersistStorage<S> {
       storageReport.skipped = 0;
       storageReport.rescueKept = true;
       storageReport.unreadable = false;
+      writesPaused = false;
+      storageReport.readFailed = false;
       let raw: string | null = null;
       try {
         raw = localStorage.getItem(name);
       } catch {
+        writesPaused = true;
+        storageReport.readFailed = true;
         return null;
       }
       if (raw == null) return null;
@@ -71,6 +86,7 @@ export function createSafeStorage<S>(): PersistStorage<S> {
     // Writes can fail (quota exceeded, storage blocked). The app keeps working in memory and the store is told,
     // so it can warn the user and offer a backup. Nothing here may throw into a click handler.
     setItem: (name, value) => {
+      if (writesPaused) return; // see writesPaused: never overwrite data we could not read
       try {
         localStorage.setItem(name, JSON.stringify(value));
         storageEvents.onWriteOk?.();
@@ -79,6 +95,7 @@ export function createSafeStorage<S>(): PersistStorage<S> {
       }
     },
     removeItem: (name) => {
+      if (writesPaused) return;
       try {
         localStorage.removeItem(name);
       } catch {

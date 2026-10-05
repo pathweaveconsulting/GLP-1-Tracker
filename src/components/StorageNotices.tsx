@@ -9,15 +9,34 @@ export function StorageNotices() {
   const skipped = useStore((s) => s.skippedEntries);
   const rescueKept = useStore((s) => s.rescueKept);
   const unreadable = useStore((s) => s.unreadable);
+  const readFailed = useStore((s) => s.readFailed);
+  const startFresh = useStore((s) => s.startFresh);
+  const resumeSaving = useStore((s) => s.resumeSaving);
   const dismiss = useStore((s) => s.dismissSkippedNotice);
   const storageError = useStore((s) => s.storageError);
   const dismissStorageError = useStore((s) => s.dismissStorageError);
-  if (skipped <= 0 && !unreadable && !storageError) return null;
+  if (skipped <= 0 && !unreadable && !storageError && !readFailed) return null;
 
   const downloadBackup = () => {
     const { settings, doses, weights, effects } = useStore.getState();
     exportBackupJson({ settings, doses, weights, effects });
   };
+
+  const downloadAndResume = () => {
+    downloadBackup();
+    resumeSaving();
+  };
+
+  const readFailedBanner = readFailed && (
+    <div role="alert" className="bg-rose-50 border-b border-rose-200 text-rose-950 text-xs px-4 py-2.5 flex items-start gap-3">
+      <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
+      <p className="flex-1">
+        Your saved data couldn’t be read from this browser, so it was not loaded. Saving is paused so it isn’t overwritten. Download a backup of what is on screen, or start fresh; either one resumes saving and replaces what is stored.{' '}
+        <button type="button" onClick={downloadAndResume} className="font-semibold underline">Download a backup</button>{' '}
+        <button type="button" onClick={startFresh} className="font-semibold underline">Start fresh</button>
+      </p>
+    </div>
+  );
 
   const downloadOriginal = () => {
     let raw: string | null = null;
@@ -37,7 +56,7 @@ export function StorageNotices() {
     if (raw) downloadTextFile('glp1-tracker-original-data.json', raw, 'application/json');
   };
 
-  const storageBanner = storageError && (
+  const storageBanner = (<>{readFailedBanner}{storageError && (
     <div role="alert" className="bg-rose-50 border-b border-rose-200 text-rose-950 text-xs px-4 py-2.5 flex items-start gap-3">
       <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
       <p className="flex-1">
@@ -46,6 +65,7 @@ export function StorageNotices() {
       </p>
       <button type="button" onClick={dismissStorageError} aria-label="Dismiss storage warning" className="shrink-0"><X className="w-4 h-4" aria-hidden="true" /></button>
     </div>
+  )}</>
   );
 
   if (skipped <= 0 && unreadable) {
