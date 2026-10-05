@@ -197,7 +197,6 @@ export interface ShotPhaseInfo {
   subtitle: string;
   daysRange: string;
   percentComplete: number;
-  daysUntilNext: number;
   nextDoseDate: Date;
   now: string;
   watch: string;
@@ -218,7 +217,6 @@ export function calculateShotPhase(doses: DoseEvent[], nowDate: Date = new Date(
       subtitle: 'Log your first dose',
       daysRange: '0d',
       percentComplete: 0,
-      daysUntilNext: 7,
       nextDoseDate: nowDate,
       now: 'No dose logged yet. Record your injection to see where you are in the weekly cycle.',
       watch: 'It can help to note your baseline weight and appetite before your first shot.',
@@ -234,10 +232,9 @@ export function calculateShotPhase(doses: DoseEvent[], nowDate: Date = new Date(
 
   const diffDays = (now.getTime() - lastDoseTime.getTime()) / DAY_MS;
   const nextDoseDate = addCalendarDays(lastDoseTime, 7);
-  const daysUntilNext = Math.max(0, Math.ceil((nextDoseDate.getTime() - now.getTime()) / DAY_MS));
   const percentComplete = Math.min(100, Math.max(0, Math.round((diffDays / 7) * 100)));
 
-  const base = { totalPhases: 6, percentComplete, daysUntilNext, nextDoseDate, lastDose };
+  const base = { totalPhases: 6, percentComplete, nextDoseDate, lastDose };
 
   if (!medicationInfo(lastDose.medication).modelled) {
     return {
@@ -283,7 +280,7 @@ export function calculateShotPhase(doses: DoseEvent[], nowDate: Date = new Date(
       watch: 'More hunger, possible cravings, and mood changes for some people.',
       do: 'Plan ahead for your next dose | Volume foods and protein can help with hunger.' };
   }
-  return { ...base, phaseNumber: 6, percentComplete: 100, daysUntilNext: 0, title: 'Past Your Usual Interval', subtitle: '> 7d', daysRange: '> 7d',
+  return { ...base, phaseNumber: 6, percentComplete: 100, title: 'Past Your Usual Interval', subtitle: '> 7d', daysRange: '> 7d',
     now: 'It has been more than 7 days since your last logged dose. If you missed one, check your medication’s missed-dose guidance or ask your prescriber or pharmacist, and never take a double dose to catch up.',
     watch: 'Appetite and food noise may be returning toward your baseline.',
     do: 'If you did take a dose and forgot to log it, add it so your history stays accurate.' };
