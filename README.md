@@ -88,7 +88,7 @@ Items a clinician should check (nothing here was changed in code by the wording 
 
 Also review before release: the wording of `SafetyNotice` (the red-flag list is labelled as examples, not exhaustive), and the decision that oral semaglutide (Rybelsus) is treated as "Other" because the weekly model does not describe a daily tablet.
 
-The reference curves in `WeightVsTrialsChart` (interpolated between approximate published trial endpoints) and the illustrative weekly-pattern chart on *This Week* also need review.
+The reference curves in `WeightVsTrialsChart` (labelled "Illustrative reference interpolation", dashed; interpolated between approximate published trial endpoints, with the former unsourced Retatrutide min/max band removed) and the illustrative weekly-pattern chart on *This Week* also need review.
 
 ## License
 

@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Info } from 'lucide-react';
 import { 
-  ResponsiveContainer, ComposedChart, Area, Line, XAxis, YAxis, Tooltip, CartesianGrid 
+  ResponsiveContainer, ComposedChart, Line, XAxis, YAxis, Tooltip, CartesianGrid 
 } from 'recharts';
 import { subDays, subMonths, subYears, differenceInDays } from 'date-fns';
 import { useStore } from '../store/useStore';
@@ -18,28 +18,24 @@ interface Props {
 
 // Benchmark curves based on clinical trials (SURMOUNT-1 for Tirzepatide, STEP-1 for Semaglutide, TRIUMPH Phase 2 for Retatrutide)
 // Approximate; verify against the published trial reports. The curve shapes between the endpoints are an interpolation.
-const TRIAL_CURVES: Record<DrugOption, {
+export const TRIAL_CURVES: Record<DrugOption, {
   name: string;
-  type: 'band' | 'line';
   color: string;
-  getExpectedPercentLoss: (days: number) => { avg: number; min?: number; max?: number };
+  /** Average only. The earlier min/max band for Retatrutide (0.45x / 1.25x) had no cited source and was removed. */
+  getExpectedPercentLoss: (days: number) => { avg: number };
 }> = {
   Retatrutide: {
     name: 'TRIUMPH Phase 2 Trial (12mg)',
-    type: 'band',
-    color: '#047857', // Mint / teal shaded band
+    color: '#047857', // emerald-700
     getExpectedPercentLoss: (days: number) => {
       // 24.2% mean loss at 48 weeks (336 days)
       const t = Math.min(days / 336, 1.2);
       const avg = -24.2 * Math.pow(t, 0.7);
-      const min = avg * 0.45; // upper bound of band (less loss e.g. -8%)
-      const max = avg * 1.25; // lower bound of band (more loss e.g. -24%)
-      return { avg, min, max };
+      return { avg };
     }
   },
   Tirzepatide: {
     name: 'SURMOUNT-1 Trial (15mg)',
-    type: 'line',
     color: '#0369a1', // Bright blue curve
     getExpectedPercentLoss: (days: number) => {
       // 20.9% mean loss at 72 weeks (504 days)
@@ -50,7 +46,6 @@ const TRIAL_CURVES: Record<DrugOption, {
   },
   Semaglutide: {
     name: 'STEP 1 Trial (2.4mg)',
-    type: 'line',
     color: '#0369a1', // Bright blue curve
     getExpectedPercentLoss: (days: number) => {
       // 14.9% mean loss at 68 weeks (476 days)
@@ -123,38 +118,22 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
       const trialPkt = drugConfig.getExpectedPercentLoss(daysElapsed);
 
       if (isPercentMode) {
-        const bandMin = trialPkt.min !== undefined && trialPkt.max !== undefined ? Math.min(trialPkt.min, trialPkt.max) : undefined;
-        const bandMax = trialPkt.min !== undefined && trialPkt.max !== undefined ? Math.max(trialPkt.min, trialPkt.max) : undefined;
         return {
           days: daysElapsed,
           daysLabel: `${daysElapsed} d`,
           userWeight: percentChange,
           trialAvg: parseFloat(trialPkt.avg.toFixed(1)),
-          trialMin: bandMin !== undefined ? parseFloat(bandMin.toFixed(1)) : undefined,
-          trialMax: bandMax !== undefined ? parseFloat(bandMax.toFixed(1)) : undefined,
-          trialBand: bandMin !== undefined && bandMax !== undefined 
-            ? [parseFloat(bandMin.toFixed(1)), parseFloat(bandMax.toFixed(1))] 
-            : undefined,
           unitLabel: '%'
         };
       } else {
         // Absolute weight mode
         const trialAvgWeight = parseFloat((startWeight * (1 + trialPkt.avg / 100)).toFixed(1));
-        const w1 = trialPkt.min !== undefined ? startWeight * (1 + trialPkt.min / 100) : undefined;
-        const w2 = trialPkt.max !== undefined ? startWeight * (1 + trialPkt.max / 100) : undefined;
-        const bandMin = w1 !== undefined && w2 !== undefined ? Math.min(w1, w2) : undefined;
-        const bandMax = w1 !== undefined && w2 !== undefined ? Math.max(w1, w2) : undefined;
 
         return {
           days: daysElapsed,
           daysLabel: `${daysElapsed} d`,
           userWeight: currentVal,
           trialAvg: trialAvgWeight,
-          trialMin: bandMin !== undefined ? parseFloat(bandMin.toFixed(1)) : undefined,
-          trialMax: bandMax !== undefined ? parseFloat(bandMax.toFixed(1)) : undefined,
-          trialBand: bandMin !== undefined && bandMax !== undefined 
-            ? [parseFloat(bandMin.toFixed(1)), parseFloat(bandMax.toFixed(1))] 
-            : undefined,
           unitLabel: unit
         };
       }
@@ -168,8 +147,6 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
     chartData.forEach(d => {
       if (typeof d.userWeight === 'number' && !isNaN(d.userWeight)) allVals.push(d.userWeight);
       if (typeof d.trialAvg === 'number' && !isNaN(d.trialAvg)) allVals.push(d.trialAvg);
-      if (d.trialMin !== undefined && !isNaN(d.trialMin)) allVals.push(d.trialMin);
-      if (d.trialMax !== undefined && !isNaN(d.trialMax)) allVals.push(d.trialMax);
     });
     if (allVals.length === 0) return ['auto', 'auto'];
 
@@ -247,10 +224,10 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
       <div className="flex justify-end items-center gap-4 text-xs font-semibold text-muted mb-2">
         <div className="flex items-center gap-1.5">
           <span 
-            className="w-3 h-3 rounded-xs inline-block" 
-            style={{ backgroundColor: drugConfig.type === 'band' ? '#047857' : '#0369a1' }} 
+            className="w-4 h-0 border-t-[3px] border-dashed inline-block" style={{ borderColor: drugConfig.color }}
+            data-testid="reference-swatch"
           />
-          <span>Clinical trial avg. loss ({selectedDrug})</span>
+          <span>Illustrative reference interpolation ({selectedDrug})</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-3.5 h-0.5 bg-slate-800 inline-block" />
@@ -266,12 +243,6 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
 
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={chartData} margin={{ top: 15, right: 20, left: -10, bottom: 5 }}>
-            <defs>
-              <linearGradient id="trialBandGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#047857" stopOpacity={0.65}/>
-                <stop offset="95%" stopColor="#047857" stopOpacity={0.25}/>
-              </linearGradient>
-            </defs>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
             <XAxis 
               dataKey="daysLabel" 
@@ -296,27 +267,17 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
               }}
               formatter={(val, name) => [
                 isPercentMode ? `${val}%` : `${val} ${chartData[0]?.unitLabel || ''}`,
-                String(name) === 'userWeight' ? 'Your Weight' : `Trial Benchmark (${selectedDrug})`
+                String(name) === 'userWeight' ? 'Your Weight' : `Illustrative reference (${selectedDrug})`
               ]}
               labelFormatter={(label) => `Duration: ${label}`}
             />
 
-            {/* If band drug (Retatrutide), render area range */}
-            {drugConfig.type === 'band' && (
-              <Area
-                type="monotone"
-                dataKey="trialBand"
-                name="Clinical trial avg. loss"
-                stroke="none"
-                fill="url(#trialBandGrad)"
-              />
-            )}
-
-            {/* Clinical trial line */}
+            {/* Illustrative reference line (interpolated between approximate published endpoints; dashed so it never reads as data) */}
             <Line
               type="monotone"
               dataKey="trialAvg"
-              name="Clinical trial avg. loss"
+              name="Illustrative reference interpolation"
+              strokeDasharray="7 4"
               stroke={drugConfig.color}
               strokeWidth={3}
               dot={false}
