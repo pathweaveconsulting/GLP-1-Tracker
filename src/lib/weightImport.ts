@@ -84,8 +84,18 @@ function parseWeightCell(text: string): { value: number; unit: WeightUnit | null
   return Number.isFinite(value) ? { value, unit } : null;
 }
 
-const hasUnit = (h: string): WeightUnit | null =>
-  /(^|[^a-z])(kgs?|kilograms?)([^a-z]|$)/.test(h) ? 'kg' : /(^|[^a-z])(lbs?|pounds?)([^a-z]|$)/.test(h) ? 'lbs' : null;
+/**
+ * The unit named by a header: "Weight (kg)", weight_kg, WT-KG, WeightKg and weightlbs all count, but a unit
+ * is only read from a whole word (or from weight/wt/mass/body immediately followed by the unit), never from inside another word.
+ */
+const hasUnit = (raw: string): WeightUnit | null => {
+  const words = raw.trim().replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase().split(/[^a-z]+/).filter(Boolean);
+  for (const w of words) {
+    const m = /^(?:weight|wt|mass|body|bodyweight)?(kgs?|kilograms?|lbs?|pounds?)$/.exec(w);
+    if (m) return m[1].startsWith('k') ? 'kg' : 'lbs';
+  }
+  return null;
+};
 
 /**
  * Import weights from CSV. Header-driven: finds a date column and a weight column, detects kg/lb from the
@@ -102,10 +112,11 @@ export function importWeightsCsv(text: string, opts: { existing: WeightEntry[]; 
   const table = parseCsv(text);
   if (table.length < 2) return { ...base, errors: ['The file needs a header row and at least one data row.'] };
 
-  const header = table[0].map((h) => h.trim().toLowerCase());
+  const rawHeader = table[0].map((h) => h.trim());
+  const header = rawHeader.map((h) => h.toLowerCase());
   const dateCol = header.findIndex((h) => /date|day|when|time/.test(h));
   let weightCol = header.findIndex((h, i) => i !== dateCol && /weight|wt\b|mass/.test(h));
-  if (weightCol < 0) weightCol = header.findIndex((h, i) => i !== dateCol && (hasUnit(h) != null || /value|amount/.test(h)));
+  if (weightCol < 0) weightCol = header.findIndex((h, i) => i !== dateCol && (hasUnit(rawHeader[i]) != null || /value|amount/.test(h)));
   const unitCol = header.findIndex((h) => h === 'unit' || h === 'units');
   if (dateCol < 0 || weightCol < 0) {
     return { ...base, errors: ['Couldn’t find the columns. The first row should name a date column (e.g. “Date”) and a weight column (e.g. “Weight (kg)”).'] };
@@ -113,7 +124,7 @@ export function importWeightsCsv(text: string, opts: { existing: WeightEntry[]; 
 
   let unit: WeightUnit = opts.defaultUnit;
   let unitSource: WeightImportResult['unitSource'] = 'default';
-  const headerUnit = hasUnit(header[weightCol]);
+  const headerUnit = hasUnit(rawHeader[weightCol]);
   if (headerUnit) { unit = headerUnit; unitSource = 'header'; }
 
   const parsed: Array<{ day: string; value: number; unit: WeightUnit | null }> = [];

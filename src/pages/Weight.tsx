@@ -220,7 +220,11 @@ export function Weight() {
           pendingImport && (
             <>
               <p>
-                Read as <strong>{pendingImport.unit}</strong> ({{ header: 'from the column header', column: 'from the unit in the file', values: 'guessed from the values, so please check', default: 'your current unit, since the file doesn’t say' }[pendingImport.unitSource]}).
+                {pendingImport.unitSource === 'default' ? (
+                  <>No unit in the file; assuming <strong>{pendingImport.unit}</strong>, your current unit. Cancel and add a unit to the header if that is wrong.</>
+                ) : (
+                  <>Read as <strong>{pendingImport.unit}</strong> ({{ header: 'from the column header', column: 'from the unit in the file', values: 'guessed from the values, so please check' }[pendingImport.unitSource]}).</>
+                )}
               </p>
               <p className="mt-1">
                 {pendingImport.duplicates} already in your log and {pendingImport.skipped} unreadable {pendingImport.skipped === 1 ? 'row' : 'rows'} will be skipped.
