@@ -13,10 +13,10 @@ async function openDoseModal() {
 }
 
 describe('LogDoseModal', () => {
-  it('has no made-up 7.5 mg default: starts at the first standard step with no history', async () => {
+  it('has no made-up default: with no history the amount starts empty (RV03)', async () => {
     seedStore('empty', 'lbs');
     const { dialog } = await openDoseModal();
-    expect(within(dialog).getByLabelText(/dose amount/i)).toHaveValue(2.5);
+    expect(within(dialog).getByLabelText(/dose amount/i)).toHaveValue(null);
   });
 
   it('starts at the last dose of that drug, and switching drug re-defaults', async () => {
@@ -24,7 +24,7 @@ describe('LogDoseModal', () => {
     const { user, dialog } = await openDoseModal();
     expect(within(dialog).getByLabelText(/dose amount/i)).toHaveValue(7.5);
     await user.selectOptions(within(dialog).getByLabelText(/^medication/i), 'Semaglutide');
-    expect(within(dialog).getByLabelText(/dose amount/i)).toHaveValue(0.25);
+    expect(within(dialog).getByLabelText(/dose amount/i)).toHaveValue(null); // no semaglutide history: blank, not a reference step
     const names = within(dialog).getAllByRole('option').map((o) => o.textContent);
     expect(names).toEqual(['Tirzepatide', 'Semaglutide', 'Retatrutide', 'Other']);
   });
@@ -57,6 +57,7 @@ describe('LogDoseModal', () => {
   it('saves a standard dose with the chosen local date and time', async () => {
     seedStore('empty', 'lbs');
     const { user, dialog } = await openDoseModal();
+    await user.click(within(dialog).getByRole('button', { name: '2.5 mg' })); // the amount is no longer pre-filled (RV03)
     const date = within(dialog).getByLabelText(/^date/i);
     const time = within(dialog).getByLabelText(/^time/i);
     await user.clear(date);
@@ -73,6 +74,7 @@ describe('LogDoseModal', () => {
   it('rejects an injection time in the future', async () => {
     seedStore('empty', 'lbs');
     const { user, dialog } = await openDoseModal();
+    await user.click(within(dialog).getByRole('button', { name: '2.5 mg' })); // the amount is no longer pre-filled (RV03)
     const time = within(dialog).getByLabelText(/^time/i);
     const t = new Date(Date.now() + 3 * 3600_000);
     const hh = String(t.getHours()).padStart(2, '0');

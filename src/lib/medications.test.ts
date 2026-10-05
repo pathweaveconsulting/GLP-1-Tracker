@@ -72,9 +72,9 @@ describe('defaultDoseAmount', () => {
     expect(defaultDoseAmount('Tirzepatide', hist)).toBe(7.5);
     expect(defaultDoseAmount('Semaglutide', hist)).toBe(0.5);
   });
-  it('falls back to the first standard step, or nothing', () => {
-    expect(defaultDoseAmount('Tirzepatide', [])).toBe(2.5);
-    expect(defaultDoseAmount('Semaglutide', [])).toBe(0.25);
+  it('falls back to nothing: no reference strength is ever pre-filled (RV03)', () => {
+    expect(defaultDoseAmount('Tirzepatide', [])).toBeNull();
+    expect(defaultDoseAmount('Semaglutide', [])).toBeNull();
     expect(defaultDoseAmount('Retatrutide', [])).toBeNull();
     expect(defaultDoseAmount('Other', hist)).toBeNull();
   });

@@ -146,9 +146,11 @@ export function doseWarning(medication: Medication, amountMg: number): DoseWarni
   return null;
 }
 
-/** Starting amount for the dose form: the user's last dose of that drug, else the first standard step, else blank. */
+/**
+ * Starting amount for the dose form: the user's own last dose of that drug, otherwise nothing.
+ * It never falls back to a reference strength, so a first-ever dose must be typed (or picked) deliberately.
+ */
 export function defaultDoseAmount(medication: Medication, history: Array<{ medication: Medication; amountMg: number; date: string }>): number | null {
   const mine = history.filter((d) => d.medication === medication).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  if (mine.length) return mine[0].amountMg;
-  return medicationInfo(medication).doseSteps[0] ?? null;
+  return mine.length ? mine[0].amountMg : null;
 }
