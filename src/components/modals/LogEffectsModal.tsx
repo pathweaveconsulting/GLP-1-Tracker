@@ -31,7 +31,7 @@ const ACTIVE: Record<Severity, string> = {
   severe: 'bg-rose-100 border-rose-500 text-rose-900',
 };
 
-function SeveritySelector({ label, value, onChange }: { label: string; value: Severity; onChange: (v: Severity) => void }) {
+function SeveritySelector({ label, value, onChange }: { label: string; value: Severity | undefined; onChange: (v: Severity) => void }) {
   const id = useId();
   return (
     <div className="space-y-1" role="group" aria-labelledby={id}>
@@ -59,19 +59,19 @@ function EffectsForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
   const today = todayLocalDateString();
   const [date, setDate] = useState<string>(today);
   const [dateError, setDateError] = useState<string>();
-  // Every symptom starts at "none": nothing is pre-selected on the user's behalf.
+  // No rating is selected until the user explicitly chooses one.
   const [severities, setSeverities] = useState<Record<string, Severity>>({});
-  const [customEffects, setCustomEffects] = useState<Array<{ name: string; level: Severity }>>([]);
+  const [customEffects, setCustomEffects] = useState<Array<{ name: string; level?: Severity }>>([]);
   const [newEffectName, setNewEffectName] = useState('');
   const [isAddingCustom, setIsAddingCustom] = useState(false);
   const [notes, setNotes] = useState('');
 
-  const sev = (k: string): Severity => severities[k] ?? 'none';
+  const sev = (k: string): Severity | undefined => severities[k];
 
   const handleAddCustomEffect = () => {
     const name = newEffectName.trim();
     if (!name || customEffects.some((c) => c.name.toLowerCase() === name.toLowerCase())) return;
-    setCustomEffects((prev) => [...prev, { name, level: 'mild' }]);
+    setCustomEffects((prev) => [...prev, { name }]);
     setNewEffectName('');
     setIsAddingCustom(false);
   };
@@ -83,25 +83,11 @@ function EffectsForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
       return;
     }
     const customRecord: Record<string, Severity> = {};
-    customEffects.forEach((ce) => { customRecord[ce.name] = ce.level; });
+    customEffects.forEach((ce) => { if (ce.level != null) customRecord[ce.name] = ce.level; });
 
     addEffect({
       date: dateOnlyToIso(date),
-      hunger: sev('hunger'),
-      foodNoise: sev('foodNoise'),
-      cravings: 'none',
-      mood: 'none',
-      energy: 'none',
-      nausea: sev('nausea'),
-      fatigue: sev('fatigue'),
-      constipation: sev('constipation'),
-      diarrhea: sev('diarrhea'),
-      reflux: sev('reflux'),
-      appetiteLoss: sev('appetiteLoss'),
-      bloating: sev('bloating'),
-      dehydration: 'none',
-      indigestion: 'none',
-      insomnia: 'none',
+      ...severities,
       customEffects: customRecord,
       notes,
     });
@@ -127,6 +113,7 @@ function EffectsForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
         {dateError && <p role="alert" className="text-xs text-danger mt-1">{dateError}</p>}
       </div>
 
+      <p className="text-xs text-muted">Choose ratings for the symptoms you want to record. Unanswered symptoms stay not recorded; select None only when you mean none.</p>
       {DEFAULT_SYMPTOMS.map((s) => (
         <SeveritySelector key={s.key} label={s.label} value={sev(s.key)} onChange={(v) => setSeverities((p) => ({ ...p, [s.key]: v }))} />
       ))}

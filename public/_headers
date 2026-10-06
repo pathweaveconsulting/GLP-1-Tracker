@@ -6,9 +6,11 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
   X-Frame-Options: DENY
+  Cache-Control: no-transform
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'
   Permissions-Policy: camera=(), microphone=(), geolocation=()
 
 # Vite gives every file in /assets a content hash in its name, so these never change under the same URL.
 # index.html is deliberately not cached this way, so a new deploy is picked up on the next load.
 /assets/*
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=31536000, immutable, no-transform

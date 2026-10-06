@@ -158,11 +158,11 @@ export function HealthCenter() {
                 You haven't logged symptoms in the last 7 days, so we can't say how the week has gone. <Link to="/effects" className="text-[#6D4AFF] font-semibold hover:underline">Log how you feel</Link>
               </p>
             ) : symptoms.items.length === 0 ? (
-              <p className="text-xs text-muted mt-1 font-normal leading-relaxed">You logged {symptoms.daysLogged} {symptoms.daysLogged === 1 ? 'day' : 'days'} this week and recorded no symptoms.</p>
+              <p className="text-xs text-muted mt-1 font-normal leading-relaxed">You logged {symptoms.daysLogged} {symptoms.daysLogged === 1 ? 'day' : 'days'} this week with no positive symptom ratings recorded. Unanswered symptoms remain unrecorded.</p>
             ) : (
               <ul className="text-xs text-muted mt-2 space-y-1">
                 {symptoms.items.slice(0, 6).map((i) => (
-                  <li key={i.key}>• {i.label}: {severityLabel(i.peak).toLowerCase()} at worst, on {i.daysPresent} of {symptoms.daysLogged} logged {symptoms.daysLogged === 1 ? 'day' : 'days'}</li>
+                  <li key={i.key}>• {i.label}: {severityLabel(i.peak).toLowerCase()} at worst, on {i.daysPresent} of {i.daysRecorded} recorded {i.daysRecorded === 1 ? 'day' : 'days'}</li>
                 ))}
               </ul>
             )}

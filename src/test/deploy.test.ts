@@ -34,7 +34,8 @@ describe('deploy: public/_headers (Cloudflare Pages)', () => {
 
   it('caches only the content-hashed build assets as immutable, never index.html', () => {
     expect(rules['/assets/*']['Cache-Control']).toMatch(/immutable/);
-    expect(rules['/*']['Cache-Control']).toBeUndefined();
+    expect(rules['/*']['Cache-Control']).not.toMatch(/immutable/);
+    expect(rules['/*']['Cache-Control']).toMatch(/no-transform/);
   });
 
   it('stays within the Pages limits (100 rules, 2000 characters per line)', () => {
@@ -42,8 +43,12 @@ describe('deploy: public/_headers (Cloudflare Pages)', () => {
     for (const line of read('public/_headers').split('\n')) expect(line.length).toBeLessThanOrEqual(2000);
   });
 
-  it('does not set a Content-Security-Policy that was never tested against the app', () => {
-    expect(JSON.stringify(rules)).not.toMatch(/Content-Security-Policy/i);
+  it('allows local app assets and blocks outbound connections and third-party scripts', () => {
+    const csp = rules['/*']['Content-Security-Policy'];
+    expect(csp).toContain("script-src 'self'");
+    expect(csp).toContain("connect-src 'none'");
+    expect(csp).toContain("style-src 'self' 'unsafe-inline'");
+    expect(csp).not.toMatch(/https?:/);
   });
 });
 

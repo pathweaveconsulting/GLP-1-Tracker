@@ -22,21 +22,22 @@ export type Severity = 'none' | 'mild' | 'moderate' | 'severe';
 export interface EffectEntry {
   id: string;
   date: string; // ISO format (representing the day)
-  hunger: Severity;
-  foodNoise: Severity;
-  cravings: Severity;
-  mood: Severity;
-  energy: Severity;
-  nausea: Severity;
-  fatigue: Severity;
-  constipation: Severity;
-  diarrhea: Severity;
-  reflux: Severity;
-  appetiteLoss: Severity;
-  bloating: Severity;
-  dehydration: Severity;
-  indigestion: Severity;
-  insomnia: Severity;
+  /** Missing means not recorded; never infer absence from an unanswered field. */
+  hunger?: Severity;
+  foodNoise?: Severity;
+  cravings?: Severity;
+  mood?: Severity;
+  energy?: Severity;
+  nausea?: Severity;
+  fatigue?: Severity;
+  constipation?: Severity;
+  diarrhea?: Severity;
+  reflux?: Severity;
+  appetiteLoss?: Severity;
+  bloating?: Severity;
+  dehydration?: Severity;
+  indigestion?: Severity;
+  insomnia?: Severity;
   customEffects?: Record<string, Severity>;
   notes: string;
 }

@@ -65,5 +65,6 @@ export function downloadTextFile(filename: string, content: string, mime = 'text
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 0);
+  // Keep the URL alive while browsers hand off the download; a click is not a save acknowledgement.
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }

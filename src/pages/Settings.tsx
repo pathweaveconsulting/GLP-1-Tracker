@@ -28,12 +28,12 @@ export function Settings() {
 
   const handleExportCSV = () => {
     exportTidyCsv(snapshot(), unit);
-    showToast('CSV export downloaded.');
+    showToast('CSV export started. Check your downloads.');
   };
 
   const handleExportJSON = () => {
     exportBackupJson(snapshot());
-    showToast('Backup downloaded. Keep it somewhere safe.');
+    showToast('Backup download started. Check your downloads and keep the file safe.');
   };
 
   const handleRestoreFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,6 +108,7 @@ export function Settings() {
               If you clear your browser data (or use a private window), it is deleted for good. Download a backup now and then.
             </p>
           </div>
+          {effects.length > 0 && <p className="text-xs text-muted">Earlier versions filled unanswered symptom ratings with None. Older ratings are preserved because we cannot tell which ones you chose. New logs save only your selections.</p>}
           <div className="space-y-2 pt-2">
             <Button onClick={handleExportCSV} variant="outline" className="w-full justify-start gap-2.5 rounded-[14px] border-[#E5E7EB] text-[#111827] font-semibold text-xs py-3">
               <Download className="w-4 h-4 text-muted" aria-hidden="true" /> Export everything as CSV

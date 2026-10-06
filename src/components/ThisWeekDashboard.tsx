@@ -202,7 +202,7 @@ export function ThisWeekDashboard({ className = '' }: Props) {
               You have not logged symptoms in the last 7 days. Even a quick "none" day helps us learn your pattern.
             </p>
           ) : summary.items.length === 0 ? (
-            <p className="text-xs text-muted leading-relaxed">You logged {summary.daysLogged} {summary.daysLogged === 1 ? 'day' : 'days'} this week and recorded no symptoms.</p>
+            <p className="text-xs text-muted leading-relaxed">You logged {summary.daysLogged} {summary.daysLogged === 1 ? 'day' : 'days'} this week with no positive symptom ratings recorded. Unanswered symptoms remain unrecorded.</p>
           ) : (
             <>
               <p className="text-[11px] text-subtle">{summary.daysLogged} {summary.daysLogged === 1 ? 'day' : 'days'} logged</p>

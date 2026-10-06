@@ -57,7 +57,8 @@ describe('parseBackup', () => {
     if (r.ok) {
       expect(r.data.doses[0].medication).toBe('Tirzepatide');
       expect(r.data.settings.medication).toBe('Semaglutide');
-      expect(r.data.effects[0]).toMatchObject({ hunger: 'moderate', nausea: 'severe', reflux: 'none', customEffects: { Headache: 'moderate' } });
+      expect(r.data.effects[0]).toMatchObject({ hunger: 'moderate', nausea: 'severe', customEffects: { Headache: 'moderate' } });
+      expect(r.data.effects[0]).not.toHaveProperty('reflux');
     }
   });
   it('rejects missing or invalid settings', () => {

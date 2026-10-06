@@ -1,4 +1,4 @@
-import type { DoseEvent, EffectEntry, Severity, WeightEntry } from '../types';
+import type { DoseEvent, EffectEntry, WeightEntry } from '../types';
 import { normalizeMedication } from './medications';
 import { normalizeSeverity } from './symptoms';
 
@@ -53,9 +53,15 @@ export function checkEffect(r: unknown): RowResult<EffectEntry> {
   if (!isIso(r.date)) reasons.push('“date” isn’t a valid date.');
   if (reasons.length) return { ok: false, reasons };
   const entry = { id: r.id as string, date: r.date as string, notes: typeof r.notes === 'string' ? r.notes : '' } as EffectEntry;
-  for (const k of SEVERITY_FIELDS) (entry as unknown as Record<string, Severity>)[k] = normalizeSeverity(r[k]);
+  for (const k of SEVERITY_FIELDS) {
+    const severity = normalizeSeverity(r[k]);
+    if (severity != null) entry[k] = severity;
+  }
   if (isObj(r.customEffects)) {
-    entry.customEffects = Object.fromEntries(Object.entries(r.customEffects).map(([name, v]) => [name, normalizeSeverity(v)]));
+    entry.customEffects = Object.fromEntries(Object.entries(r.customEffects).flatMap(([name, v]) => {
+      const severity = normalizeSeverity(v);
+      return severity == null ? [] : [[name, severity]];
+    }));
   }
   return { ok: true, row: entry };
 }

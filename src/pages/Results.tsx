@@ -10,7 +10,7 @@ import { WeightJourneyDashboard } from '../components/WeightJourneyDashboard';
 import { format } from 'date-fns';
 import { BMI_FOOTNOTE, bmi as calcBmi, bmiCategory, formatWeight, formatWeightChange, getWeightUnit } from '../lib/units';
 import { dosesBySite, doseCountsByAmount, latestWeight, weeklyRate } from '../lib/insights';
-import { SEVERITY_RANK, sevOf, sortEffects } from '../lib/symptoms';
+import { severityValue, sevOf, sortEffects } from '../lib/symptoms';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { Sparkles, TrendingUp, Compass } from 'lucide-react';
 
@@ -29,10 +29,10 @@ export function Results() {
   const unit = getWeightUnit(settings);
   const effectData = sortEffects(effects).map(e => ({
     date: format(new Date(e.date), 'MMM d'),
-    hunger: SEVERITY_RANK[sevOf(e, 'hunger')],
-    foodNoise: SEVERITY_RANK[sevOf(e, 'foodNoise')],
-    nausea: SEVERITY_RANK[sevOf(e, 'nausea')],
-    fatigue: SEVERITY_RANK[sevOf(e, 'fatigue')]
+    hunger: severityValue(sevOf(e, 'hunger')),
+    foodNoise: severityValue(sevOf(e, 'foodNoise')),
+    nausea: severityValue(sevOf(e, 'nausea')),
+    fatigue: severityValue(sevOf(e, 'fatigue'))
   }));
 
   const latest = latestWeight(weights);

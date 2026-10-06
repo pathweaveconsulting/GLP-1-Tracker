@@ -133,7 +133,7 @@ export function Reports() {
             {report.symptoms.daysLogged === 0 ? (
               <p className="text-xs text-muted">No symptom logs in this period.</p>
             ) : report.symptoms.items.length === 0 ? (
-              <p className="text-xs text-muted">You logged {report.symptoms.daysLogged} {report.symptoms.daysLogged === 1 ? 'day' : 'days'} and recorded no symptoms.</p>
+              <p className="text-xs text-muted">You logged {report.symptoms.daysLogged} {report.symptoms.daysLogged === 1 ? 'day' : 'days'} with no positive symptom ratings recorded. Unanswered symptoms remain unrecorded.</p>
             ) : (
               <>
                 <p className="text-[11px] text-subtle mb-2">{report.symptoms.daysLogged} {report.symptoms.daysLogged === 1 ? 'day' : 'days'} logged</p>

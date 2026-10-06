@@ -44,7 +44,7 @@ describe('exports', () => {
     expect(blobs[0].type).toMatch(/^text\/csv/);
     expect(csv.split('\r\n')[0].replace(/^\uFEFF/, '')).toBe('Type,Date,Item,Value,Unit,Details,Notes');
     expect(csv).toMatch(/Weight,\d{4}-\d{2}-\d{2},Weight,\d+(\.\d)?,kg,/);
-    expect(screen.getByRole('status')).toHaveTextContent(/csv export downloaded/i);
+    expect(screen.getByRole('status')).toHaveTextContent(/csv export started/i);
   });
 
   it('AllLogs uses the same export', async () => {

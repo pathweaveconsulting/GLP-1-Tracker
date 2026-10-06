@@ -41,7 +41,7 @@ describe('log modals keep the chosen calendar day (any timezone)', () => {
     expect(useStore.getState().weights).toHaveLength(0);
   });
 
-  it('symptoms: typed date is the stored local day, nothing is pre-selected, and appetite suppression starts at none', async () => {
+  it('symptoms: typed date is the stored local day, nothing is pre-selected, and unanswered symptoms stay unrecorded', async () => {
     seedStore('empty', 'lbs');
     const user = userEvent.setup();
     await open('/effects');
@@ -53,7 +53,7 @@ describe('log modals keep the chosen calendar day (any timezone)', () => {
     await user.click(within(dialog).getByRole('button', { name: /save log/i }));
     const e = useStore.getState().effects[0];
     expect(isoToLocalDateString(e.date)).toBe('2026-03-05');
-    expect(e.appetiteLoss).toBe('none'); // used to default to "mild" without the user choosing it
-    expect(e.hunger).toBe('none');
+    expect(e.appetiteLoss).toBeUndefined(); // No rating chosen means no observation.
+    expect(e.hunger).toBeUndefined();
   });
 });

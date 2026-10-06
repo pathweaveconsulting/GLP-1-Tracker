@@ -21,13 +21,15 @@ describe('tidy export', () => {
   });
   it('writes local dates, dose time and a row per logged symptom, sorted by date', () => {
     const rows = buildTidyRows({ doses, weights, effects, unit: 'lbs' });
+    const fields = ['Hunger', 'Food noise', 'Appetite suppression', 'Nausea', 'Fatigue', 'Reflux / heartburn', 'Constipation', 'Diarrhea', 'Bloating'];
     expect(rows.map((r) => [r[0], r[1], r[2]])).toEqual([
       ['Weight', '2026-03-05', 'Weight'],
       ['Dose', '2026-03-05', 'Tirzepatide'],
-      ['Symptom', '2026-03-06', 'Nausea'],
+      ...fields.map(f => ['Symptom', '2026-03-06', f]),
       ['Symptom', '2026-03-06', 'Headache'],
-      ['Symptom', '2026-03-07', 'No symptoms'],
+      ...fields.map(f => ['Symptom', '2026-03-07', f]),
     ]);
+    expect(rows.find(r => r[1] === '2026-03-07' && r[2] === 'Nausea')?.[3]).toBe('None');
     expect(rows[1][5]).toBe('Site: Thigh: Left; Time: 21:30; Discomfort: 2/10');
     expect(rows[2][6]).toBe('rough, day'); // note only on the first symptom row of that day
     expect(rows[3][6]).toBe('');
