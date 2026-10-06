@@ -45,10 +45,11 @@ describe('trackedFields', () => {
 });
 
 describe('normalizeSeverity', () => {
-  it('maps loose text and falls back to none', () => {
+  it('maps explicit severities and leaves absent or invalid values unrecorded', () => {
     expect(normalizeSeverity('MODERATE')).toBe('moderate');
     expect(normalizeSeverity(' high ')).toBe('severe');
-    expect(normalizeSeverity('banana')).toBe('none');
-    expect(normalizeSeverity(undefined)).toBe('none');
+    expect(normalizeSeverity('banana')).toBeUndefined();
+    expect(normalizeSeverity(undefined)).toBeUndefined();
+    expect(normalizeSeverity('none')).toBe('none');
   });
 });

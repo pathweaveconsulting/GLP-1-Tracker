@@ -57,7 +57,7 @@ describe('release data regressions', () => {
     const before = JSON.stringify(effects);
     const rows = symptomOverview(effects);
     expect(rows.find(r => r.key === 'nausea')).toMatchObject({ daysPresent: 1, daysLogged: 2, avgWhenPresent: 3, peak: 'severe', trend: null });
-    expect(rows.find(r => r.key === 'custom:Headache')).toMatchObject({ daysPresent: 1, daysLogged: 2, peak: 'moderate' });
+    expect(rows.find(r => r.key === 'custom:Headache')).toMatchObject({ daysPresent: 1, daysLogged: 1, peak: 'moderate' });
     const summary = recentSymptomSummary(effects, new Date(2026, 0, 2, 18));
     expect(summary.daysLogged).toBe(2);
     expect(summary.items.find(r => r.key === 'nausea')?.daysPresent).toBe(1);

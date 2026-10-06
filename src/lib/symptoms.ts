@@ -4,16 +4,17 @@ import { localDayDiff, isoToLocalDateString } from './dates';
 export const SEVERITIES: readonly Severity[] = ['none', 'mild', 'moderate', 'severe'];
 export const SEVERITY_RANK: Record<Severity, number> = { none: 0, mild: 1, moderate: 2, severe: 3 };
 
-export function severityLabel(s: Severity): string {
+export function severityLabel(s: Severity | undefined | null): string {
+  if (s == null) return 'Not recorded';
   return s === 'none' ? 'None' : s === 'mild' ? 'Mild' : s === 'moderate' ? 'Moderate' : 'Severe';
 }
 
-export function normalizeSeverity(v: unknown): Severity {
+export function normalizeSeverity(v: unknown): Severity | undefined {
   const s = typeof v === 'string' ? v.trim().toLowerCase() : '';
   if (s === 'mild' || s === 'low' || s === 'light') return 'mild';
   if (s === 'moderate' || s === 'medium' || s === 'mod') return 'moderate';
   if (s === 'severe' || s === 'high' || s === 'sev') return 'severe';
-  return 'none';
+  return s === 'none' ? 'none' : undefined;
 }
 
 type FieldKey = Exclude<keyof EffectEntry, 'id' | 'date' | 'notes' | 'customEffects'>;
@@ -52,7 +53,10 @@ export function trackedFields(effects: EffectEntry[]): SymptomField[] {
   return [...COLLECTED_FIELDS, ...extras];
 }
 
-export const sevOf = (e: EffectEntry, key: FieldKey): Severity => (e[key] as Severity | undefined) ?? 'none';
+export const sevOf = (e: EffectEntry, key: FieldKey): Severity | undefined => e[key];
+
+/** Null creates a chart gap; an unanswered field is never a zero rating. */
+export const severityValue = (s: Severity | undefined): number | null => s == null ? null : SEVERITY_RANK[s];
 
 export function sortEffects(effects: EffectEntry[]): EffectEntry[] {
   return [...effects].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -70,10 +74,13 @@ export function dailySymptomEntries(effects: EffectEntry[]): EffectEntry[] {
       continue;
     }
     for (const { key } of fields) {
-      if (SEVERITY_RANK[sevOf(entry, key)] > SEVERITY_RANK[sevOf(current, key)]) current[key] = sevOf(entry, key);
+      const incoming = sevOf(entry, key);
+      const existing = sevOf(current, key);
+      if (incoming != null && (existing == null || SEVERITY_RANK[incoming] > SEVERITY_RANK[existing])) current[key] = incoming;
     }
     for (const [name, severity] of Object.entries(entry.customEffects ?? {})) {
-      if (SEVERITY_RANK[severity] > SEVERITY_RANK[current.customEffects?.[name] ?? 'none']) current.customEffects![name] = severity;
+      const existing = current.customEffects?.[name];
+      if (existing == null || SEVERITY_RANK[severity] > SEVERITY_RANK[existing]) current.customEffects![name] = severity;
     }
   }
   return [...days.values()];
@@ -92,8 +99,9 @@ export interface SymptomSummaryItem {
   key: string;
   label: string;
   daysPresent: number;
+  daysRecorded: number;
   peak: Severity;
-  latest: Severity;
+  latest: Severity | undefined;
 }
 
 export interface SymptomSummary {
@@ -114,22 +122,25 @@ export function summarizeSymptoms(effects: EffectEntry[], from: Date, to: Date):
 function summarizeEntries(inWindow: EffectEntry[]): Omit<SymptomSummary, 'windowDays'> {
   const daily = dailySymptomEntries(inWindow);
   const items: SymptomSummaryItem[] = [];
-  const consider = (key: string, label: string, get: (e: EffectEntry) => Severity) => {
+  const consider = (key: string, label: string, get: (e: EffectEntry) => Severity | undefined) => {
     let daysPresent = 0;
+    let daysRecorded = 0;
     let peak: Severity = 'none';
     for (const e of daily) {
       const s = get(e);
+      if (s == null) continue;
+      daysRecorded++;
       if (s !== 'none') daysPresent++;
       if (SEVERITY_RANK[s] > SEVERITY_RANK[peak]) peak = s;
     }
     if (daysPresent > 0) {
-      items.push({ key, label, daysPresent, peak, latest: get(inWindow[inWindow.length - 1]) });
+      items.push({ key, label, daysPresent, daysRecorded, peak, latest: get(inWindow[inWindow.length - 1]) });
     }
   };
   for (const f of trackedFields(inWindow)) consider(f.key, f.label, (e) => sevOf(e, f.key));
   const customNames = new Set<string>();
   inWindow.forEach((e) => Object.keys(e.customEffects ?? {}).forEach((n) => customNames.add(n)));
-  customNames.forEach((name) => consider(`custom:${name}`, name, (e) => (e.customEffects?.[name] as Severity | undefined) ?? 'none'));
+  customNames.forEach((name) => consider(`custom:${name}`, name, (e) => e.customEffects?.[name]));
 
   items.sort((a, b) => SEVERITY_RANK[b.peak] - SEVERITY_RANK[a.peak] || b.daysPresent - a.daysPresent);
   return { daysLogged: daily.length, items };

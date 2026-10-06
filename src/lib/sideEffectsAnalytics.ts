@@ -1,6 +1,6 @@
 import type { DoseEvent, EffectEntry, Severity } from '../types';
 import { localDayDiff } from './dates';
-import { SEVERITY_RANK, sevOf, sortEffects, trackedFields, dailySymptomEntries } from './symptoms';
+import { severityValue, sevOf, sortEffects, trackedFields, dailySymptomEntries } from './symptoms';
 import { sortByDate } from './insights';
 
 /** Side-effect fields that describe how the body is coping (used for "recovery" and dose comparison). */
@@ -24,16 +24,17 @@ export interface SymptomOverviewRow {
 
 export function symptomOverview(effects: EffectEntry[]): SymptomOverviewRow[] {
   const sorted = dailySymptomEntries(effects);
-  const half = Math.floor(sorted.length / 2);
-  const older = sorted.slice(0, half);
-  const newer = sorted.slice(half);
   const rows: SymptomOverviewRow[] = [];
-  const handle = (key: string, label: string, get: (e: EffectEntry) => Severity) => {
-    const present = sorted.map((e) => SEVERITY_RANK[get(e)]).filter((v) => v > 0);
+  const handle = (key: string, label: string, get: (e: EffectEntry) => Severity | undefined) => {
+    const recorded = sorted.filter((e) => get(e) != null);
+    const half = Math.floor(recorded.length / 2);
+    const older = recorded.slice(0, half);
+    const newer = recorded.slice(half);
+    const present = recorded.map((e) => severityValue(get(e))!).filter((v) => v > 0);
     if (present.length === 0) return;
-    const rate = (xs: EffectEntry[]) => (xs.length ? xs.filter((e) => SEVERITY_RANK[get(e)] > 0).length / xs.length : 0);
+    const rate = (xs: EffectEntry[]) => (xs.length ? xs.filter((e) => (severityValue(get(e)) ?? 0) > 0).length / xs.length : 0);
     let trend: SymptomOverviewRow['trend'] = null;
-    if (sorted.length >= 6) {
+    if (recorded.length >= 6) {
       const d = rate(newer) - rate(older);
       trend = d <= -0.15 ? 'less often' : d >= 0.15 ? 'more often' : 'about the same';
     }
@@ -41,7 +42,7 @@ export function symptomOverview(effects: EffectEntry[]): SymptomOverviewRow[] {
       key,
       label,
       daysPresent: present.length,
-      daysLogged: sorted.length,
+      daysLogged: recorded.length,
       peak: SEV_BY_RANK[Math.max(...present)],
       avgWhenPresent: mean(present),
       trend,
@@ -54,7 +55,7 @@ export function symptomOverview(effects: EffectEntry[]): SymptomOverviewRow[] {
   }
   const customs = new Set<string>();
   sorted.forEach((e) => Object.keys(e.customEffects ?? {}).forEach((n) => customs.add(n)));
-  customs.forEach((n) => handle(`custom:${n}`, n, (e) => (e.customEffects?.[n] as Severity | undefined) ?? 'none'));
+  customs.forEach((n) => handle(`custom:${n}`, n, (e) => e.customEffects?.[n]));
   return rows.sort((a, b) => b.daysPresent - a.daysPresent);
 }
 
@@ -82,7 +83,9 @@ export function assignLogsToDoses(effects: EffectEntry[], doses: DoseEvent[]): A
   return out;
 }
 
-const giScore = (e: EffectEntry) => mean(GI_FIELDS.map((k) => SEVERITY_RANK[sevOf(e, k)]))!;
+const recordedValues = (entries: EffectEntry[], key: Parameters<typeof sevOf>[1]) =>
+  entries.map((e) => severityValue(sevOf(e, key))).filter((v): v is number => v != null);
+const giScore = (e: EffectEntry) => mean(GI_FIELDS.flatMap((k) => recordedValues([e], k)));
 
 export interface RecoveryPoint {
   day: string;
@@ -97,7 +100,7 @@ export function recoveryPattern(effects: EffectEntry[], doses: DoseEvent[]): Rec
   const assigned = assignLogsToDoses(effects, doses);
   return Array.from({ length: 7 }, (_, offset) => {
     const at = assigned.filter((a) => a.offset === offset);
-    return { day: offset === 0 ? 'Day 0 (shot)' : `Day ${offset}`, offset, avg: at.length ? mean(at.map((a) => giScore(a.effect))) : null, logs: at.length };
+    return { day: offset === 0 ? 'Day 0 (shot)' : `Day ${offset}`, offset, avg: at.length ? mean(at.map((a) => giScore(a.effect)).filter((v): v is number => v != null)) : null, logs: at.length };
   });
 }
 
@@ -128,8 +131,9 @@ export function symptomHeatmap(effects: EffectEntry[], mode: 'months' | 'weeks',
       label: f.label,
       cells: headers.map((h) => {
         const entries = groups.get(h) ?? [];
-        if (entries.length === 0) return null;
-        return SEV_BY_RANK[Math.max(...entries.map((e) => SEVERITY_RANK[sevOf(e, f.key)]))];
+        const values = recordedValues(entries, f.key);
+        if (values.length === 0) return null;
+        return SEV_BY_RANK[Math.max(...values)];
       }),
     }));
   return { headers, rows };
@@ -152,8 +156,8 @@ export function appetiteTrend(effects: EffectEntry[]): AppetitePoint[] {
   }
   return Array.from(groups, ([period, es]) => ({
     period,
-    hunger: mean(es.map((e) => SEVERITY_RANK[sevOf(e, 'hunger')])),
-    foodNoise: mean(es.map((e) => SEVERITY_RANK[sevOf(e, 'foodNoise')])),
+    hunger: mean(recordedValues(es, 'hunger')),
+    foodNoise: mean(recordedValues(es, 'foodNoise')),
     logs: es.length,
   }));
 }
@@ -166,8 +170,11 @@ export function doseSymptomComparison(effects: EffectEntry[], doses: DoseEvent[]
   const groups = labels.map((label) => ({ label, items: assigned.filter((a) => doseLabel(a.dose) === label) })).filter((g) => g.items.length > 0);
   const fields = trackedFields(effects).filter((f) => (GI_FIELDS as readonly string[]).includes(f.key));
   const symptoms = fields.map((f) => {
-    const row: Record<string, string | number> = { symptom: f.label };
-    for (const g of groups) row[g.label] = Number(mean(g.items.map((a) => SEVERITY_RANK[sevOf(a.effect, f.key)]))!.toFixed(2));
+    const row: Record<string, string | number | null> = { symptom: f.label };
+    for (const g of groups) {
+      const avg = mean(recordedValues(g.items.map((a) => a.effect), f.key));
+      row[g.label] = avg == null ? null : Number(avg.toFixed(2));
+    }
     return row;
   });
   return { doses: groups.map((g) => ({ label: g.label, logs: g.items.length })), symptoms };
@@ -175,7 +182,7 @@ export function doseSymptomComparison(effects: EffectEntry[], doses: DoseEvent[]
 
 export interface InjectionDetail {
   logs: number;
-  averages: Array<{ label: string; avg: number }>;
+  averages: Array<{ label: string; avg: number | null }>;
 }
 
 /** Average severity per symptom in the week after one specific injection. */
@@ -184,6 +191,6 @@ export function injectionDetail(effects: EffectEntry[], doses: DoseEvent[], dose
   const fields = trackedFields(effects).filter((f) => !['cravings', 'mood', 'energy'].includes(f.key));
   return {
     logs: mine.length,
-    averages: mine.length ? fields.map((f) => ({ label: f.label, avg: mean(mine.map((a) => SEVERITY_RANK[sevOf(a.effect, f.key)]))! })) : [],
+    averages: mine.length ? fields.map((f) => ({ label: f.label, avg: mean(recordedValues(mine.map((a) => a.effect), f.key)) })) : [],
   };
 }

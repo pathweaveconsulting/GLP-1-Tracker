@@ -82,7 +82,7 @@ export function SideEffectsAnalyticsDashboard({ className = '' }: Props) {
       <section aria-labelledby="se-table" className={card}>
         <h3 id="se-table" className="text-base font-semibold text-[#111827] mb-3">Symptom by symptom</h3>
         {overview.length === 0 ? (
-          <p className="text-xs text-muted">No symptoms recorded, only days of "none". That's a good sign, and it's still useful to keep logging.</p>
+          <p className="text-xs text-muted">No positive symptom ratings recorded. Unanswered symptoms are not treated as None.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left">
@@ -169,7 +169,7 @@ export function SideEffectsAnalyticsDashboard({ className = '' }: Props) {
             </tbody>
           </table>
         </div>
-        <p className="text-[11px] text-subtle mt-2">Grey "–" means you didn't log anything in that period. It does not mean "no symptoms".</p>
+        <p className="text-[11px] text-subtle mt-2">Grey "–" means this symptom was not recorded in that period. It does not mean "no symptoms".</p>
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -215,7 +215,7 @@ export function SideEffectsAnalyticsDashboard({ className = '' }: Props) {
               <p className="text-[11px] text-subtle mb-2">{detail.logs} {detail.logs === 1 ? 'log' : 'logs'} in the 7 days after this injection</p>
               <ul className="grid grid-cols-2 gap-2 text-xs">
                 {detail.averages.map((a) => (
-                  <li key={a.label} className="flex justify-between p-2.5 rounded-[12px] bg-[#F8F9FC] border border-[#E5E7EB]"><span className="text-[#344054]">{a.label}</span><span className="font-semibold text-[#111827]">{sevTick(Math.round(a.avg))}</span></li>
+                  <li key={a.label} className="flex justify-between p-2.5 rounded-[12px] bg-[#F8F9FC] border border-[#E5E7EB]"><span className="text-[#344054]">{a.label}</span><span className="font-semibold text-[#111827]">{a.avg == null ? 'Not recorded' : sevTick(Math.round(a.avg))}</span></li>
                 ))}
               </ul>
             </>

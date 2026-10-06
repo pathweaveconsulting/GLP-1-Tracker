@@ -24,10 +24,10 @@ export function buildTidyRows(args: { doses: DoseEvent[]; weights: WeightEntry[]
   for (const e of effects) {
     const day = isoToLocalDateString(e.date);
     const present: Array<[string, string]> = [];
-    trackedFields([e]).forEach((f) => { const s = sevOf(e, f.key); if (s !== 'none') present.push([f.label, severityLabel(s)]); });
-    Object.entries(e.customEffects ?? {}).forEach(([n, s]) => { if (s !== 'none') present.push([n, severityLabel(s)]); });
+    trackedFields([e]).forEach((f) => { const s = sevOf(e, f.key); if (s != null) present.push([f.label, severityLabel(s)]); });
+    Object.entries(e.customEffects ?? {}).forEach(([n, s]) => { if (s != null) present.push([n, severityLabel(s)]); });
     if (present.length === 0) {
-      out.push({ t: ms(e.date), row: ['Symptom', day, 'No symptoms', 'None', 'severity', '', e.notes ?? ''] });
+      out.push({ t: ms(e.date), row: ['Symptom', day, 'Symptoms', 'Not recorded', 'severity', '', e.notes ?? ''] });
     } else {
       present.forEach(([label, sev], i) => out.push({ t: ms(e.date), row: ['Symptom', day, label, sev, 'severity', '', i === 0 ? e.notes ?? '' : ''] }));
     }

@@ -15,7 +15,7 @@ const severityColorMap: Record<Severity, string> = {
   severe: 'bg-rose-100 text-rose-800'
 };
 
-const SymptomChip = ({ label, severity }: { label: string; severity: Severity; key?: string }) => {
+const SymptomChip = ({ label, severity }: { label: string; severity: Severity | undefined; key?: string }) => {
   if (!severity || severity === 'none') return null;
   return (
     <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ${severityColorMap[severity]}`}>
@@ -82,8 +82,8 @@ export function Effects() {
           {sortedEffects.map((effect) => {
             const customList = effect.customEffects ? Object.entries(effect.customEffects) : [];
             const hasSymptoms = Object.entries(effect).some(([key, val]) => 
-              key !== 'id' && key !== 'date' && key !== 'notes' && key !== 'customEffects' && val !== 'none'
-            ) || customList.some(([_, val]) => val !== 'none');
+              key !== 'id' && key !== 'date' && key !== 'notes' && key !== 'customEffects' && val != null && val !== 'none'
+            ) || customList.some(([_, val]) => val != null && val !== 'none');
 
             return (
               <Card key={effect.id} className="overflow-hidden rounded-[20px] border-[#E5E7EB] bg-white shadow-xs hover:border-amber-200 transition-all">
@@ -115,7 +115,7 @@ export function Effects() {
                   ) : (
                     <div className="flex items-center gap-2 text-subtle text-xs font-medium">
                       <Activity className="w-4 h-4" />
-                      <span>No notable side effects reported today.</span>
+                      <span>No positive symptom ratings recorded in this log. Unanswered symptoms are not recorded.</span>
                     </div>
                   )}
                   
