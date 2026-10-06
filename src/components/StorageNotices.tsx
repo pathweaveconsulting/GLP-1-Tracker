@@ -11,13 +11,14 @@ export function StorageNotices() {
   const skipped = useStore((s) => s.skippedEntries);
   const rescueKept = useStore((s) => s.rescueKept);
   const unreadable = useStore((s) => s.unreadable);
+  const malformed = useStore((s) => s.malformed);
   const readFailed = useStore((s) => s.readFailed);
   const startFresh = useStore((s) => s.startFresh);
   const [confirmFresh, setConfirmFresh] = useState(false);
   const dismiss = useStore((s) => s.dismissSkippedNotice);
   const storageError = useStore((s) => s.storageError);
   const dismissStorageError = useStore((s) => s.dismissStorageError);
-  if (skipped <= 0 && !unreadable && !storageError && !readFailed) return null;
+  if (skipped <= 0 && !unreadable && !malformed && !storageError && !readFailed) return null;
 
   const downloadBackup = () => {
     const { settings, doses, weights, effects } = useStore.getState();
@@ -77,14 +78,14 @@ export function StorageNotices() {
   )}</>
   );
 
-  if (skipped <= 0 && unreadable) {
+  if (skipped <= 0 && (unreadable || malformed)) {
     return (
       <>
       {storageBanner}
       <div role="status" className="bg-amber-50 border-b border-amber-200 text-amber-950 text-xs px-4 py-2.5 flex items-start gap-3">
         <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
         <p className="flex-1">
-          Your saved data couldn’t be read, so the app started empty.{' '}
+          {malformed ? 'Some saved data couldn’t be read. The readable data was loaded.' : 'Your saved data couldn’t be read, so the app started empty.'}{' '}
           {rescueKept ? (
             <>A copy of the original data was kept on this device.{' '}</>
           ) : (
@@ -106,6 +107,7 @@ export function StorageNotices() {
     <div role="status" className="bg-amber-50 border-b border-amber-200 text-amber-950 text-xs px-4 py-2.5 flex items-start gap-3">
       <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
       <p className="flex-1">
+        {malformed && <>Some saved data had an invalid structure. The readable data was loaded.{' '}</>}
         {skipped} {skipped === 1 ? 'entry' : 'entries'} couldn’t be read and {skipped === 1 ? 'was' : 'were'} skipped.{' '}
         {rescueKept ? (
           <>

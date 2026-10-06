@@ -18,6 +18,7 @@ export const useStore = create<AppState>()(
       skippedEntries: 0,
       rescueKept: true,
       unreadable: false,
+      malformed: false,
       readFailed: false,
       startFresh: () => {
         // Explicit consent to replace whatever could not be read: resume saving and write what is in memory now.
@@ -29,7 +30,7 @@ export const useStore = create<AppState>()(
         storageErrorDismissed = true;
         set({ storageError: false });
       },
-      dismissSkippedNotice: () => set({ skippedEntries: 0, unreadable: false }),
+      dismissSkippedNotice: () => set({ skippedEntries: 0, unreadable: false, malformed: false }),
 
       completeOnboarding: (settings, opts) =>
         set((state) => ({
@@ -44,7 +45,7 @@ export const useStore = create<AppState>()(
 
       resetAllData: () => {
         resumeWrites(); // Erase is an explicit action, so saving resumes
-        set({ ...emptyData(), skippedEntries: 0, unreadable: false, readFailed: false });
+        set({ ...emptyData(), skippedEntries: 0, unreadable: false, malformed: false, readFailed: false });
         useStore.persist.clearStorage();
         // "Erase" must remove everything the app keeps, including a rescue copy of unreadable data.
         try {
@@ -80,7 +81,7 @@ export const useStore = create<AppState>()(
       name: STORAGE_KEY,
       version: STORE_VERSION,
       storage: createSafeStorage<PersistedData>(),
-      merge: (persisted, current) => ({ ...current, ...(persisted as object), skippedEntries: storageReport.skipped, rescueKept: storageReport.rescueKept, unreadable: storageReport.unreadable, readFailed: storageReport.readFailed }),
+      merge: (persisted, current) => ({ ...current, ...(persisted as object), skippedEntries: storageReport.skipped, rescueKept: storageReport.rescueKept, unreadable: storageReport.unreadable, malformed: storageReport.malformed, readFailed: storageReport.readFailed }),
       migrate: (persisted, version) => migrateStore(persisted, version) as unknown as AppState,
       // Persist data only, never the action functions.
       partialize: (state): PersistedData => ({

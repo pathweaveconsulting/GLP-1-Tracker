@@ -4,7 +4,7 @@ import { isObj } from '../lib/rowValidation';
 import { sanitizePersistedState } from './sanitize';
 
 /** What the last read of storage found; consumed by the store when it hydrates. */
-export const storageReport = { skipped: 0, rescueKept: true, unreadable: false, readFailed: false };
+export const storageReport = { skipped: 0, rescueKept: true, unreadable: false, malformed: false, readFailed: false };
 
 /**
  * True after a read of the main key THREW (storage unreadable, as opposed to empty). While true nothing is written
@@ -41,6 +41,7 @@ export function createSafeStorage<S>(): PersistStorage<S> {
       storageReport.skipped = 0;
       storageReport.rescueKept = true;
       storageReport.unreadable = false;
+      storageReport.malformed = false;
       writesPaused = false;
       storageReport.readFailed = false;
       let raw: string | null = null;
@@ -67,6 +68,7 @@ export function createSafeStorage<S>(): PersistStorage<S> {
         return null;
       }
       const clean = sanitizePersistedState(parsed.state);
+      storageReport.malformed = clean.malformed;
       const result = { ...parsed, state: clean.state };
       if (clean.dropped > 0 || clean.malformed) {
         storageReport.rescueKept = copyToCorrupt(raw);
