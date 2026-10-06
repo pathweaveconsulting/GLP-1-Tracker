@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { Home, Syringe, Activity, FileText, Settings, Calendar, Scale, Database, Lightbulb, CircleDashed, HeartPulse, MoreHorizontal, Sparkles, Compass } from 'lucide-react';
+import { Suspense, useState } from 'react';
+import { Outlet, NavLink } from 'react-router-dom';
+import { Home, Syringe, Activity, FileText, Settings, Calendar, Scale, Database, Lightbulb, HeartPulse, MoreHorizontal, Sparkles, UserRound } from 'lucide-react';
+import { format } from 'date-fns';
+import { useStore } from '../store/useStore';
 import { cn } from '../lib/utils';
+import { SafetyNotice } from './SafetyNotice';
 import { MobileMenuDrawer } from './modals/MobileMenuDrawer';
 
 const navSections = [
@@ -32,7 +35,7 @@ const navSections = [
     title: 'Reports & Guidance',
     items: [
       { name: 'Weekly & Monthly Reports', href: '/reports', icon: FileText },
-      { name: 'AI Insights & Guidance', href: '/recommendations', icon: Lightbulb },
+      { name: 'Insights & Guidance', href: '/recommendations', icon: Lightbulb },
     ]
   },
   {
@@ -46,27 +49,31 @@ const navSections = [
 
 export function Layout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const navigate = useNavigate();
+  const settings = useStore((s) => s.settings);
 
   return (
-    <div className="flex h-screen bg-[#F8F9FC] text-[#111827] font-sans antialiased selection:bg-purple-100 selection:text-purple-900">
+    <>
+    <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[80] focus:bg-white focus:text-[#111827] focus:px-4 focus:py-2 focus:rounded-[12px] focus:shadow-lg focus:ring-2 focus:ring-[#6D4AFF]">
+      Skip to main content
+    </a>
+    <div className="flex h-screen print:h-auto bg-[#F8F9FC] text-[#111827] font-sans antialiased selection:bg-purple-100 selection:text-purple-900">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-[260px] bg-white border-r border-[#E5E7EB] z-20">
+      <aside className="hidden md:flex print:hidden flex-col w-[260px] bg-white border-r border-[#E5E7EB] z-20">
         <div className="p-6 border-b border-[#F1F5F9]">
           <NavLink to="/" className="flex items-center gap-2.5">
             <div className="w-9 h-9 bg-[#6D4AFF] text-white flex items-center justify-center rounded-[16px] font-semibold text-xs shadow-xs">
               GLP
             </div>
             <div>
-              <h1 className="text-sm font-semibold tracking-tight text-[#111827] leading-tight">GLP-1 Platform</h1>
-              <p className="text-[11px] font-medium text-[#667085]">Health-Tech Intelligence</p>
+              <div className="text-sm font-semibold tracking-tight text-[#111827] leading-tight">GLP-1 Companion</div>
+              <p className="text-[11px] font-medium text-muted">Your journey, explained</p>
             </div>
           </NavLink>
         </div>
-        <nav className="flex-1 px-4 py-5 space-y-5 overflow-y-auto">
+        <nav aria-label="Main" className="flex-1 px-4 py-5 space-y-5 overflow-y-auto">
           {navSections.map((section, idx) => (
             <div key={idx} className="space-y-1">
-              <span className="px-3 text-[11px] font-semibold text-[#98A2B3] tracking-normal block mb-1">
+              <span className="px-3 text-[11px] font-semibold text-subtle tracking-normal block mb-1">
                 {section.title}
               </span>
               {section.items.map((item) => (
@@ -80,7 +87,7 @@ export function Layout() {
                         ? 'bg-[#F3F0FF] text-[#6D4AFF] border-l-2 border-[#6D4AFF]'
                         : item.highlight
                         ? 'bg-purple-50/60 text-[#6D4AFF] hover:bg-purple-100/60'
-                        : 'text-[#667085] hover:bg-[#F8F9FC] hover:text-[#111827]'
+                        : 'text-muted hover:bg-[#F8F9FC] hover:text-[#111827]'
                     )
                   }
                 >
@@ -91,19 +98,28 @@ export function Layout() {
             </div>
           ))}
         </nav>
-        <div className="p-4 border-t border-[#F1F5F9] flex items-center gap-3 cursor-pointer hover:bg-[#F8F9FC] transition-colors" onClick={() => navigate('/settings')}>
-          <img src="https://i.pravatar.cc/150?img=47" alt="User" className="w-8 h-8 rounded-full object-cover" />
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-[#111827] truncate">Renu Sharma</p>
-            <p className="text-[10px] text-[#667085] truncate">Premium Plan</p>
+        <NavLink to="/settings" className="p-4 border-t border-[#F1F5F9] flex items-center gap-3 hover:bg-[#F8F9FC] transition-colors" aria-label="Profile and settings">
+          <div className="w-8 h-8 rounded-full bg-[#F3F0FF] text-[#6D4AFF] flex items-center justify-center" aria-hidden="true">
+            <UserRound className="w-4 h-4" />
           </div>
-        </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-[#111827] truncate">{settings.medication}</p>
+            <p className="text-[10px] text-muted truncate">
+              {settings.startDate ? `Started ${format(new Date(settings.startDate), 'MMM d, yyyy')}` : 'Your journey'}
+            </p>
+          </div>
+        </NavLink>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto pb-24 md:pb-8">
+      <main id="main-content" tabIndex={-1} className="flex-1 overflow-y-auto print:overflow-visible pb-24 md:pb-8 focus:outline-none">
         <div className="max-w-6xl mx-auto p-4 md:p-8">
-          <Outlet />
+          <Suspense fallback={<p role="status" className="py-24 text-center text-sm text-muted">Loading…</p>}>
+            <Outlet />
+          </Suspense>
+          <footer className="mt-10 pt-4 border-t border-[#E5E7EB] print:hidden">
+            <SafetyNotice variant="compact" />
+          </footer>
         </div>
       </main>
 
@@ -111,11 +127,11 @@ export function Layout() {
       <MobileMenuDrawer isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
 
       {/* Mobile Persistent Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-[#E5E7EB]/80 px-2 pb-safe pt-2 flex justify-around z-40 shadow-lg">
+      <nav aria-label="Quick navigation" className="md:hidden print:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-[#E5E7EB]/80 px-2 pb-safe pt-2 flex justify-around z-40 shadow-lg">
         <NavLink
           to="/"
           className={({ isActive }) =>
-            cn('flex flex-col items-center p-2 rounded-[16px] transition-colors', isActive ? 'text-[#6D4AFF] font-semibold' : 'text-[#98A2B3] hover:text-[#667085]')
+            cn('flex flex-col items-center p-2 rounded-[16px] transition-colors', isActive ? 'text-[#6D4AFF] font-semibold' : 'text-subtle hover:text-muted')
           }
         >
           <Home className="w-5 h-5 mb-0.5" />
@@ -125,7 +141,7 @@ export function Layout() {
         <NavLink
           to="/logs"
           className={({ isActive }) =>
-            cn('flex flex-col items-center p-2 rounded-[16px] transition-colors', isActive ? 'text-[#6D4AFF] font-semibold' : 'text-[#98A2B3] hover:text-[#667085]')
+            cn('flex flex-col items-center p-2 rounded-[16px] transition-colors', isActive ? 'text-[#6D4AFF] font-semibold' : 'text-subtle hover:text-muted')
           }
         >
           <Database className="w-5 h-5 mb-0.5" />
@@ -135,7 +151,7 @@ export function Layout() {
         <NavLink
           to="/results"
           className={({ isActive }) =>
-            cn('flex flex-col items-center p-2 rounded-[16px] transition-colors', isActive ? 'text-[#6D4AFF] font-semibold' : 'text-[#98A2B3] hover:text-[#667085]')
+            cn('flex flex-col items-center p-2 rounded-[16px] transition-colors', isActive ? 'text-[#6D4AFF] font-semibold' : 'text-subtle hover:text-muted')
           }
         >
           <Activity className="w-5 h-5 mb-0.5" />
@@ -145,7 +161,7 @@ export function Layout() {
         <NavLink
           to="/weight"
           className={({ isActive }) =>
-            cn('flex flex-col items-center p-2 rounded-[16px] transition-colors', isActive ? 'text-[#6D4AFF] font-semibold' : 'text-[#98A2B3] hover:text-[#667085]')
+            cn('flex flex-col items-center p-2 rounded-[16px] transition-colors', isActive ? 'text-[#6D4AFF] font-semibold' : 'text-subtle hover:text-muted')
           }
         >
           <Scale className="w-5 h-5 mb-0.5" />
@@ -153,13 +169,15 @@ export function Layout() {
         </NavLink>
 
         <button
+          type="button"
           onClick={() => setIsMenuOpen(true)}
-          className="flex flex-col items-center p-2 rounded-[16px] text-[#98A2B3] hover:text-[#667085] transition-colors"
+          className="flex flex-col items-center p-2 rounded-[16px] text-subtle hover:text-muted transition-colors"
         >
           <MoreHorizontal className="w-5 h-5 mb-0.5" />
           <span className="text-[10px]">More</span>
         </button>
       </nav>
     </div>
+    </>
   );
 }

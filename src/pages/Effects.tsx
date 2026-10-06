@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useStore } from '../store/useStore';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -9,7 +9,7 @@ import { LogEffectsModal } from '../components/modals/LogEffectsModal';
 import { SideEffectsAnalyticsDashboard } from '../components/SideEffectsAnalyticsDashboard';
 
 const severityColorMap: Record<Severity, string> = {
-  none: 'bg-[#F1F5F9] text-[#667085]',
+  none: 'bg-[#F1F5F9] text-muted',
   mild: 'bg-amber-100 text-amber-800',
   moderate: 'bg-orange-100 text-orange-800',
   severe: 'bg-rose-100 text-rose-800'
@@ -36,37 +36,39 @@ export function Effects() {
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-[#111827]">Side Effects</h1>
-          <p className="text-[#667085] text-sm mt-0.5">Track body adaptation, side effect trends, and daily logs</p>
+          <p className="text-muted text-sm mt-0.5">Track body adaptation, side effect trends, and daily logs</p>
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
           {/* View Tab Selector */}
           <div className="flex bg-[#F8F9FC] p-1 rounded-[14px] border border-[#E5E7EB] shadow-xs">
             <button
+              aria-pressed={activeTab === 'analytics'}
               onClick={() => setActiveTab('analytics')}
               className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-[10px] transition-all ${
                 activeTab === 'analytics'
                   ? 'bg-white text-[#111827] shadow-xs'
-                  : 'text-[#667085] hover:text-[#111827]'
+                  : 'text-muted hover:text-[#111827]'
               }`}
             >
               <Sparkles className="w-3.5 h-3.5 text-[#6D4AFF]" />
               <span>Analytics Dashboard</span>
             </button>
             <button
+              aria-pressed={activeTab === 'log'}
               onClick={() => setActiveTab('log')}
               className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-[10px] transition-all ${
                 activeTab === 'log'
                   ? 'bg-white text-[#111827] shadow-xs'
-                  : 'text-[#667085] hover:text-[#111827]'
+                  : 'text-muted hover:text-[#111827]'
               }`}
             >
-              <ListFilter className="w-3.5 h-3.5 text-[#667085]" />
+              <ListFilter className="w-3.5 h-3.5 text-muted" />
               <span>Symptom Log History</span>
             </button>
           </div>
 
-          <Button onClick={() => setIsLogEffectsOpen(true)} className="gap-2 bg-[#F59E0B] hover:bg-amber-600 text-white rounded-[14px] shadow-xs px-4 py-2.5 text-xs font-semibold">
+          <Button onClick={() => setIsLogEffectsOpen(true)} className="gap-2 bg-amber-700 hover:bg-amber-800 text-white rounded-[14px] shadow-xs px-4 py-2.5 text-xs font-semibold">
             <Plus className="w-4 h-4" />
             <span>Record Symptoms</span>
           </Button>
@@ -88,7 +90,7 @@ export function Effects() {
                 <CardContent className="p-5 flex flex-col gap-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-[16px] bg-amber-50 flex items-center justify-center text-amber-600">
+                      <div className="w-8 h-8 rounded-[16px] bg-amber-50 flex items-center justify-center text-caution">
                         <Smile className="w-4 h-4" />
                       </div>
                       <h3 className="font-semibold text-[#111827] text-base">{format(new Date(effect.date), 'EEEE, MMM d, yyyy')}</h3>
@@ -111,14 +113,14 @@ export function Effects() {
                       ))}
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2 text-[#98A2B3] text-xs font-medium">
+                    <div className="flex items-center gap-2 text-subtle text-xs font-medium">
                       <Activity className="w-4 h-4" />
                       <span>No notable side effects reported today.</span>
                     </div>
                   )}
                   
                   {effect.notes && (
-                    <p className="text-xs text-[#667085] bg-[#F8F9FC] p-3 rounded-[16px] border border-[#E5E7EB] italic">
+                    <p className="text-xs text-muted bg-[#F8F9FC] p-3 rounded-[16px] border border-[#E5E7EB] italic">
                       "{effect.notes}"
                     </p>
                   )}

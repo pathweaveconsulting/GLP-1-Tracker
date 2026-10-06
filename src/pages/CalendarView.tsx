@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useStore } from '../store/useStore';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { formatWeight, getWeightUnit } from '../lib/units';
+import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, subMonths, addMonths } from 'date-fns';
 import { ChevronLeft, ChevronRight, Syringe, Scale, Activity } from 'lucide-react';
 
 export function CalendarView() {
-  const { doses, weights, effects } = useStore();
+  const { doses, weights, effects, settings } = useStore();
+  const unit = getWeightUnit(settings);
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const monthStart = startOfMonth(currentDate);
@@ -28,17 +30,17 @@ export function CalendarView() {
       <header className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-[#111827]">Calendar Log</h1>
-          <p className="text-[#667085] text-sm mt-0.5">View your doses, weight logs, and symptoms on a monthly grid</p>
+          <p className="text-muted text-sm mt-0.5">View your doses, weight logs, and symptoms on a monthly grid</p>
         </div>
         <div className="flex items-center gap-3 bg-white p-1.5 rounded-[14px] border border-[#E5E7EB] shadow-xs">
-          <Button variant="outline" size="icon" onClick={prevMonth} className="rounded-[10px] border-0 h-8 w-8">
-            <ChevronLeft className="w-4 h-4 text-[#667085]" />
+          <Button variant="outline" size="icon" onClick={prevMonth} aria-label="Previous month" className="rounded-[10px] border-0 h-8 w-8">
+            <ChevronLeft className="w-4 h-4 text-muted" />
           </Button>
           <span className="font-semibold text-sm min-w-[110px] text-center text-[#111827]">
             {format(currentDate, "MMMM yyyy")}
           </span>
-          <Button variant="outline" size="icon" onClick={nextMonth} className="rounded-[10px] border-0 h-8 w-8">
-            <ChevronRight className="w-4 h-4 text-[#667085]" />
+          <Button variant="outline" size="icon" onClick={nextMonth} aria-label="Next month" className="rounded-[10px] border-0 h-8 w-8">
+            <ChevronRight className="w-4 h-4 text-muted" />
           </Button>
         </div>
       </header>
@@ -47,7 +49,7 @@ export function CalendarView() {
         <CardContent className="p-6">
           <div className="grid grid-cols-7 gap-px mb-3">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-              <div key={day} className="text-center text-xs font-semibold text-[#667085] py-2">
+              <div key={day} className="text-center text-xs font-semibold text-muted py-2">
                 {day}
               </div>
             ))}
@@ -70,7 +72,7 @@ export function CalendarView() {
                   key={day.toISOString()} 
                   className={`min-h-[85px] p-2.5 border rounded-[16px] flex flex-col gap-1 transition-all hover:bg-[#F8F9FC] cursor-pointer ${isToday ? 'border-[#6D4AFF] bg-[#F3F0FF]/30' : 'border-[#E5E7EB] bg-white'}`}
                 >
-                  <span className={`text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full ${isToday ? 'bg-[#6D4AFF] text-white' : 'text-[#667085]'}`}>
+                  <span className={`text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full ${isToday ? 'bg-[#6D4AFF] text-white' : 'text-muted'}`}>
                     {format(day, dateFormat)}
                   </span>
                   
@@ -82,9 +84,9 @@ export function CalendarView() {
                       </div>
                     )}
                     {dayWeight && (
-                      <div className="flex items-center gap-1 text-[10px] bg-emerald-50 text-[#16A34A] px-2 py-0.5 rounded-[6px] font-semibold truncate">
+                      <div className="flex items-center gap-1 text-[10px] bg-emerald-50 text-positive px-2 py-0.5 rounded-[6px] font-semibold truncate">
                         <Scale className="w-3 h-3 shrink-0" />
-                        <span className="truncate">{dayWeight.weightLbs.toFixed(1)}</span>
+                        <span className="truncate">{formatWeight(dayWeight.weightLbs, unit)}</span>
                       </div>
                     )}
                     {dayEffect && dayEffect.nausea !== 'none' && (
