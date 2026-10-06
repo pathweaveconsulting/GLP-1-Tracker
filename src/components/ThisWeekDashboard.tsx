@@ -79,6 +79,7 @@ export function ThisWeekDashboard({ className = '' }: Props) {
           </div>
           <h2 id="today-heading" className="text-xl sm:text-2xl font-semibold text-[#111827] tracking-tight">{phase.title}</h2>
           <p className="text-xs font-normal text-muted mt-1.5 max-w-2xl leading-relaxed">{phase.now}</p>
+          {hasDose && !unmodelled && <p className="mt-2 text-xs text-muted">Illustrative calendar phases, not a prediction of your symptoms or measured medication level; approximate; verify against current prescribing information. Timing varies by product and person.</p>}
           {unmodelled && <OtherMedicationNote medication={phase.lastDose!.medication} className="mt-2" />}
           {hasDose && !unmodelled && (
             <p className="text-[11px] text-subtle mt-1.5">

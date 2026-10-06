@@ -295,7 +295,7 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
               <strong>Semaglutide (STEP 1):</strong> average loss of about 15% at 68 weeks at 2.4 mg.
             </li>
           </ul>
-          <p className="text-[11px] text-subtle">Approximate; verify against the published trial reports.</p>
+          <p className="text-[11px] text-subtle">Approximate; verify against the published trial reports. Curves stop changing at the published endpoint; they do not predict later loss. Sources: NEJM doi:10.1056/NEJMoa2301972 (retatrutide), doi:10.1056/NEJMoa2206038 (SURMOUNT-1), doi:10.1056/NEJMoa2032183 (STEP 1).</p>
           <button type="button" onClick={() => setShowInfoModal(false)} className="w-full py-2.5 rounded-[16px] bg-[#582967] text-white font-semibold text-xs hover:bg-[#4a2257] transition-all">Close</button>
         </div>
       </Modal>

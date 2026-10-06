@@ -79,3 +79,23 @@ describe('release data regressions', () => {
     expect(screen.getByText('Days with a moderate or severe symptom').parentElement).toHaveTextContent(/symptom1$/);
   });
 });
+
+
+describe('release medical reference limits', () => {
+  it('does not apply a shared semaglutide maximum or model named oral products', async () => {
+    const { medicationInfo, normalizeMedication, doseWarning } = await import('../lib/medications');
+    expect(medicationInfo('Semaglutide').maxStandardMg).toBeNull();
+    expect(normalizeMedication('Wegovy tablets')).toBe('Other');
+    expect(normalizeMedication('oral semaglutide')).toBe('Other');
+    expect(doseWarning('Semaglutide', 7.2)?.text).not.toContain('above the usual maximum');
+  });
+  it('does not extrapolate trial endpoints or invent loss before day zero', async () => {
+    const { TRIAL_CURVES } = await import('../lib/trialCurves');
+    for (const [drug, days, endpoint] of [['Retatrutide',336,-24.2],['Tirzepatide',504,-20.9],['Semaglutide',476,-14.9]] as const) {
+      expect(TRIAL_CURVES[drug].getExpectedPercentLoss(days).avg).toBe(endpoint);
+      expect(TRIAL_CURVES[drug].getExpectedPercentLoss(days + 500).avg).toBe(endpoint);
+      expect(TRIAL_CURVES[drug].getExpectedPercentLoss(-1).avg).toBeCloseTo(0);
+    }
+    expect(TRIAL_CURVES.Retatrutide.name).not.toContain('TRIUMPH');
+  });
+});
