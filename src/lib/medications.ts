@@ -57,13 +57,13 @@ export const MEDICATION_INFO: Record<Medication, MedicationInfo> = {
     name: 'Semaglutide',
     halfLifeDays: 7,
     doseSteps: [0.25, 0.5, 1, 1.7, 2, 2.4],
-    maxStandardMg: 2.4,
+    maxStandardMg: null,
     modelled: true,
     investigational: false,
     intervalDays: 7,
     missedDoseNote:
       MISSED_DOSE_NOTE,
-    notes: 'Different semaglutide products use different dose ladders, so your own prescription is the authority.',
+    notes: 'Weekly injections only. Semaglutide products have different strengths and maximums; the buttons are an incomplete reference, not a dose ladder. Verify your exact product and prescription. For oral semaglutide, including Wegovy tablets and Rybelsus, select Other.',
   },
   Retatrutide: {
     name: 'Retatrutide',
@@ -93,7 +93,7 @@ export const MEDICATION_INFO: Record<Medication, MedicationInfo> = {
 
 /** Shown wherever "Other" (including oral tablets such as Rybelsus) is selected or loaded. */
 export const OTHER_MEDICATION_NOTE =
-  'Dose guidance and the level curve aren’t available for this medication. This includes daily oral tablets such as Rybelsus, which the weekly model doesn’t describe. Your logs, weight and symptom pages still work.';
+  'Dose guidance and the level curve aren’t available for this medication. This includes daily oral tablets such as Rybelsus and Wegovy tablets, which the weekly model doesn’t describe. Your logs, weight and symptom pages still work.';
 
 /** The medications the app tracks. Single source of truth for every dropdown. */
 export const MEDICATION_OPTIONS: readonly Medication[] = ['Tirzepatide', 'Semaglutide', 'Retatrutide', 'Other'];
@@ -113,7 +113,7 @@ export function normalizeMedication(value: unknown): Medication {
   if (v === 'semaglutide' || v === 'ozempic' || v === 'wegovy') return 'Semaglutide';
   // Oral semaglutide (Rybelsus) is a daily tablet, so the weekly model, dose steps and maximum below do not apply to it.
   // approximate; verify against current prescribing information
-  if (v === 'rybelsus') return 'Other';
+  if (v === 'rybelsus' || v === 'wegovy tablets' || v === 'oral semaglutide') return 'Other';
   if (v === 'retatrutide') return 'Retatrutide';
   return 'Other';
 }
@@ -153,8 +153,9 @@ export function doseWarning(medication: Medication, amountMg: number): DoseWarni
   if (info.doseSteps.length > 0 && !info.doseSteps.some((s) => Math.abs(s - amountMg) < 1e-9)) {
     return {
       level: 'info',
-      text: `${amountMg} mg isn't one of the usual ${info.name} steps (${info.doseSteps.join(', ')} mg). That's fine if it matches your prescription. (Steps are ${APPROXIMATE_NOTE}.)`,
-      requiresConfirmation: false,
+      text: `${amountMg} mg isn't one of the usual ${info.name} steps (${info.doseSteps.join(', ')} mg). This app cannot check whether that amount is appropriate. Verify your exact product, prescription and units with your pharmacist. (Steps are ${APPROXIMATE_NOTE}.)`,
+      // A higher strength can be product-specific; keep the units check without inventing a shared maximum.
+      requiresConfirmation: info.maxStandardMg == null && amountMg > Math.max(...info.doseSteps),
     };
   }
   return null;

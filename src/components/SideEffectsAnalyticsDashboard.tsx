@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar, Legend } from 'recharts';
 import { useStore } from '../store/useStore';
-import { severityLabel, sortEffects } from '../lib/symptoms';
+import { severityLabel, sortEffects, dailySymptomEntries } from '../lib/symptoms';
 import { sortByDate } from '../lib/insights';
 import {
   appetiteTrend, doseSymptomComparison, injectionDetail, recoveryPattern, symptomHeatmap, symptomOverview,
@@ -34,6 +34,7 @@ export function SideEffectsAnalyticsDashboard({ className = '' }: Props) {
   const [selectedDoseId, setSelectedDoseId] = useState<string>('');
 
   const logs = useMemo(() => sortEffects(effects), [effects]);
+  const days = useMemo(() => dailySymptomEntries(effects), [effects]);
   const overview = useMemo(() => symptomOverview(effects), [effects]);
   const recovery = useMemo(() => recoveryPattern(effects, doses), [effects, doses]);
   const heatmap = useMemo(() => symptomHeatmap(effects, heatmapMode), [effects, heatmapMode]);
@@ -43,7 +44,7 @@ export function SideEffectsAnalyticsDashboard({ className = '' }: Props) {
   const detailDose = sortedDoses.find((d) => d.id === selectedDoseId) ?? sortedDoses[0];
   const detail = detailDose ? injectionDetail(effects, doses, detailDose.id) : null;
 
-  const daysWithModerate = logs.filter((e) =>
+  const daysWithModerate = days.filter((e) =>
     [e.nausea, e.fatigue, e.diarrhea, e.constipation, e.bloating, e.reflux, ...Object.values(e.customEffects ?? {})].some((s) => s === 'moderate' || s === 'severe'),
   ).length;
   const top = overview[0];
@@ -66,13 +67,13 @@ export function SideEffectsAnalyticsDashboard({ className = '' }: Props) {
       <div className={card}>
         <h2 className="text-xl font-semibold text-[#111827] tracking-tight">Side Effects Overview</h2>
         <p className="text-sm text-muted mt-0.5">
-          Based on {logs.length} symptom {logs.length === 1 ? 'log' : 'logs'} from {format(new Date(logs[0].date), 'MMM d, yyyy')} to {format(new Date(logs[logs.length - 1].date), 'MMM d, yyyy')}. Compared with your own history, not with anyone else.
+          Based on {logs.length} symptom {logs.length === 1 ? 'log' : 'logs'} from {format(new Date(logs[0].date), 'MMM d, yyyy')} to {format(new Date(logs[logs.length - 1].date), 'MMM d, yyyy')}. Compared with your own history, not with anyone else. Day counts and trends use the highest recorded severity per local day.
         </p>
-        {logs.length < 6 && <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-[12px] px-3 py-2 mt-3">With fewer than 6 logs we can't tell you about trends yet. Patterns get clearer as you log more.</p>}
+        {days.length < 6 && <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-[12px] px-3 py-2 mt-3">With fewer than 6 logged days we can't tell you about trends yet. Patterns get clearer as you log more.</p>}
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className={card}><div className="text-xs text-muted">Days logged</div><div className="text-3xl font-semibold text-[#111827] mt-1">{logs.length}</div></div>
+        <div className={card}><div className="text-xs text-muted">Days logged</div><div className="text-3xl font-semibold text-[#111827] mt-1">{days.length}</div></div>
         <div className={card}><div className="text-xs text-muted">Days with a moderate or severe symptom</div><div className="text-3xl font-semibold text-[#111827] mt-1">{daysWithModerate}</div></div>
         <div className={card}><div className="text-xs text-muted">Most frequent symptom</div><div className="text-lg font-semibold text-[#111827] mt-1">{top ? top.label : 'None logged'}</div>{top && <div className="text-[11px] text-subtle">{top.daysPresent} of {top.daysLogged} days</div>}</div>
         <div className={card}><div className="text-xs text-muted">Injections logged</div><div className="text-3xl font-semibold text-[#111827] mt-1">{doses.length}</div></div>
@@ -92,7 +93,7 @@ export function SideEffectsAnalyticsDashboard({ className = '' }: Props) {
                     <td className="py-2.5 font-semibold text-[#111827]">{r.label}</td>
                     <td className="py-2.5 text-muted">{r.daysPresent} of {r.daysLogged}</td>
                     <td className="py-2.5 text-muted">{severityLabel(r.peak)}</td>
-                    <td className="py-2.5 text-muted">{r.trend ? `Happening ${r.trend}` : 'Needs 6+ logs'}</td>
+                    <td className="py-2.5 text-muted">{r.trend ? `Happening ${r.trend}` : 'Needs 6+ logged days'}</td>
                   </tr>
                 ))}
               </tbody>

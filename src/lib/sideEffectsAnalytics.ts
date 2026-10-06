@@ -1,6 +1,6 @@
 import type { DoseEvent, EffectEntry, Severity } from '../types';
 import { localDayDiff } from './dates';
-import { SEVERITY_RANK, sevOf, sortEffects, trackedFields } from './symptoms';
+import { SEVERITY_RANK, sevOf, sortEffects, trackedFields, dailySymptomEntries } from './symptoms';
 import { sortByDate } from './insights';
 
 /** Side-effect fields that describe how the body is coping (used for "recovery" and dose comparison). */
@@ -18,12 +18,12 @@ export interface SymptomOverviewRow {
   peak: Severity;
   /** Average severity (1 mild - 3 severe) on days it was present. */
   avgWhenPresent: number | null;
-  /** Needs 6+ logs: compares presence rate in the older half of logs with the newer half. */
+  /** Needs 6+ logged local days: compares presence rates using each day’s peak severity. */
   trend: 'less often' | 'about the same' | 'more often' | null;
 }
 
 export function symptomOverview(effects: EffectEntry[]): SymptomOverviewRow[] {
-  const sorted = sortEffects(effects);
+  const sorted = dailySymptomEntries(effects);
   const half = Math.floor(sorted.length / 2);
   const older = sorted.slice(0, half);
   const newer = sorted.slice(half);
@@ -161,8 +161,9 @@ export function appetiteTrend(effects: EffectEntry[]): AppetitePoint[] {
 /** Average side-effect severity in the week after injections, grouped by dose (descriptive only). */
 export function doseSymptomComparison(effects: EffectEntry[], doses: DoseEvent[]) {
   const assigned = assignLogsToDoses(effects, doses);
-  const labels = Array.from(new Set(sortByDate(doses).map((d) => `${d.amountMg} mg`)));
-  const groups = labels.map((label) => ({ label, items: assigned.filter((a) => `${a.dose.amountMg} mg` === label) })).filter((g) => g.items.length > 0);
+  const doseLabel = (d: DoseEvent) => `${d.medication} ${d.amountMg} mg`;
+  const labels = Array.from(new Set(sortByDate(doses).map(doseLabel)));
+  const groups = labels.map((label) => ({ label, items: assigned.filter((a) => doseLabel(a.dose) === label) })).filter((g) => g.items.length > 0);
   const fields = trackedFields(effects).filter((f) => (GI_FIELDS as readonly string[]).includes(f.key));
   const symptoms = fields.map((f) => {
     const row: Record<string, string | number> = { symptom: f.label };

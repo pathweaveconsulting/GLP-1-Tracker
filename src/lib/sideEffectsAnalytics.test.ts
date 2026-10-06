@@ -60,8 +60,8 @@ describe('heatmap, appetite and dose comparison', () => {
   });
   it('compares only doses that have logs', () => {
     const c = doseSymptomComparison([eff('a', at(6, 2), { nausea: 'moderate' }), eff('b', at(6, 9), { nausea: 'severe' })], doses);
-    expect(c.doses).toEqual([{ label: '2.5 mg', logs: 1 }, { label: '5 mg', logs: 1 }]);
-    expect(c.symptoms.find((s) => s.symptom === 'Nausea')).toMatchObject({ '2.5 mg': 2, '5 mg': 3 });
+    expect(c.doses).toEqual([{ label: 'Tirzepatide 2.5 mg', logs: 1 }, { label: 'Tirzepatide 5 mg', logs: 1 }]);
+    expect(c.symptoms.find((s) => s.symptom === 'Nausea')).toMatchObject({ 'Tirzepatide 2.5 mg': 2, 'Tirzepatide 5 mg': 3 });
     expect(doseSymptomComparison([], doses).doses).toEqual([]);
   });
   it('summarises one injection and says nothing when there are no logs', () => {

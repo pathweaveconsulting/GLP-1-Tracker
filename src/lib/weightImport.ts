@@ -1,7 +1,7 @@
 import type { WeightEntry } from '../types';
 import { parseCsv } from './csv';
 import { LBS_PER_KG, WEIGHT_BOUNDS, WeightUnit } from './units';
-import { dateOnlyToIso, isoToLocalDateString, parseDateOnly } from './dates';
+import { dateOnlyToIso, isoToLocalDateString, parseDateOnly, todayLocalDateString } from './dates';
 
 export interface ImportedWeight {
   /** ISO instant (date-only inputs are anchored at local noon). */
@@ -11,7 +11,7 @@ export interface ImportedWeight {
 
 export interface WeightImportResult {
   rows: ImportedWeight[];
-  /** Data rows that could not be read (bad date, bad weight, out of range). */
+  /** Data rows that could not be read (bad or future date, bad weight, out of range). */
   skipped: number;
   /** Rows that already exist (same day and weight) or repeat inside the file. */
   duplicates: number;
@@ -129,10 +129,11 @@ export function importWeightsCsv(text: string, opts: { existing: WeightEntry[]; 
 
   const parsed: Array<{ day: string; value: number; unit: WeightUnit | null }> = [];
   let skipped = 0;
+  const today = todayLocalDateString();
   for (const r of table.slice(1)) {
     const day = parseImportDate(r[dateCol] ?? '');
     const cell = parseWeightCell(r[weightCol] ?? '');
-    if (!day || !cell) { skipped++; continue; }
+    if (!day || day > today || !cell) { skipped++; continue; }
     let cellUnit: WeightUnit | null = cell.unit;
     if (!cellUnit && unitCol >= 0) {
       const u = (r[unitCol] ?? '').trim().toLowerCase();

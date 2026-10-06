@@ -115,7 +115,7 @@ describe('weight CSV import', () => {
     const dialog = await screen.findByRole('alertdialog');
     expect(dialog).toHaveTextContent(/import 2 weights\?/i);
     expect(dialog).toHaveTextContent(/kg/);
-    expect(dialog).toHaveTextContent(/1 already in your log and 1 unreadable row/);
+    expect(dialog).toHaveTextContent(/1 already in your log and 1 invalid or future-dated row/);
     await user.click(within(dialog).getByRole('button', { name: /^import$/i }));
     const w = useStore.getState().weights;
     expect(w).toHaveLength(3);

@@ -101,6 +101,7 @@ function DoseForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
         <select id={`${uid}-med`} value={medication} onChange={(e) => changeMedication(e.target.value as Medication)} className={field}>
           {MEDICATION_OPTIONS.map((m) => <option key={m} value={m}>{m}</option>)}
         </select>
+        <p className="mt-2 text-xs text-muted">Weekly injection models only. For oral semaglutide, including Wegovy tablets or Rybelsus, select Other. Verify your exact product and prescription with your pharmacist.</p>
         <OtherMedicationNote medication={medication} className="mt-2" />
       </div>
 

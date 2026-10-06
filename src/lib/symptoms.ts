@@ -1,5 +1,5 @@
 import type { EffectEntry, Severity } from '../types';
-import { localDayDiff } from './dates';
+import { localDayDiff, isoToLocalDateString } from './dates';
 
 export const SEVERITIES: readonly Severity[] = ['none', 'mild', 'moderate', 'severe'];
 export const SEVERITY_RANK: Record<Severity, number> = { none: 0, mild: 1, moderate: 2, severe: 3 };
@@ -58,6 +58,27 @@ export function sortEffects(effects: EffectEntry[]): EffectEntry[] {
   return [...effects].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 }
 
+/** One derived analysis row per local day, using peak recorded severity; original entries stay unchanged. */
+export function dailySymptomEntries(effects: EffectEntry[]): EffectEntry[] {
+  const days = new Map<string, EffectEntry>();
+  const fields = trackedFields(effects);
+  for (const entry of sortEffects(effects)) {
+    const day = isoToLocalDateString(entry.date);
+    const current = days.get(day);
+    if (!current) {
+      days.set(day, { ...entry, customEffects: { ...entry.customEffects } });
+      continue;
+    }
+    for (const { key } of fields) {
+      if (SEVERITY_RANK[sevOf(entry, key)] > SEVERITY_RANK[sevOf(current, key)]) current[key] = sevOf(entry, key);
+    }
+    for (const [name, severity] of Object.entries(entry.customEffects ?? {})) {
+      if (SEVERITY_RANK[severity] > SEVERITY_RANK[current.customEffects?.[name] ?? 'none']) current.customEffects![name] = severity;
+    }
+  }
+  return [...days.values()];
+}
+
 /** Most recent symptom log, only if it is at most `maxAgeDays` calendar days old. */
 export function latestEffectWithin(effects: EffectEntry[], now: Date = new Date(), maxAgeDays = 3): EffectEntry | null {
   const sorted = sortEffects(effects);
@@ -91,11 +112,12 @@ export function summarizeSymptoms(effects: EffectEntry[], from: Date, to: Date):
 }
 
 function summarizeEntries(inWindow: EffectEntry[]): Omit<SymptomSummary, 'windowDays'> {
+  const daily = dailySymptomEntries(inWindow);
   const items: SymptomSummaryItem[] = [];
   const consider = (key: string, label: string, get: (e: EffectEntry) => Severity) => {
     let daysPresent = 0;
     let peak: Severity = 'none';
-    for (const e of inWindow) {
+    for (const e of daily) {
       const s = get(e);
       if (s !== 'none') daysPresent++;
       if (SEVERITY_RANK[s] > SEVERITY_RANK[peak]) peak = s;
@@ -110,7 +132,7 @@ function summarizeEntries(inWindow: EffectEntry[]): Omit<SymptomSummary, 'window
   customNames.forEach((name) => consider(`custom:${name}`, name, (e) => (e.customEffects?.[name] as Severity | undefined) ?? 'none'));
 
   items.sort((a, b) => SEVERITY_RANK[b.peak] - SEVERITY_RANK[a.peak] || b.daysPresent - a.daysPresent);
-  return { daysLogged: inWindow.length, items };
+  return { daysLogged: daily.length, items };
 }
 
 /** Symptoms the user actually logged in the last `windowDays` calendar days, worst first. */

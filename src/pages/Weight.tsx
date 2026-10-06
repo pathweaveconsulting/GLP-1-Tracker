@@ -43,7 +43,7 @@ export function Weight() {
     }
     const result = importWeightsCsv(await readFileAsText(file), { existing: weights, defaultUnit: unit });
     if (result.errors.length > 0) setImportError(result.errors[0]);
-    else if (result.rows.length === 0) setImportError(`Nothing to import: ${result.duplicates} already in your log, ${result.skipped} rows couldn’t be read.`);
+    else if (result.rows.length === 0) setImportError(`Nothing to import: ${result.duplicates} already in your log, ${result.skipped} rows were invalid or future-dated.`);
     else setPendingImport(result);
   };
 
@@ -227,7 +227,7 @@ export function Weight() {
                 )}
               </p>
               <p className="mt-1">
-                {pendingImport.duplicates} already in your log and {pendingImport.skipped} unreadable {pendingImport.skipped === 1 ? 'row' : 'rows'} will be skipped.
+                {pendingImport.duplicates} already in your log and {pendingImport.skipped} invalid or future-dated {pendingImport.skipped === 1 ? 'row' : 'rows'} will be skipped.
               </p>
             </>
           )

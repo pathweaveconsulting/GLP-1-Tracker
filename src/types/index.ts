@@ -70,6 +70,8 @@ export interface AppState extends PersistedData {
   rescueKept: boolean;
   /** True when the whole stored blob could not be read (truncated or not JSON), so the app started empty. Not persisted. */
   unreadable: boolean;
+  /** True when a stored table or profile had an invalid structure; valid data may still be loaded. Not persisted. */
+  malformed: boolean;
   /** True when reading storage threw at startup; saving is paused until the user acts. Not persisted. */
   readFailed: boolean;
   /** Explicit action: replace whatever could not be read, resume saving. */

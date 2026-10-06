@@ -79,6 +79,7 @@ function ProfileForm({ onClose }: { onClose: () => void }) {
           {MEDICATION_OPTIONS.map((m) => <option key={m} value={m}>{m}</option>)}
         </select>
         {err('medication')}
+        <p className="mt-2 text-xs text-muted">Weekly injection models only. For oral semaglutide, including Wegovy tablets or Rybelsus, select Other. Verify your exact product and prescription with your pharmacist.</p>
         <OtherMedicationNote medication={form.medication} className="mt-2" />
       </div>
 
