@@ -38,7 +38,7 @@ export const COLLECTED_FIELDS: SymptomField[] = [
 ];
 
 /** Older or imported entries may carry these; they count only if the user actually recorded something. */
-const OPTIONAL_FIELDS: SymptomField[] = [
+export const OPTIONAL_FIELDS: SymptomField[] = [
   { key: 'cravings', label: 'Cravings' },
   { key: 'mood', label: 'Mood' },
   { key: 'energy', label: 'Energy' },

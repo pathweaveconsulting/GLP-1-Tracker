@@ -4,8 +4,10 @@ import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { format } from 'date-fns';
 import { Plus, Activity, Smile, Sparkles, ListFilter } from 'lucide-react';
-import { Severity } from '../types';
+import { EffectEntry, Severity } from '../types';
 import { LogEffectsModal } from '../components/modals/LogEffectsModal';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
+import { COLLECTED_FIELDS, OPTIONAL_FIELDS } from '../lib/symptoms';
 import { SideEffectsAnalyticsDashboard } from '../components/SideEffectsAnalyticsDashboard';
 
 const severityColorMap: Record<Severity, string> = {
@@ -16,7 +18,7 @@ const severityColorMap: Record<Severity, string> = {
 };
 
 const SymptomChip = ({ label, severity }: { label: string; severity: Severity | undefined; key?: string }) => {
-  if (!severity || severity === 'none') return null;
+  if (!severity) return null;
   return (
     <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ${severityColorMap[severity]}`}>
       {label}: {severity}
@@ -25,7 +27,10 @@ const SymptomChip = ({ label, severity }: { label: string; severity: Severity | 
 };
 
 export function Effects() {
-  const { effects } = useStore();
+  const { effects, deleteEffect, restoreEffect } = useStore();
+  const [editing, setEditing] = useState<EffectEntry>();
+  const [deleting, setDeleting] = useState<EffectEntry>();
+  const [deleted, setDeleted] = useState<EffectEntry>();
   const [activeTab, setActiveTab] = useState<'analytics' | 'log'>('analytics');
   const [isLogEffectsOpen, setIsLogEffectsOpen] = useState(false);
   
@@ -68,7 +73,7 @@ export function Effects() {
             </button>
           </div>
 
-          <Button onClick={() => setIsLogEffectsOpen(true)} className="gap-2 bg-amber-700 hover:bg-amber-800 text-white rounded-[14px] shadow-xs px-4 py-2.5 text-xs font-semibold">
+          <Button onClick={() => { setEditing(undefined); setIsLogEffectsOpen(true); }} className="gap-2 bg-amber-700 hover:bg-amber-800 text-white rounded-[14px] shadow-xs px-4 py-2.5 text-xs font-semibold">
             <Plus className="w-4 h-4" />
             <span>Record Symptoms</span>
           </Button>
@@ -79,11 +84,12 @@ export function Effects() {
         <SideEffectsAnalyticsDashboard />
       ) : (
         <div className="grid gap-4">
+          {sortedEffects.length === 0 && <p className="text-sm text-muted">No symptom logs yet. Unanswered symptoms are not recorded.</p>}
           {sortedEffects.map((effect) => {
             const customList = effect.customEffects ? Object.entries(effect.customEffects) : [];
             const hasSymptoms = Object.entries(effect).some(([key, val]) => 
-              key !== 'id' && key !== 'date' && key !== 'notes' && key !== 'customEffects' && val != null && val !== 'none'
-            ) || customList.some(([_, val]) => val != null && val !== 'none');
+              key !== 'id' && key !== 'date' && key !== 'notes' && key !== 'customEffects' && val != null
+            ) || customList.some(([_, val]) => val != null);
 
             return (
               <Card key={effect.id} className="overflow-hidden rounded-[20px] border-[#E5E7EB] bg-white shadow-xs hover:border-amber-200 transition-all">
@@ -96,18 +102,15 @@ export function Effects() {
                       <h3 className="font-semibold text-[#111827] text-base">{format(new Date(effect.date), 'EEEE, MMM d, yyyy')}</h3>
                     </div>
                   </div>
-                  
+                  <div className="flex gap-3">
+                    <Button onClick={() => { setEditing(effect); setIsLogEffectsOpen(true); }} aria-label={`Edit symptom log ${format(new Date(effect.date), 'yyyy-MM-dd')}`}>Edit</Button>
+                    <Button onClick={() => setDeleting(effect)} aria-label={`Delete symptom log ${format(new Date(effect.date), 'yyyy-MM-dd')}`}>Delete</Button>
+                  </div>
                   {hasSymptoms ? (
                     <div className="flex flex-wrap gap-2 pt-1">
-                      <SymptomChip label="Hunger" severity={effect.hunger} />
-                      <SymptomChip label="Food Noise" severity={effect.foodNoise} />
-                      <SymptomChip label="Cravings" severity={effect.cravings} />
-                      <SymptomChip label="Nausea" severity={effect.nausea} />
-                      <SymptomChip label="Fatigue" severity={effect.fatigue} />
-                      <SymptomChip label="Constipation" severity={effect.constipation} />
-                      <SymptomChip label="Diarrhea" severity={effect.diarrhea} />
-                      <SymptomChip label="Reflux" severity={effect.reflux} />
-                      <SymptomChip label="Appetite Loss" severity={effect.appetiteLoss} />
+                      {[...COLLECTED_FIELDS, ...OPTIONAL_FIELDS].map(({key, label}) => (
+                        <SymptomChip key={key} label={label} severity={effect[key]} />
+                      ))}
                       {customList.map(([name, sev]) => (
                         <SymptomChip key={name} label={name} severity={sev} />
                       ))}
@@ -131,7 +134,10 @@ export function Effects() {
         </div>
       )}
 
+      {deleted && <div role="status" className="text-sm text-muted">Symptom log removed. <Button onClick={() => { restoreEffect(deleted); setDeleted(undefined); }}>Undo last deletion</Button></div>}
+      <ConfirmDialog open={!!deleting} title="Delete symptom log?" description="This removes the selected symptom ratings and notes. You can undo the last deletion while this page remains open." confirmLabel="Delete log" destructive onCancel={() => setDeleting(undefined)} onConfirm={() => { if (deleting) { const current = useStore.getState().effects.find((e) => e.id === deleting.id); if (current) { deleteEffect(current.id); setDeleted(current); } } setDeleting(undefined); }} />
       <LogEffectsModal 
+        effect={editing}
         isOpen={isLogEffectsOpen} 
         onClose={() => setIsLogEffectsOpen(false)} 
       />

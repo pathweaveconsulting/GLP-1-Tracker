@@ -80,6 +80,8 @@ export const useStore = create<AppState>()(
       deleteWeight: (id) => set((state) => ({ weights: state.weights.filter((w) => w.id !== id) })),
 
       addEffect: (effect) => set((state) => ({ effects: [...state.effects, { ...effect, id: newId() }] })),
+      deleteEffect: (id) => set((state) => ({ effects: state.effects.filter((e) => e.id !== id) })),
+      restoreEffect: (effect) => set((state) => ({ effects: state.effects.some((e) => e.id === effect.id) ? state.effects : [...state.effects, effect] })),
       updateEffect: (id, updatedEffect) =>
         set((state) => ({ effects: state.effects.map((e) => (e.id === id ? { ...e, ...updatedEffect } : e)) })),
 
