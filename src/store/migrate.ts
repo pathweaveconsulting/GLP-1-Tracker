@@ -2,6 +2,8 @@ import type { DoseEvent, EffectEntry, PersistedData, UserSettings, WeightEntry }
 import { normalizeMedication } from '../lib/medications';
 
 export const STORE_VERSION = 1;
+/** An absent version denotes the original unversioned store. */
+export const supportedStoreVersion = (version: unknown): boolean => version === undefined || (typeof version === 'number' && Number.isInteger(version) && version >= 0 && version <= STORE_VERSION);
 
 /**
  * Ids produced by the old demo-data generator (`dose-3`, `weight-12`, `effect-0`).
@@ -35,6 +37,7 @@ const isRow = (v: unknown): v is { id: string } => !!v && typeof v === 'object' 
  * onboarding again; when real entries survive, onboarding opens in "welcome back" mode and is pre-filled from them.
  */
 export function migrateStore(persisted: unknown, fromVersion: number): PersistedData {
+  if (!Number.isInteger(fromVersion) || fromVersion < 0 || fromVersion > STORE_VERSION) throw Error('Unsupported store version. Update the app before opening these records.');
   const raw = (persisted && typeof persisted === 'object' ? persisted : {}) as Partial<PersistedData> & Record<string, unknown>;
   if (fromVersion >= STORE_VERSION) {
     return { ...emptyData(), ...raw } as PersistedData;

@@ -2,9 +2,10 @@ import type { DoseEvent, EffectEntry, UserSettings, WeightEntry } from '../types
 import { normalizeMedication } from './medications';
 import { checkDose, checkEffect, checkWeight, isIso, isObj, RowResult } from './rowValidation';
 import { DailyLog, validateDailyRows } from './dailyLogs';
+import { legacyDataFromV2, migrateDataModelV2, type DataModelV2 } from './dataModelV2';
 
 export const BACKUP_FORMAT = 'glp1-tracker-backup';
-export const BACKUP_VERSION = 2;
+export const BACKUP_VERSION = 3;
 
 export interface BackupData {
   settings: UserSettings;
@@ -22,7 +23,15 @@ export interface BackupFile {
 }
 
 export function createBackup(data: BackupData, now: Date = new Date()): BackupFile {
-  return { format: BACKUP_FORMAT, version: data.dailyLogs === undefined ? 1 : BACKUP_VERSION, exportedAt: now.toISOString(), data };
+  return { format: BACKUP_FORMAT, version: data.dailyLogs === undefined ? 1 : 2, exportedAt: now.toISOString(), data };
+}
+
+/** Explicit schema export; regular existing downloads keep their v1/v2 format until UI cutover. */
+export function createDataModelBackup(data: BackupData, appVersion: string, now: Date = new Date()): {
+  format: typeof BACKUP_FORMAT; version: 3; schemaVersion: 2; appVersion: string; exportedAt: string; data: DataModelV2;
+} {
+  if (!appVersion.trim()) throw Error('An app version is required.');
+  return {format:BACKUP_FORMAT,version:3,schemaVersion:2,appVersion,exportedAt:now.toISOString(),data:migrateDataModelV2(data)};
 }
 
 export type ParseBackupResult = { ok: true; data: BackupData; counts: { doses: number; weights: number; effects: number } } | { ok: false; errors: string[] };
@@ -45,6 +54,14 @@ export function parseBackup(text: string): ParseBackupResult {
   }
   if (raw.version > BACKUP_VERSION) {
     return { ok: false, errors: [`This backup was made by a newer version of the app (backup version ${raw.version}; this app understands up to ${BACKUP_VERSION}). Update the app and try again.`] };
+  }
+  if (raw.version === 3) {
+    try {
+      if (raw.schemaVersion !== 2 || typeof raw.appVersion !== 'string' || !raw.appVersion.trim() || !isIso(raw.exportedAt)) throw Error('Missing schema version, app version or export date.');
+      if (Object.keys(raw).some(k => !['format','version','schemaVersion','appVersion','exportedAt','data'].includes(k))) throw Error('Unsupported backup envelope fields.');
+      const data = legacyDataFromV2(raw.data);
+      return {ok:true,data,counts:{doses:data.doses.length,weights:data.weights.length,effects:data.effects.length}};
+    } catch (error) { return {ok:false,errors:[error instanceof Error ? error.message : 'Versioned backup could not be read.']}; }
   }
   if (!isObj(raw.data)) return { ok: false, errors: ['The backup has no data section.'] };
 

@@ -21,3 +21,7 @@ Clinical/evidence registry design belongs to Pack 0. Medical values and wording 
 ## Release limits
 
 No production merge, production feature-flag change, DNS change, force-push or paid service. Device vault creation/unlock requires owner handoff. Real-browser symptom editing/deletion/undo, screen readers, mobile layout, rendered colours, offline install and print remain unverified. Encryption cannot protect an unlocked session against an administrator replacing the delivered JavaScript. No claim of immunity to hacking.
+
+## Versioned foundation draft
+
+Schema V2 conversion/validation and backup V3 adapters are implemented; live storage stays version 1. New domains are reserved and reject nonempty data until their validators exist. Current app protection blocks ordinary writes/removal, CSV and encrypted restoration for unsupported store versions and offers the original main data in JSON backup. See DATA_MODEL_V2.md. This is not an automatic migration or durable rollback implementation; those are next before cutover.
