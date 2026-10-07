@@ -1,5 +1,6 @@
 import { openEncryptedVault, VAULT_FORMAT } from './vaultCrypto';
-import { STORAGE_KEY } from '../store/keys';
+import { STORAGE_KEY, DAILY_LOGS_KEY } from '../store/keys';
+import { parseDailyLogs } from './dailyLogs';
 import { createBackup, parseBackup, type BackupData } from './backup';
 
 export function isEncryptedBackup(text: string): boolean {
@@ -12,5 +13,6 @@ export async function decryptBackup(text: string, secret: string, recovery = fal
   if (!main) throw new Error('This encrypted file contains no restorable records.');
   const value: unknown = JSON.parse(main);
   if (!value || typeof value !== 'object' || !('state' in value)) throw new Error('This file contains unreadable original data rather than a restorable backup.');
-  return parseBackup(JSON.stringify(createBackup((value as { state: BackupData }).state)));
+  const dailyRaw = slots[DAILY_LOGS_KEY];
+  return parseBackup(JSON.stringify(createBackup({...(value as { state: BackupData }).state, ...(dailyRaw === undefined ? {} : {dailyLogs:parseDailyLogs(dailyRaw)})})));
 }

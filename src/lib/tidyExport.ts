@@ -3,14 +3,25 @@ import { formatWeight, WeightUnit } from './units';
 import { isoToLocalDateString, isoToLocalTimeString } from './dates';
 import { CsvCell, toCsv } from './csv';
 import { trackedFields, sevOf, severityLabel } from './symptoms';
+import type { DailyLog } from './dailyLogs';
 
 export const TIDY_HEADER = ['Type', 'Date', 'Item', 'Value', 'Unit', 'Details', 'Notes'] as const;
 
 /** One tidy long-format table of everything the user logged, with weights in their chosen unit. */
-export function buildTidyRows(args: { doses: DoseEvent[]; weights: WeightEntry[]; effects: EffectEntry[]; unit: WeightUnit }): CsvCell[][] {
+export function buildTidyRows(args: { doses: DoseEvent[]; weights: WeightEntry[]; effects: EffectEntry[]; unit: WeightUnit; dailyLogs?: DailyLog[] }): CsvCell[][] {
   const { doses, weights, effects, unit } = args;
   const out: Array<{ t: number; row: CsvCell[] }> = [];
   const ms = (iso: string) => new Date(iso).getTime();
+  for (const day of args.dailyLogs ?? []) {
+    const [year,month,date] = day.date.split('-').map(Number);
+    const t = new Date(year,month-1,date).getTime();
+    const rows: CsvCell[][] = [];
+    if (day.proteinGrams !== undefined) rows.push(['Daily',day.date,'Protein',day.proteinGrams,'g','Self-reported daily total','']);
+    if (day.waterMl !== undefined) rows.push(['Daily',day.date,'Water',day.waterMl,'mL','Self-reported daily total','']);
+    if (!rows.length) rows.push(['Daily',day.date,'Daily note','','','No totals recorded','']);
+    rows[0][6] = day.notes;
+    for (const row of rows) out.push({t,row});
+  }
 
   for (const w of weights) {
     out.push({ t: ms(w.date), row: ['Weight', isoToLocalDateString(w.date), 'Weight', Number(formatWeight(w.weightLbs, unit, { unit: false })), unit, '', ''] });

@@ -1,7 +1,7 @@
 /** WebCrypto only: AES-256-GCM, fresh 96-bit IVs, 128-bit tags; PBKDF2-SHA256 at 600,000 iterations.
  * The website operator can change delivered code; this protects stored bytes, not a hostile unlocked client.
  */
-import { STORAGE_KEY, CORRUPT_KEY, BACKUP_REMINDER_KEY } from '../store/keys';
+import { STORAGE_KEY, CORRUPT_KEY, BACKUP_REMINDER_KEY, DAILY_LOGS_KEY } from '../store/keys';
 export const VAULT_FORMAT = 'glp1-encrypted-vault';
 export const KDF_ITERATIONS = 600_000;
 export const MAX_VAULT_BYTES = 12 * 1024 * 1024;
@@ -85,7 +85,7 @@ export async function createEncryptedVault(passphrase: string, slots: VaultSlots
 
 export async function decryptSlots(envelope: VaultEnvelope, key: CryptoKey): Promise<VaultSlots> {
   const slots: unknown = JSON.parse(decoder.decode(await decrypt(envelope.payload, key, context(envelope.id, 'records'))));
-  if (!slots || typeof slots !== 'object' || Array.isArray(slots) || Object.entries(slots).some(([k,v]) => ![STORAGE_KEY, CORRUPT_KEY, BACKUP_REMINDER_KEY].includes(k) || typeof v !== 'string')) throw new Error('Invalid vault records.');
+  if (!slots || typeof slots !== 'object' || Array.isArray(slots) || Object.entries(slots).some(([k,v]) => ![STORAGE_KEY, CORRUPT_KEY, BACKUP_REMINDER_KEY, DAILY_LOGS_KEY].includes(k) || typeof v !== 'string')) throw new Error('Invalid vault records.');
   return slots as VaultSlots;
 }
 

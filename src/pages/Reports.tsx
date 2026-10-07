@@ -9,6 +9,8 @@ import { formatWeight, formatWeightChange, getWeightUnit, lbsToDisplay } from '.
 import { severityLabel } from '../lib/symptoms';
 import { DoctorRecords } from '../components/DoctorRecords';
 import { doctorReportEnabled } from '../lib/features';
+import { useDailyLogs } from '../store/dailyLogs';
+import { isoToLocalDateString } from '../lib/dates';
 
 const card = 'bg-white p-6 rounded-[24px] border border-[#E5E7EB] shadow-xs print:shadow-none';
 
@@ -21,6 +23,7 @@ function periodLabel(range: PeriodRange): string {
 export function Reports() {
   const { doses, weights, effects, settings } = useStore();
   const unit = getWeightUnit(settings);
+  const daily = useDailyLogs();
   const [kind, setKind] = useState<ReportKind>('weekly');
   const [includeRecords, setIncludeRecords] = useState(false);
   const [range, setRange] = useState<PeriodRange>(() => periodFor('weekly', new Date()));
@@ -36,6 +39,7 @@ export function Reports() {
 
   const report = useMemo(() => buildPeriodReport({ doses, weights, effects, range }), [doses, weights, effects, range]);
   const chart = report.weights.entries.map((w) => ({ date: format(new Date(w.date), 'MMM d'), weight: lbsToDisplay(w.weightLbs, unit) }));
+  const dailyRows = daily.rows.filter(row => row.date >= isoToLocalDateString(range.start.toISOString()) && row.date <= isoToLocalDateString(range.end.toISOString()));
 
   return (
     <div className="space-y-6">
@@ -76,7 +80,7 @@ export function Reports() {
         </button>
       </div>
 
-      {report.isEmpty ? (
+      {report.isEmpty && dailyRows.length === 0 ? (
         <div className={card}>
           <p className="text-sm text-muted">
             Nothing was logged in this {kind === 'weekly' ? 'week' : 'month'}. Use the arrows to look at another period, or <Link to="/" className="text-[#6D4AFF] font-semibold hover:underline">log something today</Link>.
@@ -159,6 +163,8 @@ export function Reports() {
         </>
       )}
       {doctorReportEnabled() && includeRecords && <DoctorRecords doses={doses} weights={weights} effects={effects} settings={settings} range={range} />}
+      {daily.error && <p role="alert" className="text-danger">Daily records could not be read; this report is incomplete. Original encrypted bytes are kept. Export a backup from Settings before recovery.</p>}
+      {dailyRows.length > 0 && <section aria-labelledby="report-daily" className={card}><h2 id="report-daily" className="text-lg font-semibold mb-3">Recorded protein & water totals</h2><p className="text-xs text-muted mb-3">Self-reported daily totals; missing values and days are unrecorded. These are not recommended targets.</p><ul className="space-y-3">{dailyRows.map(row => <li key={row.date}><p>{row.date} · Protein: {row.proteinGrams === undefined ? 'Not recorded' : `${row.proteinGrams} g`} · Water: {row.waterMl === undefined ? 'Not recorded' : `${row.waterMl} mL`}</p>{includeRecords && row.notes && <p className="whitespace-pre-wrap break-words">Notes: {row.notes}</p>}</li>)}</ul></section>}
       <p className="text-[11px] text-subtle text-center">Generated from your own logs on this device. Not medical advice. Printed/PDF copies are unencrypted.</p>
     </div>
   );

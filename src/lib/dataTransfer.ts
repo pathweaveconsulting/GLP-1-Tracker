@@ -5,10 +5,11 @@ import { toLocalDateString } from './dates';
 import type { WeightUnit } from './units';
 import { encryptedBackup, hasVault } from './vault';
 import { STORE_VERSION } from '../store/migrate';
+import { readDailyLogs } from '../store/dailyLogs';
 
 /** Download the tidy CSV (Type, Date, Item, Value, Unit, Details, Notes) in the user's unit. */
 export function exportTidyCsv(data: BackupData, unit: WeightUnit, now: Date = new Date()): void {
-  const csv = buildTidyCsv({ doses: data.doses, weights: data.weights, effects: data.effects, unit });
+  const csv = buildTidyCsv({ doses: data.doses, weights: data.weights, effects: data.effects, unit, dailyLogs:data.dailyLogs ?? readDailyLogs() });
   downloadTextFile(`glp1-tracker-data-${toLocalDateString(now)}.csv`, csv);
 }
 

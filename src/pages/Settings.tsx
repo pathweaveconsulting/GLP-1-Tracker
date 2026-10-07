@@ -13,7 +13,7 @@ import { exportBackupJson, exportTidyCsv, readFileAsText } from '../lib/dataTran
 import { BackupData, parseBackup } from '../lib/backup';
 import { OfflineSettings } from '../components/OfflineSettings';
 import { confirmBackupSaved } from '../lib/backupReminder';
-import { hasVault } from '../lib/vault';
+import { hasVault, flushVault } from '../lib/vault';
 import { decryptBackup, isEncryptedBackup } from '../lib/encryptedRestore';
 import { MAX_VAULT_BYTES } from '../lib/vaultCrypto';
 
@@ -72,11 +72,12 @@ export function Settings() {
     }
   };
 
-  const confirmRestore = () => {
+  const confirmRestore = async () => {
     if (!pendingRestore) return;
     replaceAllData(pendingRestore.data);
     setPendingRestore(null);
-    showToast('Backup restored.');
+    try { if (hasVault()) await flushVault(); showToast('Backup restored.'); }
+    catch { showToast('Backup loaded in this tab, but encrypted saving failed. Keep this tab open and download a backup before reloading.'); }
   };
 
   const handleEraseData = () => {
@@ -210,6 +211,7 @@ export function Settings() {
           pendingRestore && (
             <>
               The backup contains {pendingRestore.counts.doses} {pendingRestore.counts.doses === 1 ? 'dose' : 'doses'}, {pendingRestore.counts.weights} {pendingRestore.counts.weights === 1 ? 'weight' : 'weights'} and {pendingRestore.counts.effects} symptom {pendingRestore.counts.effects === 1 ? 'log' : 'logs'}.
+              {' '}It also contains {pendingRestore.data.dailyLogs?.length ?? 0} daily protein/water logs. Your current daily logs will be replaced too; an older backup contains none.
               Everything currently stored here (including your profile) will be <strong>replaced</strong>. This can’t be undone.
               {getWeightUnit(pendingRestore.data.settings) !== unit && <> Your display unit will change to {getWeightUnit(pendingRestore.data.settings)}.</>}
             </>
