@@ -1,12 +1,13 @@
 import { useSyncExternalStore } from 'react';
 import { BACKUP_REMINDER_KEY } from '../store/keys';
+import { hasVault, readVaultSlot, writeVaultSlot } from './vault';
 
 const DAY = 86_400_000;
 const CHANGED = 'glp1-backup-reminder-changed';
 type Reminder = { confirmedAt?: number; snoozedUntil?: number };
 
 function read(): string | null {
-  try { return localStorage.getItem(BACKUP_REMINDER_KEY); } catch { return null; }
+  try { return hasVault() ? readVaultSlot(BACKUP_REMINDER_KEY) : localStorage.getItem(BACKUP_REMINDER_KEY); } catch { return null; }
 }
 
 export function parseReminder(raw: string | null): Reminder {
@@ -26,24 +27,26 @@ export function reminderDue(reminder: Reminder, now: number): boolean {
   return !recent && !snoozed;
 }
 
-function write(value: Reminder): boolean {
+function write(value: Reminder): boolean | Promise<boolean> {
   try {
+    if (hasVault()) return writeVaultSlot(BACKUP_REMINDER_KEY, JSON.stringify(value)).then(() => { window.dispatchEvent(new Event(CHANGED)); return true; }, () => false);
     localStorage.setItem(BACKUP_REMINDER_KEY, JSON.stringify(value));
     window.dispatchEvent(new Event(CHANGED));
     return true;
   } catch { return false; }
 }
 
-export function confirmBackupSaved(now = Date.now()): boolean {
+export function confirmBackupSaved(now = Date.now()): boolean | Promise<boolean> {
   return write({ confirmedAt: now });
 }
 
-export function snoozeBackupReminder(now = Date.now()): boolean {
+export function snoozeBackupReminder(now = Date.now()): boolean | Promise<boolean> {
   return write({ ...parseReminder(read()), snoozedUntil: now + DAY });
 }
 
 export function clearBackupReminder(): void {
   try {
+    if (hasVault()) { void writeVaultSlot(BACKUP_REMINDER_KEY, null).then(() => window.dispatchEvent(new Event(CHANGED)), () => {}); return; }
     localStorage.removeItem(BACKUP_REMINDER_KEY);
     window.dispatchEvent(new Event(CHANGED));
   } catch { /* No confirmation is claimed when storage is unavailable. */ }

@@ -3,6 +3,8 @@ import { buildTidyCsv } from './tidyExport';
 import { BackupData, createBackup } from './backup';
 import { toLocalDateString } from './dates';
 import type { WeightUnit } from './units';
+import { encryptedBackup, hasVault } from './vault';
+import { STORE_VERSION } from '../store/migrate';
 
 /** Download the tidy CSV (Type, Date, Item, Value, Unit, Details, Notes) in the user's unit. */
 export function exportTidyCsv(data: BackupData, unit: WeightUnit, now: Date = new Date()): void {
@@ -11,7 +13,10 @@ export function exportTidyCsv(data: BackupData, unit: WeightUnit, now: Date = ne
 }
 
 /** Download a JSON backup that can be restored later. */
-export function exportBackupJson(data: BackupData, now: Date = new Date()): void {
+export function exportBackupJson(data: BackupData, now: Date = new Date()): void | Promise<void> {
+  if (hasVault()) return encryptedBackup(JSON.stringify({ state: { ...data, hasOnboarded: true }, version: STORE_VERSION })).then(raw => {
+    downloadTextFile(`glp1-encrypted-backup-${toLocalDateString(now)}.json`, raw, 'application/json');
+  });
   downloadTextFile(`glp1-tracker-backup-${toLocalDateString(now)}.json`, JSON.stringify(createBackup(data, now), null, 2), 'application/json');
 }
 

@@ -57,7 +57,7 @@ export function Layout() {
     <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[80] focus:bg-white focus:text-[#111827] focus:px-4 focus:py-2 focus:rounded-[12px] focus:shadow-lg focus:ring-2 focus:ring-[#6D4AFF]">
       Skip to main content
     </a>
-    <div className="flex h-screen print:h-auto bg-[#F8F9FC] text-[#111827] font-sans antialiased selection:bg-purple-100 selection:text-purple-900">
+    <div className="flex h-[calc(100dvh-var(--vault-toolbar-height,0px))] print:h-auto bg-[#F8F9FC] text-[#111827] font-sans antialiased selection:bg-purple-100 selection:text-purple-900">
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex print:hidden flex-col w-[260px] bg-white border-r border-[#E5E7EB] z-20">
         <div className="p-6 border-b border-[#F1F5F9]">

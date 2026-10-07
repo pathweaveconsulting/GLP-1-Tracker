@@ -64,7 +64,7 @@ describe('deploy: README documents what the build produces', () => {
     expect(read('.gitignore')).toMatch(/^dist\/?$/m);
   });
 
-  it('says how to remove noindex before going public, and that no CSP was tested', () => {
+  it('documents noindex and Content-Security-Policy', () => {
     expect(readme).toMatch(/X-Robots-Tag/);
     expect(readme).toMatch(/Content-Security-Policy|CSP/);
   });

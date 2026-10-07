@@ -5,6 +5,7 @@ import { useStore } from '../store/useStore';
 import { CORRUPT_KEY, STORAGE_KEY } from '../store/keys';
 import { downloadTextFile } from '../lib/csv';
 import { exportBackupJson } from '../lib/dataTransfer';
+import { encryptedBackup, hasVault, readVaultSlot } from '../lib/vault';
 
 /** Banners about problems loading stored data. Rendered above both the app and onboarding. */
 export function StorageNotices() {
@@ -15,14 +16,15 @@ export function StorageNotices() {
   const readFailed = useStore((s) => s.readFailed);
   const startFresh = useStore((s) => s.startFresh);
   const [confirmFresh, setConfirmFresh] = useState(false);
+  const [exportError, setExportError] = useState(false);
   const dismiss = useStore((s) => s.dismissSkippedNotice);
   const storageError = useStore((s) => s.storageError);
   const dismissStorageError = useStore((s) => s.dismissStorageError);
   if (skipped <= 0 && !unreadable && !malformed && !storageError && !readFailed) return null;
 
-  const downloadBackup = () => {
+  const downloadBackup = async () => {
     const { settings, doses, weights, effects } = useStore.getState();
-    exportBackupJson({ settings, doses, weights, effects });
+    try { await exportBackupJson({ settings, doses, weights, effects }); } catch { setExportError(true); }
   };
 
   const readFailedBanner = readFailed && (
@@ -48,7 +50,12 @@ export function StorageNotices() {
     </>
   );
 
-  const downloadOriginal = () => {
+  const downloadOriginal = async () => {
+    if (hasVault()) {
+      try { downloadTextFile('glp1-encrypted-original-data.json', await encryptedBackup(readVaultSlot(STORAGE_KEY) ?? ''), 'application/json'); }
+      catch { setExportError(true); }
+      return;
+    }
     let raw: string | null = null;
     try {
       raw = localStorage.getItem(CORRUPT_KEY);
@@ -66,7 +73,7 @@ export function StorageNotices() {
     if (raw) downloadTextFile('glp1-tracker-original-data.json', raw, 'application/json');
   };
 
-  const storageBanner = (<>{readFailedBanner}{storageError && (
+  const storageBanner = (<>{exportError && <p role="alert">The backup download could not start. Please try again.</p>}{readFailedBanner}{storageError && (
     <div role="alert" className="bg-rose-50 border-b border-rose-200 text-rose-950 text-xs px-4 py-2.5 flex items-start gap-3">
       <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
       <p className="flex-1">
