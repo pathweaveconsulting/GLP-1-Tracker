@@ -96,6 +96,8 @@ export interface AppState extends PersistedData {
   updateWeight: (id: string, weight: Partial<WeightEntry>) => void;
   deleteWeight: (id: string) => void;
   addEffect: (effect: Omit<EffectEntry, 'id'>) => void;
+  deleteEffect: (id: string) => void;
+  restoreEffect: (effect: EffectEntry) => void;
   updateEffect: (id: string, effect: Partial<EffectEntry>) => void;
   updateSettings: (settings: Partial<UserSettings>) => void;
 }

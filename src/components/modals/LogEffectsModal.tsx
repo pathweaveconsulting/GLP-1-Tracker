@@ -1,28 +1,17 @@
 import React, { useId, useState } from 'react';
 import { Smile, Check, Plus } from 'lucide-react';
 import { useStore } from '../../store/useStore';
-import { Severity } from '../../types';
+import { EffectEntry, Severity } from '../../types';
 import { Modal } from '../ui/Modal';
-import { SEVERITIES, severityLabel } from '../../lib/symptoms';
-import { dateOnlyToIso, parseDateOnly, todayLocalDateString } from '../../lib/dates';
+import { COLLECTED_FIELDS, OPTIONAL_FIELDS, SEVERITIES, severityLabel } from '../../lib/symptoms';
+import { dateOnlyToIso, isoToLocalDateString, parseDateOnly, todayLocalDateString } from '../../lib/dates';
 
 interface Props {
   isOpen: boolean;
+  effect?: EffectEntry;
   onClose: () => void;
   onSuccess?: () => void;
 }
-
-const DEFAULT_SYMPTOMS = [
-  { key: 'foodNoise', label: 'Food noise' },
-  { key: 'hunger', label: 'Hunger level' },
-  { key: 'appetiteLoss', label: 'Appetite suppression' },
-  { key: 'nausea', label: 'Nausea' },
-  { key: 'fatigue', label: 'Fatigue' },
-  { key: 'reflux', label: 'Reflux / heartburn' },
-  { key: 'constipation', label: 'Constipation' },
-  { key: 'diarrhea', label: 'Diarrhea' },
-  { key: 'bloating', label: 'Bloating' },
-] as const;
 
 const ACTIVE: Record<Severity, string> = {
   none: 'bg-[#E5E7EB] border-slate-400 text-[#111827]',
@@ -31,7 +20,7 @@ const ACTIVE: Record<Severity, string> = {
   severe: 'bg-rose-100 border-rose-500 text-rose-900',
 };
 
-function SeveritySelector({ label, value, onChange }: { label: string; value: Severity | undefined; onChange: (v: Severity) => void }) {
+function SeveritySelector({ label, value, onChange }: { label: string; value: Severity | undefined; onChange: (v: Severity | undefined) => void }) {
   const id = useId();
   return (
     <div className="space-y-1" role="group" aria-labelledby={id}>
@@ -49,22 +38,26 @@ function SeveritySelector({ label, value, onChange }: { label: string; value: Se
           </button>
         ))}
       </div>
+      <button type="button" onClick={() => onChange(undefined)} className="text-xs text-muted underline">Not recorded</button>
     </div>
   );
 }
 
-function EffectsForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
+function EffectsForm({ onClose, onSuccess, effect }: Omit<Props, 'isOpen'>) {
   const addEffect = useStore((s) => s.addEffect);
+  const updateEffect = useStore((s) => s.updateEffect);
+  const fields = effect ? [...COLLECTED_FIELDS, ...OPTIONAL_FIELDS.filter((f) => effect[f.key] != null)] : COLLECTED_FIELDS;
+  const initialDate = effect ? isoToLocalDateString(effect.date) : todayLocalDateString();
   const uid = useId();
   const today = todayLocalDateString();
-  const [date, setDate] = useState<string>(today);
+  const [date, setDate] = useState<string>(initialDate);
   const [dateError, setDateError] = useState<string>();
   // No rating is selected until the user explicitly chooses one.
-  const [severities, setSeverities] = useState<Record<string, Severity>>({});
-  const [customEffects, setCustomEffects] = useState<Array<{ name: string; level?: Severity }>>([]);
+  const [severities, setSeverities] = useState<Record<string, Severity | undefined>>(() => Object.fromEntries(fields.filter((f) => effect?.[f.key] != null).map((f) => [f.key, effect![f.key]])));
+  const [customEffects, setCustomEffects] = useState<Array<{ name: string; level?: Severity }>>(() => Object.entries(effect?.customEffects ?? {}).map(([name, level]) => ({name, level})));
   const [newEffectName, setNewEffectName] = useState('');
   const [isAddingCustom, setIsAddingCustom] = useState(false);
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState(effect?.notes ?? '');
 
   const sev = (k: string): Severity | undefined => severities[k];
 
@@ -85,12 +78,14 @@ function EffectsForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
     const customRecord: Record<string, Severity> = {};
     customEffects.forEach((ce) => { if (ce.level != null) customRecord[ce.name] = ce.level; });
 
-    addEffect({
-      date: dateOnlyToIso(date),
+    const updated = {
+      date: effect && date === initialDate ? effect.date : dateOnlyToIso(date),
       ...severities,
       customEffects: customRecord,
       notes,
-    });
+    };
+    if (effect) updateEffect(effect.id, updated);
+    else addEffect(updated);
     onSuccess?.();
     onClose();
   };
@@ -114,8 +109,8 @@ function EffectsForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
       </div>
 
       <p className="text-xs text-muted">Choose ratings for the symptoms you want to record. Unanswered symptoms stay not recorded; select None only when you mean none.</p>
-      {DEFAULT_SYMPTOMS.map((s) => (
-        <SeveritySelector key={s.key} label={s.label} value={sev(s.key)} onChange={(v) => setSeverities((p) => ({ ...p, [s.key]: v }))} />
+      {fields.map((s) => (
+        <SeveritySelector key={s.key} label={s.key === 'hunger' ? 'Hunger level' : s.label} value={sev(s.key)} onChange={(v) => setSeverities((p) => ({ ...p, [s.key]: v }))} />
       ))}
 
       {customEffects.map((ce, idx) => (
@@ -157,16 +152,16 @@ function EffectsForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
   );
 }
 
-export function LogEffectsModal({ isOpen, onClose, onSuccess }: Props) {
+export function LogEffectsModal({ isOpen, onClose, onSuccess, effect }: Props) {
   return (
     <Modal
       open={isOpen}
       onClose={onClose}
-      title="Log How You Feel"
+      title={effect ? "Edit symptom log" : "Log How You Feel"}
       subtitle="Appetite, side effects and anything else you notice"
       icon={<div className="w-10 h-10 rounded-[16px] bg-amber-50 flex items-center justify-center text-caution"><Smile className="w-5 h-5" aria-hidden="true" /></div>}
     >
-      <EffectsForm onClose={onClose} onSuccess={onSuccess} />
+      <EffectsForm key={effect?.id ?? "new"} onClose={onClose} onSuccess={onSuccess} effect={effect} />
     </Modal>
   );
 }
