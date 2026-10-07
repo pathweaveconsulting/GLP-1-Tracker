@@ -1,5 +1,5 @@
 import React from 'react';
-import { CORRUPT_KEY, STORAGE_KEY } from '../store/keys';
+import { CORRUPT_KEY, STORAGE_KEY, VAULT_KEY } from '../store/keys';
 import { downloadTextFile } from '../lib/csv';
 
 // Deliberately independent of the store and of every other component, so it still renders when they are what broke.
@@ -16,6 +16,11 @@ const today = () => new Date().toISOString().slice(0, 10);
 
 /** Download the raw string currently stored under the main key (what the app would load). False when there is none. */
 export function downloadRawData(): boolean {
+  const encrypted = readKey(VAULT_KEY);
+  if (encrypted != null) {
+    downloadTextFile(`glp1-encrypted-last-saved-${today()}.json`, encrypted, 'application/json');
+    return true;
+  }
   const raw = readKey(STORAGE_KEY);
   if (raw == null) return false;
   downloadTextFile(`glp1-tracker-raw-data-current-${today()}.json`, raw, 'application/json');
@@ -34,10 +39,11 @@ interface State {
   error: Error | null;
   confirmReset: boolean;
   noData: boolean;
+  downloadError: boolean;
 }
 
 export class ErrorBoundary extends React.Component<{ children: React.ReactNode }, State> {
-  state: State = { error: null, confirmReset: false, noData: false };
+  state: State = { error: null, confirmReset: false, noData: false, downloadError: false };
 
   static getDerivedStateFromError(error: Error): Partial<State> {
     return { error };
@@ -49,6 +55,7 @@ export class ErrorBoundary extends React.Component<{ children: React.ReactNode }
   }
 
   private reset = () => {
+    if (readKey(VAULT_KEY) !== null) return;
     // Keep a rescue copy before wiping the main key, then reload into a clean app.
     const raw = readKey(STORAGE_KEY);
     try {
@@ -63,21 +70,27 @@ export class ErrorBoundary extends React.Component<{ children: React.ReactNode }
   render() {
     if (!this.state.error) return this.props.children;
     const btn = 'px-4 py-2.5 rounded-[14px] text-sm font-semibold border';
+    const encrypted = readKey(VAULT_KEY) !== null;
     return (
       <div role="alert" style={{ maxWidth: 560, margin: '10vh auto', padding: 24, fontFamily: 'system-ui, sans-serif', color: '#111827' }}>
         <h1 style={{ fontSize: 22, fontWeight: 600 }}>Something went wrong</h1>
         <p style={{ marginTop: 8, color: '#475467', lineHeight: 1.5 }}>
-          The app hit an unexpected problem. Some data may be unsaved or unreadable. Reload, download a raw copy, or reset.
+          {encrypted ? 'The app hit an unexpected problem. Some data may be unsaved or unreadable. Download a saved copy before reloading.' : 'The app hit an unexpected problem. Some data may be unsaved or unreadable. Reload, download a raw copy, or reset.'}
         </p>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 16 }}>
           <button type="button" className={btn} onClick={() => window.location.reload()}>Reload</button>
-          <button type="button" className={btn} onClick={() => this.setState({ noData: !downloadRawData() })}>Download raw data (current)</button>
+          <button type="button" className={btn} onClick={() => {
+            try { this.setState({ noData: !downloadRawData(), downloadError: false }); }
+            catch { this.setState({ downloadError: true }); }
+          }}>{encrypted ? 'Download encrypted data (last saved)' : 'Download raw data (current)'}</button>
           {readKey(CORRUPT_KEY) != null && (
             <button type="button" className={btn} onClick={downloadRescueCopy}>Download rescue copy</button>
           )}
-          <button type="button" className={btn} onClick={() => this.setState({ confirmReset: true })}>Reset app</button>
+          {!encrypted && <button type="button" className={btn} onClick={() => this.setState({ confirmReset: true })}>Reset app</button>}
         </div>
         {this.state.noData && <p style={{ marginTop: 12, color: '#475467' }}>There is no current data to download.</p>}
+        {this.state.downloadError && <p style={{ marginTop: 12 }}>The download could not start. Please try again.</p>}
+        {encrypted && <p style={{ marginTop: 12 }}>This download contains the last saved encrypted records, which may exclude recent unsaved changes. Your vault is kept intact. After reloading, unlock it; erasing records is available in Settings.</p>}
         {this.state.confirmReset && (
           <div style={{ marginTop: 16, padding: 12, border: '1px solid #FDA29B', borderRadius: 12 }}>
             <p style={{ margin: 0 }}>This erases the app’s data on this device. The app will try to keep a rescue copy, but this can fail when browser storage is full or blocked. Download the raw data first if you want it.</p>

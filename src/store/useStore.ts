@@ -6,6 +6,7 @@ import { emptyData, migrateStore, STORE_VERSION } from './migrate';
 import { CORRUPT_KEY, STORAGE_KEY } from './keys';
 import { createSafeStorage, resumeWrites, storageEvents, storageReport } from './storage';
 import { clearBackupReminder } from '../lib/backupReminder';
+import { hasVault, writeVaultSlot } from '../lib/vault';
 
 export { STORAGE_KEY, CORRUPT_KEY };
 
@@ -51,7 +52,8 @@ export const useStore = create<AppState>()(
         useStore.persist.clearStorage();
         // "Erase" must remove everything the app keeps, including a rescue copy of unreadable data.
         try {
-          localStorage.removeItem(CORRUPT_KEY);
+          if (hasVault()) void writeVaultSlot(CORRUPT_KEY, null).catch(() => storageEvents.onWriteError?.());
+          else localStorage.removeItem(CORRUPT_KEY);
         } catch {
           // ignore
         }

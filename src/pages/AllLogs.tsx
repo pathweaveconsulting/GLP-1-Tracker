@@ -26,11 +26,12 @@ export function AllLogs() {
           <h1 className="text-3xl font-semibold tracking-tight text-[#111827]">All Telemetry Logs</h1>
           <p className="text-sm text-muted mt-0.5">Master database of all injections, weights, and symptoms</p>
         </div>
-        <Button onClick={handleExportCSV} variant="outline" size="sm" className="gap-2 rounded-[14px] border-[#E5E7EB] text-xs font-semibold text-[#111827]">
+        <Button onClick={handleExportCSV} aria-describedby="logs-csv-privacy" variant="outline" size="sm" className="gap-2 rounded-[14px] border-[#E5E7EB] text-xs font-semibold text-[#111827]">
           <Download className="w-4 h-4 text-muted" />
           CSV Export
         </Button>
       </header>
+      <p id="logs-csv-privacy" className="text-xs text-muted">CSV files are unencrypted and contain private health records. Store them privately; use Settings for an encrypted backup.</p>
 
       <div className="flex gap-2 p-1 bg-[#F8F9FC] border border-[#E5E7EB] rounded-[14px]">
         <button 

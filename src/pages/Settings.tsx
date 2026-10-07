@@ -12,6 +12,9 @@ import { formatHeight, formatWeight, getWeightUnit } from '../lib/units';
 import { exportBackupJson, exportTidyCsv, readFileAsText } from '../lib/dataTransfer';
 import { BackupData, parseBackup } from '../lib/backup';
 import { confirmBackupSaved } from '../lib/backupReminder';
+import { hasVault } from '../lib/vault';
+import { decryptBackup, isEncryptedBackup } from '../lib/encryptedRestore';
+import { MAX_VAULT_BYTES } from '../lib/vaultCrypto';
 
 type PendingRestore = { data: BackupData; counts: { doses: number; weights: number; effects: number } };
 
@@ -24,6 +27,11 @@ export function Settings() {
   const [pendingRestore, setPendingRestore] = useState<PendingRestore | null>(null);
   const [restoreErrors, setRestoreErrors] = useState<string[] | null>(null);
   const [backupStarted, setBackupStarted] = useState(false);
+  const [encryptedFile, setEncryptedFile] = useState<string | null>(null);
+  const [backupSecret, setBackupSecret] = useState('');
+  const [backupRecovery, setBackupRecovery] = useState(false);
+  const [decrypting, setDecrypting] = useState(false);
+  const [backupUnlockError, setBackupUnlockError] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
 
   const snapshot = (): BackupData => ({ settings, doses, weights, effects });
@@ -37,9 +45,9 @@ export function Settings() {
     }
   };
 
-  const handleExportJSON = () => {
+  const handleExportJSON = async () => {
     try {
-      exportBackupJson(snapshot());
+      await exportBackupJson(snapshot());
       setBackupStarted(true);
       showToast('Backup download started. Check your downloads and keep the file safe.');
     } catch {
@@ -51,8 +59,11 @@ export function Settings() {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
+    if (file.size > MAX_VAULT_BYTES) { setRestoreErrors(['This file is too large to safely restore in this browser (maximum 12 MiB).']); return; }
     try {
-      const result = parseBackup(await readFileAsText(file));
+      const text = await readFileAsText(file);
+      if (isEncryptedBackup(text)) { setBackupUnlockError(''); setBackupSecret(''); setBackupRecovery(false); setEncryptedFile(text); return; }
+      const result = parseBackup(text);
       if (result.ok) setPendingRestore({ data: result.data, counts: result.counts });
       else setRestoreErrors(result.errors);
     } catch {
@@ -119,13 +130,14 @@ export function Settings() {
               Your data lives only in this browser on this device. This app has no account and no server, and it doesn’t send your logs anywhere.
             </p>
             <p>
-              It is stored <strong>unencrypted</strong> in the browser’s local storage, so anyone who can open this browser profile can read it.
+              {hasVault() ? <>Your records and rescue copies are stored encrypted. Unlocking uses your passphrase or recovery key; neither is stored here. JSON backups are encrypted too. An unlocked browser can still display and export your records.</> : <>It is stored <strong>unencrypted</strong> in the browser’s local storage, so anyone who can open this browser profile can read it.</>}
               If you clear your browser data (or use a private window), it is deleted for good. Download a backup now and then.
             </p>
           </div>
           {effects.length > 0 && <p className="text-xs text-muted">Earlier versions filled unanswered symptom ratings with None. Older ratings are preserved because we cannot tell which ones you chose. New logs save only your selections.</p>}
           <div id="backup" className="space-y-2 pt-2">
-            <Button onClick={handleExportCSV} variant="outline" className="w-full justify-start gap-2.5 rounded-[14px] border-[#E5E7EB] text-[#111827] font-semibold text-xs py-3">
+            <p id="csv-privacy" className="text-xs text-muted">CSV exports are unencrypted. Anyone with the file can read it; use an encrypted JSON backup for private recovery.</p>
+            <Button aria-describedby="csv-privacy" onClick={handleExportCSV} variant="outline" className="w-full justify-start gap-2.5 rounded-[14px] border-[#E5E7EB] text-[#111827] font-semibold text-xs py-3">
               <Download className="w-4 h-4 text-muted" aria-hidden="true" /> Export everything as CSV
             </Button>
             <Button onClick={handleExportJSON} variant="outline" className="w-full justify-start gap-2.5 rounded-[14px] border-[#E5E7EB] text-[#111827] font-semibold text-xs py-3">
@@ -133,8 +145,8 @@ export function Settings() {
             </Button>
             {backupStarted && <div className="p-3 rounded-[12px] border border-[#E5E7EB] text-xs text-muted">
               <p>The app cannot tell whether the browser saved your file. Check your downloads and keep the JSON file somewhere private before confirming.</p>
-              <Button type="button" variant="outline" className="mt-2" onClick={() => {
-                if (confirmBackupSaved()) {
+              <Button type="button" variant="outline" className="mt-2" onClick={async () => {
+                if (await confirmBackupSaved()) {
                   setBackupStarted(false);
                   showToast('You confirmed saving a backup. We’ll remind you again in a week.');
                 } else showToast('This browser could not save your confirmation. Backup reminders will continue.');
@@ -152,6 +164,28 @@ export function Settings() {
       </Card>
 
       <SafetyNotice variant="full" />
+
+      <Modal open={encryptedFile !== null} onClose={() => { if (!decrypting) { setEncryptedFile(null); setBackupSecret(''); } }} title="Unlock encrypted backup" subtitle="Use the passphrase or recovery key for the vault that created this file.">
+        <form className="space-y-3" onSubmit={async e => {
+          e.preventDefault();
+          if (!encryptedFile) return;
+          setDecrypting(true);
+          setBackupUnlockError('');
+          try {
+            const result = await decryptBackup(encryptedFile, backupSecret, backupRecovery);
+            setBackupSecret(''); setEncryptedFile(null);
+            if (result.ok) setPendingRestore({ data: result.data, counts: result.counts });
+            else setRestoreErrors(result.errors);
+          } catch { setBackupUnlockError('Could not decrypt this backup. Check its passphrase or recovery key; the file may also be damaged. Nothing was changed.'); }
+          finally { setDecrypting(false); }
+        }}>
+          <label className="flex gap-2 text-sm"><input type="checkbox" checked={backupRecovery} disabled={decrypting} onChange={e => { setBackupRecovery(e.target.checked); setBackupSecret(''); }} />Use the backup’s recovery key</label>
+          <label htmlFor="backup-secret" className="block text-sm font-semibold">{backupRecovery ? 'Backup recovery key' : 'Backup passphrase'}</label>
+          <input id="backup-secret" type="password" autoComplete="off" required maxLength={1024} disabled={decrypting} value={backupSecret} onChange={e => setBackupSecret(e.target.value)} className="w-full p-3 border border-[#D0D5DD] rounded-xl" />
+          <Button type="submit" disabled={decrypting}>{decrypting ? 'Decrypting…' : 'Check backup'}</Button>
+          {backupUnlockError && <p role="alert" className="text-sm text-danger">{backupUnlockError}</p>}
+        </form>
+      </Modal>
 
       <div className="text-center pb-8 pt-4">
         <p className="text-[11px] text-muted font-medium">GLP-1 Companion • Not medical advice. Always consult your care team.</p>

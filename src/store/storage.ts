@@ -2,6 +2,42 @@ import type { PersistStorage, StorageValue } from 'zustand/middleware';
 import { CORRUPT_KEY } from './keys';
 import { isObj } from '../lib/rowValidation';
 import { sanitizePersistedState } from './sanitize';
+import { hasVault, isVaultUnlocked, readVaultSlot, writeVaultSlot } from '../lib/vault';
+
+async function readEncrypted<S>(name: string): Promise<StorageValue<S> | null> {
+  storageReport.skipped = 0;
+  storageReport.rescueKept = true;
+  storageReport.unreadable = false;
+  storageReport.malformed = false;
+  storageReport.readFailed = false;
+  writesPaused = false;
+  try {
+    const raw = readVaultSlot(name);
+    if (raw === null) return null;
+    let parsed: unknown;
+    try { parsed = JSON.parse(raw); } catch { parsed = null; }
+    if (!isObj(parsed) || !isObj(parsed.state)) {
+      storageReport.unreadable = true;
+      try { await writeVaultSlot(CORRUPT_KEY, raw); } catch { storageReport.rescueKept = false; }
+      return null;
+    }
+    const clean = sanitizePersistedState(parsed.state);
+    storageReport.malformed = clean.malformed;
+    storageReport.skipped = clean.dropped;
+    const result = { ...parsed, state: clean.state };
+    if (clean.dropped > 0 || clean.malformed) {
+      try {
+        await writeVaultSlot(CORRUPT_KEY, raw);
+        await writeVaultSlot(name, JSON.stringify(result));
+      } catch { storageReport.rescueKept = false; }
+    }
+    return result as unknown as StorageValue<S>;
+  } catch {
+    writesPaused = true;
+    storageReport.readFailed = true;
+    return null;
+  }
+}
 
 /** What the last read of storage found; consumed by the store when it hydrates. */
 export const storageReport = { skipped: 0, rescueKept: true, unreadable: false, malformed: false, readFailed: false };
@@ -38,6 +74,11 @@ function copyToCorrupt(raw: string): boolean {
 export function createSafeStorage<S>(): PersistStorage<S> {
   return {
     getItem: (name) => {
+      try { if (hasVault()) return readEncrypted<S>(name); } catch {
+        writesPaused = true;
+        storageReport.readFailed = true;
+        return null;
+      }
       storageReport.skipped = 0;
       storageReport.rescueKept = true;
       storageReport.unreadable = false;
@@ -90,6 +131,10 @@ export function createSafeStorage<S>(): PersistStorage<S> {
     setItem: (name, value) => {
       if (writesPaused) return; // see writesPaused: never overwrite data we could not read
       try {
+        if (hasVault()) {
+          if (!isVaultUnlocked()) return; // Clearing decrypted memory on lock never writes records.
+          return writeVaultSlot(name, JSON.stringify(value)).then(() => storageEvents.onWriteOk?.(), () => storageEvents.onWriteError?.());
+        }
         localStorage.setItem(name, JSON.stringify(value));
         storageEvents.onWriteOk?.();
       } catch {
@@ -99,6 +144,7 @@ export function createSafeStorage<S>(): PersistStorage<S> {
     removeItem: (name) => {
       if (writesPaused) return;
       try {
+        if (hasVault()) return writeVaultSlot(name, null).catch(() => storageEvents.onWriteError?.());
         localStorage.removeItem(name);
       } catch {
         // ignore: nothing to remove or storage is blocked

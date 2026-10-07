@@ -52,14 +52,14 @@ src/
 
 ## Privacy
 
-There is no server and no account. Everything you log is stored **unencrypted** in this browser's `localStorage` (key `glp1-tracker-storage`). Anyone who can open this browser profile can read it, and clearing browser data (or using a private window) deletes it. Use *Settings → Download a backup* regularly. The app makes no network requests for your data and loads no third-party images.
+There is no backend or account. This branch stores records, rescue copies and backup reminder metadata in an **encrypted local vault** (`glp1-encrypted-vault`). Create a unique passphrase and save the recovery key privately before continuing. Existing plaintext records are removed only after verifying the encrypted copy. The app locks after ten minutes of inactivity. Clearing browser data still deletes records; keep encrypted backups. See [SECURITY.md](./SECURITY.md) for the threat model and limits. Production does not gain these protections until this branch is approved and released.
 
 Data formats you can export from Settings:
 
 - **CSV** with columns `Type, Date, Item, Value, Unit, Details, Notes` (UTF-8 with BOM, weights in your chosen unit, spreadsheet-formula-safe).
-- **JSON backup** (`format: "glp1-tracker-backup"`, `version: 1`) that can be restored, with strict validation.
+- **Encrypted JSON backup** (`format: "glp1-encrypted-vault"`, `version: 1`) unlocked with the passphrase or recovery key, then strictly validated before replacement. Legacy plaintext backups remain importable. CSV exports remain unencrypted.
 
-If stored data can't be read (invalid JSON, rows that fail validation), the app keeps the readable rows, shows a notice, and keeps a raw copy under `glp1-tracker-storage-corrupt` until you erase data from Settings. If the browser refuses to save (storage full or blocked), a banner offers a backup download.
+If stored data can't be read (invalid JSON, rows that fail validation), the app keeps the readable rows, shows a notice, and keeps the original bytes in an encrypted rescue slot until you erase data from Settings. If the browser refuses to save (storage full or blocked), a banner offers a backup download.
 
 Weights can also be imported from a CSV (up to 5 MB / 50,000 rows) (Weight page → import button).
 
@@ -78,7 +78,7 @@ Every new assertion should be mutation-checked at least once (break the code, wa
 
 The app is a static site with no server, database or network calls: `npm run build` writes everything to `dist` and any static host can serve it. Saved data lives in each visitor's own browser (`localStorage`) and is per address, so a new domain starts empty.
 
-Cloudflare Pages (these steps are from Cloudflare's documentation and have not been run for this repo):
+Cloudflare Pages production is hosted at https://glp1.pathweave.co.in/ in project `glp-1-tracker`. Release workflow: draft PR → preview checks → owner approval → merge to `main` → production checks. Build settings:
 
 1. Workers & Pages → Create → Pages → connect this GitHub repository.
 2. Build command `npm run build`, output directory `dist`, Node 20 or later.
@@ -88,7 +88,7 @@ Notes:
 
 - `public/_headers` is copied into `dist` by the build. It sends `X-Robots-Tag: noindex, nofollow` so a test site stays out of search results, plus a few hardening headers and long caching for the hashed files in `/assets`. **Delete the `X-Robots-Tag` line before the site is meant to be public.**
 - The app uses browser-history routing, so deep links such as `/results` need the host to fall back to `index.html`. Cloudflare Pages does this when the project has no top-level `404.html`; confirm it on the first deploy by opening a deep link and refreshing.
-- No `Content-Security-Policy` is set, because one was never tested against the app (charts and styles may need specific allowances). Add one only after testing it in a real browser.
+- `public/_headers` sets a Content-Security-Policy (CSP) with a self-only script policy, prohibits connections (`connect-src 'none'`), disallows framing and form submission, and disables camera, microphone and location. Inline CSS remains allowed for chart/UI styles; inline scripts are prohibited. Recheck the actual response headers and every route on preview before release.
 - The medication values and safety wording still need clinician review (see the next section) before the site is shared beyond testers.
 
 ## Review medication reference data

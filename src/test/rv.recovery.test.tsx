@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import App from '../App';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { useStore, STORAGE_KEY } from '../store/useStore';
-import { CORRUPT_KEY } from '../store/keys';
+import { CORRUPT_KEY, VAULT_KEY } from '../store/keys';
 
 const realLocation = Object.getOwnPropertyDescriptor(window, 'location')!;
 afterEach(() => {
@@ -27,6 +27,18 @@ function captureDownloads() {
 }
 
 describe('RV02: ErrorBoundary says only what it knows', () => {
+  it('offers the saved encrypted bytes after a crash and keeps the vault intact', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    localStorage.setItem(VAULT_KEY, 'ENCRYPTED-BYTES');
+    const { blobs, names } = captureDownloads();
+    render(<ErrorBoundary><Boom /></ErrorBoundary>);
+    await userEvent.setup().click(screen.getByRole('button', { name: /download encrypted data \(last saved\)/i }));
+    expect(await readBlob(blobs[0])).toBe('ENCRYPTED-BYTES');
+    expect(names[0]).toMatch(/encrypted-last-saved/);
+    expect(screen.queryByRole('button', { name: /reset app/i })).toBeNull();
+    expect(localStorage.getItem(VAULT_KEY)).toBe('ENCRYPTED-BYTES');
+    expect(screen.getByRole('alert')).toHaveTextContent(/may exclude recent unsaved changes/i);
+  });
   it('does not claim the data is still stored or that a rescue copy is kept', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     render(<ErrorBoundary><Boom /></ErrorBoundary>);
