@@ -5,6 +5,7 @@ Updated 2026-10-07. This is a release checklist, not evidence that unperformed c
 | Feedback | Implemented checkpoint | Remaining acceptance |
 |---|---|---|
 | Data loss / backups | Versioned JSON import/export, CSV, honest periodic reminders (PR #4); encrypted vault/backups (PR #5) | Real-browser migration, failed saves, recovery-key unlock, lock, replace confirmation, export/re-import with weight/dose/symptom/daily rows; privately retain backups |
+| Migration / recovery | Schema-V2 validation without live cutover; confirmed one-generation encrypted recovery-point save/restore and rollback undo | Real-device recovery after lock/reopen, failed writes, stale tabs, all-slot fidelity and erasure; automatic pre-import snapshots and live-schema bridge are still pending |
 | Strong stored-data encryption | User-held secrets and AES-GCM vault; no key escrow | Independent security review; encryption cannot prevent an operator replacing delivered JavaScript from capturing the next unlock |
 | External attack protection | Static app, CSP, no external network allowance, hostname-only Cloudflare guard | Actual response-header checks, account MFA/collaborator review, penetration test if needed; no claim of unhackability |
 | Heavy initial chart download | Lazy app/routes; preview initial DOM assets contain no Recharts preload | Device Lighthouse and cold-load measurements; deliberate offline preparation downloads charts later |

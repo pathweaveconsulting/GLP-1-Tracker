@@ -1,10 +1,11 @@
-import { CORRUPT_KEY, STORAGE_KEY, BACKUP_REMINDER_KEY, VAULT_KEY, DAILY_LOGS_KEY } from '../store/keys';
+import { CORRUPT_KEY, STORAGE_KEY, BACKUP_REMINDER_KEY, VAULT_KEY, VAULT_SLOT_KEYS } from '../store/keys';
 import { createEncryptedVault, decryptSlots, encryptSlots, openEncryptedVault, serializeVault, type VaultEnvelope, type VaultSlots } from './vaultCrypto';
 
 export { VAULT_KEY } from '../store/keys';
 let session: { key: CryptoKey; envelope: VaultEnvelope; slots: VaultSlots; expected: string } | null = null;
 let queue: Promise<void> = Promise.resolve();
 let pending = 0;
+let transactionActive = false;
 let lockedBackup: { raw: string; source: string } | null = null;
 export const getLockedBackup = () => lockedBackup?.raw ?? null;
 export const hasPendingVaultWrites = () => pending > 0;
@@ -24,7 +25,8 @@ export function readVaultSlot(name: string): string | null {
 export function writeVaultSlot(name: string, value: string | null): Promise<void> {
   const active = session;
   if (!active) return Promise.reject(new Error('Vault is locked.'));
-  if (![STORAGE_KEY, CORRUPT_KEY, BACKUP_REMINDER_KEY, DAILY_LOGS_KEY].includes(name)) return Promise.reject(new Error('Unsupported record key.'));
+  if (transactionActive) return Promise.reject(new Error('A recovery operation is saving. Retry this edit after it finishes.'));
+  if (!VAULT_SLOT_KEYS.includes(name)) return Promise.reject(new Error('Unsupported record key.'));
   const previous = active.slots[name];
   if (value === null) delete active.slots[name]; else active.slots[name] = value;
   changed();
@@ -51,6 +53,44 @@ export function writeVaultSlot(name: string, value: string | null): Promise<void
     throw error;
   }).finally(() => { pending--; });
   return queue;
+}
+
+/** Publish every slot together only after verified ciphertext is durably saved. Failed queues are not bypassed. */
+export function transactVault(update: (current: VaultSlots) => VaultSlots): Promise<void> {
+  const active = session;
+  if (!active) return Promise.reject(new Error('Unlock your vault first.'));
+  if (transactionActive) return Promise.reject(new Error('A recovery operation is already saving.'));
+  transactionActive = true;
+  pending++;
+  const operation = queue.then(async () => {
+    if (!navigator.locks) throw new Error('This browser does not support safe encrypted saving.');
+    await navigator.locks.request('glp1-vault-write', async () => {
+      if (session !== active || localStorage.getItem(VAULT_KEY) !== active.expected) throw new Error('Vault changed. Reload only after saving a backup.');
+      const slots = update({ ...active.slots });
+      if (Object.entries(slots).some(([k,v]) => !VAULT_SLOT_KEYS.includes(k) || typeof v !== 'string')) throw new Error('Unsupported recovery records.');
+      const next = await encryptSlots(active.envelope, active.key, slots);
+      const raw = serializeVault(next);
+      if (JSON.stringify(await decryptSlots(next, active.key)) !== JSON.stringify(slots)) throw new Error('Encrypted recovery could not be verified.');
+      if (session !== active || localStorage.getItem(VAULT_KEY) !== active.expected) throw new Error('Vault changed during recovery.');
+      // localStorage setItem is atomic: quota errors leave the previous envelope intact.
+      localStorage.setItem(VAULT_KEY, raw);
+      if (localStorage.getItem(VAULT_KEY) !== raw) throw new Error('Encrypted recovery save could not be verified.');
+      active.envelope = next;
+      active.expected = raw;
+      active.slots = slots;
+      changed();
+    });
+  }).finally(() => { pending--; transactionActive = false; });
+  // A failed recovery transaction never published optimistic records; ordinary saving can continue.
+  // Preserve an earlier ordinary-write failure instead of clearing its recovery requirement.
+  const previous = queue;
+  queue = operation.catch(() => previous);
+  return operation;
+}
+
+export function currentVaultSlots(): VaultSlots {
+  if (!session) throw new Error('Unlock your vault first.');
+  return { ...session.slots };
 }
 
 export async function prepareVault(passphrase: string) {

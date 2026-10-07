@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import { AppState, PersistedData } from '../types';
 import { newId } from '../lib/id';
 import { emptyData, migrateStore, STORE_VERSION } from './migrate';
-import { CORRUPT_KEY, STORAGE_KEY } from './keys';
+import { CORRUPT_KEY, STORAGE_KEY, ROLLBACK_KEY } from './keys';
 import { createSafeStorage, resumeWrites, storageEvents, storageReport } from './storage';
 import { clearBackupReminder } from '../lib/backupReminder';
 import { hasVault, isVaultUnlocked, writeVaultSlot } from '../lib/vault';
@@ -47,7 +47,10 @@ export const useStore = create<AppState>()(
         })),
 
       resetAllData: () => {
-        if (isVaultUnlocked()) void replaceDailyLogs([]).catch(() => storageEvents.onWriteError?.());
+        if (isVaultUnlocked()) {
+          void replaceDailyLogs([]).catch(() => storageEvents.onWriteError?.());
+          void writeVaultSlot(ROLLBACK_KEY, null).catch(() => storageEvents.onWriteError?.());
+        }
         clearBackupReminder();
         resumeWrites(); // Erase is an explicit action, so saving resumes
         set({ ...emptyData(), skippedEntries: 0, unreadable: false, malformed: false, readFailed: false });
