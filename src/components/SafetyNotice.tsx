@@ -22,10 +22,12 @@ interface Props {
   /** Override the medication used to decide on the investigational warning (e.g. during onboarding). */
   medication?: Medication;
   className?: string;
+  /** Onboarding is outside the router and shows the complete notice at review. */
+  showHelpLink?: boolean;
 }
 
 /** Shared safety guidance. "full" lists red-flag symptoms and missed-dose guidance; "compact" is a one-line footer. */
-export function SafetyNotice({ variant = 'full', medication, className = '' }: Props) {
+export function SafetyNotice({ variant = 'full', medication, className = '', showHelpLink = true }: Props) {
   const settingsMed = useStore((s) => s.settings.medication);
   const hasRetatrutideDose = useStore((s) => s.doses.some((d) => d.medication === 'Retatrutide'));
   const med = medication ?? settingsMed;
@@ -36,7 +38,7 @@ export function SafetyNotice({ variant = 'full', medication, className = '' }: P
       <p className={`text-[11px] text-muted leading-relaxed ${className}`} data-testid="safety-compact">
         <ShieldAlert className="inline w-3 h-3 mr-1 -mt-0.5 text-subtle" aria-hidden="true" />
         Not medical advice. Severe or lasting belly pain, repeated vomiting, an allergic reaction or thoughts of self-harm need urgent care. {EXAMPLES_NOT_EXHAUSTIVE}{' '}
-        <Link to="/health#safety" className="text-[#6D4AFF] font-semibold hover:underline">When to get help</Link>
+        {showHelpLink && <Link to="/health#safety" className="text-[#6D4AFF] font-semibold hover:underline">When to get help</Link>}
       </p>
     );
   }

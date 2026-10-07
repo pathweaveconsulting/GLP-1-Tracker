@@ -39,8 +39,10 @@ describe('F1: welcome-back onboarding after an upgrade', () => {
     expect(document.body.textContent).not.toMatch(/\b(220|170)\b/);
     expect(screen.getByLabelText(/^medication/i)).toHaveValue('Tirzepatide');
     expect(screen.getByLabelText(/starting weight/i)).toHaveValue(205.5); // earliest real weigh-in
-    expect(screen.getByLabelText(/treatment start date/i)).toHaveValue('2026-09-10'); // earliest dose (before the first weigh-in)
     expect(screen.getByLabelText(/goal weight/i)).toHaveValue(null);
+    await userEvent.setup().type(screen.getByLabelText(/goal weight/i), '180');
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Continue' }));
+    expect(screen.getByLabelText(/treatment start date/i)).toHaveValue('2026-09-10'); // earliest dose (before the first weigh-in)
     expect(screen.getByLabelText(/height \(feet\)/i)).toHaveValue(null);
   });
 
@@ -48,14 +50,19 @@ describe('F1: welcome-back onboarding after an upgrade', () => {
     await rehydrateFrom(oldBlob({ ...real, settings: demoSettings }));
     const user = userEvent.setup();
     render(<App />);
-    await user.click(screen.getByRole('checkbox'));
-    await user.click(screen.getByRole('button', { name: /start my journey/i }));
-    expect(screen.getAllByRole('alert').length).toBeGreaterThanOrEqual(2); // goal + height
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    expect(screen.getByRole('alert')).toHaveTextContent(/goal weight/i);
     expect(useStore.getState().hasOnboarded).toBe(false);
 
     await user.type(screen.getByLabelText(/goal weight/i), '180');
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    expect(screen.getByRole('alert')).toHaveTextContent(/Height feet/);
+    expect(useStore.getState().hasOnboarded).toBe(false);
     await user.type(screen.getByLabelText(/height \(feet\)/i), '5');
     await user.type(screen.getByLabelText(/height \(inches\)/i), '9');
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+    await user.click(screen.getByRole('checkbox'));
     await user.click(screen.getByRole('button', { name: /start my journey/i }));
     const s = useStore.getState();
     expect(s.hasOnboarded).toBe(true);

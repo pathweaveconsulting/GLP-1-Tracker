@@ -63,6 +63,10 @@ If stored data can't be read (invalid JSON, rows that fail validation), the app 
 
 Weights can also be imported from a CSV (up to 5 MB / 50,000 rows) (Weight page → import button).
 
+## Setup and units
+
+New onboarding uses three steps: medication/weight, height/start date, then review and the full safety notice. Medication and date are blank until explicitly selected. Returning users see values derived from their preserved entries. Kilogram users enter height in centimetres; pounds users enter feet/inches. Canonical storage remains pounds and inches. Goals must be below starting weight for this weight-loss tracker; the app does not prescribe a target. Saving an unchanged profile keeps the exact original values, avoiding rounding drift.
+
 ## Testing
 
 `vitest` + Testing Library in jsdom. The suite includes:
