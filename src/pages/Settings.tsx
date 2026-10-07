@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useStore } from '../store/useStore';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Card, CardContent, CardHeader } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Download, Trash2, Shield, User, FileJson, Upload } from 'lucide-react';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
@@ -27,22 +27,34 @@ export function Settings() {
   const snapshot = (): BackupData => ({ settings, doses, weights, effects });
 
   const handleExportCSV = () => {
-    exportTidyCsv(snapshot(), unit);
-    showToast('CSV export started. Check your downloads.');
+    try {
+      exportTidyCsv(snapshot(), unit);
+      showToast('CSV export started. Check your downloads.');
+    } catch {
+      showToast('CSV export could not start. Your records are unchanged. Please try again.');
+    }
   };
 
   const handleExportJSON = () => {
-    exportBackupJson(snapshot());
-    showToast('Backup download started. Check your downloads and keep the file safe.');
+    try {
+      exportBackupJson(snapshot());
+      showToast('Backup download started. Check your downloads and keep the file safe.');
+    } catch {
+      showToast('Backup download could not start. Your records are unchanged. Please try again.');
+    }
   };
 
   const handleRestoreFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
-    const result = parseBackup(await readFileAsText(file));
-    if (result.ok) setPendingRestore({ data: result.data, counts: result.counts });
-    else setRestoreErrors(result.errors);
+    try {
+      const result = parseBackup(await readFileAsText(file));
+      if (result.ok) setPendingRestore({ data: result.data, counts: result.counts });
+      else setRestoreErrors(result.errors);
+    } catch {
+      setRestoreErrors(['This file could not be read. Please check that it is available on your device and try again.']);
+    }
   };
 
   const confirmRestore = () => {
@@ -75,7 +87,7 @@ export function Settings() {
         <CardHeader className="flex flex-row items-center justify-between">
           <div className="flex items-center gap-2">
             <User className="w-5 h-5 text-[#6D4AFF]" aria-hidden="true" />
-            <CardTitle className="text-base font-semibold text-[#111827]"><h2>Profile & Medication Setup</h2></CardTitle>
+            <h2 className="text-base font-semibold text-[#111827]">Profile & Medication Setup</h2>
           </div>
           <Button onClick={() => setIsEditProfileOpen(true)} variant="outline" size="sm" className="rounded-[14px] border-[#E5E7EB] text-xs font-semibold text-[#111827]">
             Edit Profile
@@ -95,7 +107,7 @@ export function Settings() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Shield className="w-5 h-5 text-positive" aria-hidden="true" />
-            <CardTitle className="text-base font-semibold text-[#111827]"><h2>Privacy & your data</h2></CardTitle>
+            <h2 className="text-base font-semibold text-[#111827]">Privacy & your data</h2>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
