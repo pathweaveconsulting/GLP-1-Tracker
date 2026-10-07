@@ -11,6 +11,7 @@ import { EditProfileModal } from '../components/modals/EditProfileModal';
 import { formatHeight, formatWeight, getWeightUnit } from '../lib/units';
 import { exportBackupJson, exportTidyCsv, readFileAsText } from '../lib/dataTransfer';
 import { BackupData, parseBackup } from '../lib/backup';
+import { confirmBackupSaved } from '../lib/backupReminder';
 
 type PendingRestore = { data: BackupData; counts: { doses: number; weights: number; effects: number } };
 
@@ -22,6 +23,7 @@ export function Settings() {
   const [confirmErase, setConfirmErase] = useState(false);
   const [pendingRestore, setPendingRestore] = useState<PendingRestore | null>(null);
   const [restoreErrors, setRestoreErrors] = useState<string[] | null>(null);
+  const [backupStarted, setBackupStarted] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const snapshot = (): BackupData => ({ settings, doses, weights, effects });
@@ -38,6 +40,7 @@ export function Settings() {
   const handleExportJSON = () => {
     try {
       exportBackupJson(snapshot());
+      setBackupStarted(true);
       showToast('Backup download started. Check your downloads and keep the file safe.');
     } catch {
       showToast('Backup download could not start. Your records are unchanged. Please try again.');
@@ -121,13 +124,22 @@ export function Settings() {
             </p>
           </div>
           {effects.length > 0 && <p className="text-xs text-muted">Earlier versions filled unanswered symptom ratings with None. Older ratings are preserved because we cannot tell which ones you chose. New logs save only your selections.</p>}
-          <div className="space-y-2 pt-2">
+          <div id="backup" className="space-y-2 pt-2">
             <Button onClick={handleExportCSV} variant="outline" className="w-full justify-start gap-2.5 rounded-[14px] border-[#E5E7EB] text-[#111827] font-semibold text-xs py-3">
               <Download className="w-4 h-4 text-muted" aria-hidden="true" /> Export everything as CSV
             </Button>
             <Button onClick={handleExportJSON} variant="outline" className="w-full justify-start gap-2.5 rounded-[14px] border-[#E5E7EB] text-[#111827] font-semibold text-xs py-3">
               <FileJson className="w-4 h-4 text-muted" aria-hidden="true" /> Download a backup (JSON)
             </Button>
+            {backupStarted && <div className="p-3 rounded-[12px] border border-[#E5E7EB] text-xs text-muted">
+              <p>The app cannot tell whether the browser saved your file. Check your downloads and keep the JSON file somewhere private before confirming.</p>
+              <Button type="button" variant="outline" className="mt-2" onClick={() => {
+                if (confirmBackupSaved()) {
+                  setBackupStarted(false);
+                  showToast('You confirmed saving a backup. We’ll remind you again in a week.');
+                } else showToast('This browser could not save your confirmation. Backup reminders will continue.');
+              }}>I saved my backup file</Button>
+            </div>}
             <Button onClick={() => fileRef.current?.click()} variant="outline" className="w-full justify-start gap-2.5 rounded-[14px] border-[#E5E7EB] text-[#111827] font-semibold text-xs py-3">
               <Upload className="w-4 h-4 text-muted" aria-hidden="true" /> Restore from a backup
             </Button>

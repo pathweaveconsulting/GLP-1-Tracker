@@ -70,7 +70,8 @@ describe('Reports', () => {
     seedStore('populated', 'lbs');
     const user = userEvent.setup();
     await open('/reports');
-    const heading = () => screen.getByRole('heading', { level: 2 }).textContent;
+    // Select the live report period; the app now also has a backup reminder heading.
+    const heading = () => screen.getAllByRole('heading', { level: 2 }).find(h => h.getAttribute('aria-live') === 'polite')!.textContent;
     const first = heading();
     expect(screen.getByRole('button', { name: /next week/i })).toBeDisabled();
     await user.click(screen.getByRole('button', { name: /previous week/i }));

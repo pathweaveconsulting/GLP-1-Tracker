@@ -6,6 +6,7 @@ import { useStore } from '../store/useStore';
 import { cn } from '../lib/utils';
 import { SafetyNotice } from './SafetyNotice';
 import { MobileMenuDrawer } from './modals/MobileMenuDrawer';
+import { BackupReminder } from './BackupReminder';
 
 const navSections = [
   {
@@ -114,6 +115,7 @@ export function Layout() {
       {/* Main Content */}
       <main id="main-content" tabIndex={-1} className="flex-1 overflow-y-auto print:overflow-visible pb-24 md:pb-8 focus:outline-none">
         <div className="max-w-6xl mx-auto p-4 md:p-8">
+          <BackupReminder />
           <Suspense fallback={<p role="status" className="py-24 text-center text-sm text-muted">Loading…</p>}>
             <Outlet />
           </Suspense>

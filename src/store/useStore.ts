@@ -5,6 +5,7 @@ import { newId } from '../lib/id';
 import { emptyData, migrateStore, STORE_VERSION } from './migrate';
 import { CORRUPT_KEY, STORAGE_KEY } from './keys';
 import { createSafeStorage, resumeWrites, storageEvents, storageReport } from './storage';
+import { clearBackupReminder } from '../lib/backupReminder';
 
 export { STORAGE_KEY, CORRUPT_KEY };
 
@@ -44,6 +45,7 @@ export const useStore = create<AppState>()(
         })),
 
       resetAllData: () => {
+        clearBackupReminder();
         resumeWrites(); // Erase is an explicit action, so saving resumes
         set({ ...emptyData(), skippedEntries: 0, unreadable: false, malformed: false, readFailed: false });
         useStore.persist.clearStorage();
