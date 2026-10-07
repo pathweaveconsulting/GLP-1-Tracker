@@ -1,6 +1,7 @@
 import { STORAGE_KEY, DAILY_LOGS_KEY, ROLLBACK_KEY, VAULT_SLOT_KEYS } from '../store/keys';
 import { STORE_VERSION } from '../store/migrate';
-import { DAILY_FORMAT, parseDailyLogs } from './dailyLogs';
+import { DAILY_FORMAT, parseDailyLogs, serializeDailyLogs } from './dailyLogs';
+import type { BackupData } from './backup';
 import { prepareDataModelMigration, type DataModelV2 } from './dataModelV2';
 import { isObj } from './rowValidation';
 import { currentVaultSlots, transactVault } from './vault';
@@ -10,7 +11,7 @@ export interface RecoveryPoint {
   format: 'glp1-recovery-point';
   version: 1;
   createdAt: string;
-  reason: 'migration-preview' | 'rollback';
+  reason: 'migration-preview' | 'rollback' | 'backup-import';
   slots: VaultSlots;
 }
 export interface VaultMigrationPreview { original: string; model: DataModelV2 }
@@ -40,7 +41,7 @@ export function previewVaultMigration(): VaultMigrationPreview {
 
 export function parseRecoveryPoint(raw: string): RecoveryPoint {
   const value: unknown = JSON.parse(raw);
-  if (!isObj(value) || Object.keys(value).some(k => !['format','version','createdAt','reason','slots'].includes(k)) || value.format !== 'glp1-recovery-point' || value.version !== 1 || typeof value.createdAt !== 'string' || !Number.isFinite(Date.parse(value.createdAt)) || !['migration-preview','rollback'].includes(String(value.reason)) || !isObj(value.slots)) throw Error('Unsupported recovery point. Nothing was restored.');
+  if (!isObj(value) || Object.keys(value).some(k => !['format','version','createdAt','reason','slots'].includes(k)) || value.format !== 'glp1-recovery-point' || value.version !== 1 || typeof value.createdAt !== 'string' || !Number.isFinite(Date.parse(value.createdAt)) || !['migration-preview','rollback','backup-import'].includes(String(value.reason)) || !isObj(value.slots)) throw Error('Unsupported recovery point. Nothing was restored.');
   if (Object.entries(value.slots).some(([k,v]) => k === ROLLBACK_KEY || !VAULT_SLOT_KEYS.includes(k) || typeof v !== 'string')) throw Error('Unsupported recovery slots. Nothing was restored.');
   modelFromSlots(value.slots as VaultSlots);
   return value as unknown as RecoveryPoint;
@@ -68,5 +69,26 @@ export function restoreRecoveryPoint(expected: string): Promise<void> {
     const point = parseRecoveryPoint(expected);
     modelFromSlots(slots); // Do not replace unsupported current data with an older generation.
     return { ...point.slots, [ROLLBACK_KEY]: recoveryPoint(slots, 'rollback') };
+  });
+}
+
+/** Capture all current slots when showing the replacement confirmation, including pending ordinary edits. */
+export const backupRestoreBaseline = (): string => JSON.stringify(currentVaultSlots());
+
+/** Imported records and their exact pre-import recovery point are saved together, or neither is saved. */
+export function restoreBackupWithRecovery(data: BackupData, expected: string): Promise<void> {
+  const plan = prepareDataModelMigration(JSON.stringify(data));
+  if (!plan.ok) throw Error(plan.error);
+  // Serialize before awaiting a queue; later mutation of the caller's object cannot change the approved import.
+  const main = JSON.stringify({state:{settings:data.settings,doses:data.doses,weights:data.weights,effects:data.effects,hasOnboarded:true},version:STORE_VERSION});
+  const daily = data.dailyLogs === undefined ? null : serializeDailyLogs(data.dailyLogs);
+  const imported: VaultSlots = {[STORAGE_KEY]:main,...(daily === null ? {} : {[DAILY_LOGS_KEY]:daily})};
+  modelFromSlots(imported);
+  return transactVault(slots => {
+    if (JSON.stringify(slots) !== expected) throw Error('Records changed after the backup preview. Select the file again and review it before replacing data.');
+    modelFromSlots(slots); // Preserve unsupported current data by refusing replacement, even if the import is valid.
+    const next: VaultSlots = {...slots,...imported,[ROLLBACK_KEY]:recoveryPoint(slots,'backup-import')};
+    if (daily === null) delete next[DAILY_LOGS_KEY];
+    return next;
   });
 }
