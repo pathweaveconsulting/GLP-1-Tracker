@@ -1,10 +1,12 @@
 import type { PersistStorage, StorageValue } from 'zustand/middleware';
 import { CORRUPT_KEY } from './keys';
+import { supportedStoreVersion } from './migrate';
 import { isObj } from '../lib/rowValidation';
 import { sanitizePersistedState } from './sanitize';
 import { hasVault, isVaultUnlocked, readVaultSlot, writeVaultSlot } from '../lib/vault';
 
 async function readEncrypted<S>(name: string): Promise<StorageValue<S> | null> {
+  storageReport.unsupportedVersion = false;
   storageReport.skipped = 0;
   storageReport.rescueKept = true;
   storageReport.unreadable = false;
@@ -16,6 +18,7 @@ async function readEncrypted<S>(name: string): Promise<StorageValue<S> | null> {
     if (raw === null) return null;
     let parsed: unknown;
     try { parsed = JSON.parse(raw); } catch { parsed = null; }
+    if (isObj(parsed) && !supportedStoreVersion(parsed.version)) { writesPaused = true; storageReport.readFailed = true; storageReport.unsupportedVersion = true; return null; }
     if (!isObj(parsed) || !isObj(parsed.state)) {
       storageReport.unreadable = true;
       try { await writeVaultSlot(CORRUPT_KEY, raw); } catch { storageReport.rescueKept = false; }
@@ -40,7 +43,7 @@ async function readEncrypted<S>(name: string): Promise<StorageValue<S> | null> {
 }
 
 /** What the last read of storage found; consumed by the store when it hydrates. */
-export const storageReport = { skipped: 0, rescueKept: true, unreadable: false, malformed: false, readFailed: false };
+export const storageReport = { skipped: 0, rescueKept: true, unreadable: false, malformed: false, readFailed: false, unsupportedVersion: false };
 
 /**
  * True after a read of the main key THREW (storage unreadable, as opposed to empty). While true nothing is written
@@ -51,6 +54,7 @@ let writesPaused = false;
 export function resumeWrites(): void {
   writesPaused = false;
   storageReport.readFailed = false;
+  storageReport.unsupportedVersion = false;
 }
 
 /** Hooks the store installs so the adapter can report write failures without importing the store. */
@@ -79,6 +83,7 @@ export function createSafeStorage<S>(): PersistStorage<S> {
         storageReport.readFailed = true;
         return null;
       }
+      storageReport.unsupportedVersion = false;
       storageReport.skipped = 0;
       storageReport.rescueKept = true;
       storageReport.unreadable = false;
@@ -103,6 +108,7 @@ export function createSafeStorage<S>(): PersistStorage<S> {
         storageReport.rescueKept = copyToCorrupt(raw);
         return null;
       }
+      if (isObj(parsed) && !supportedStoreVersion(parsed.version)) { writesPaused = true; storageReport.readFailed = true; storageReport.unsupportedVersion = true; return null; }
       if (!isObj(parsed) || !isObj(parsed.state)) {
         storageReport.unreadable = true;
         storageReport.rescueKept = copyToCorrupt(raw);
