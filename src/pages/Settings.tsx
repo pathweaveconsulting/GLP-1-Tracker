@@ -16,6 +16,7 @@ import { confirmBackupSaved } from '../lib/backupReminder';
 import { hasVault, flushVault } from '../lib/vault';
 import { decryptBackup, isEncryptedBackup } from '../lib/encryptedRestore';
 import { MAX_VAULT_BYTES } from '../lib/vaultCrypto';
+import { MigrationRecovery } from '../components/MigrationRecovery';
 
 type PendingRestore = { data: BackupData; counts: { doses: number; weights: number; effects: number } };
 
@@ -166,6 +167,7 @@ export function Settings() {
       </Card>
 
       <OfflineSettings />
+      <MigrationRecovery />
       <SafetyNotice variant="full" />
 
       <Modal open={encryptedFile !== null} onClose={() => { if (!decrypting) { setEncryptedFile(null); setBackupSecret(''); } }} title="Unlock encrypted backup" subtitle="Use the passphrase or recovery key for the vault that created this file.">

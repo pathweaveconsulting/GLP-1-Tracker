@@ -24,4 +24,8 @@ No production merge, production feature-flag change, DNS change, force-push or p
 
 ## Versioned foundation draft
 
-Schema V2 conversion/validation and backup V3 adapters are implemented; live storage stays version 1. New domains are reserved and reject nonempty data until their validators exist. Current app protection blocks ordinary writes/removal, CSV and encrypted restoration for unsupported store versions and offers the original main data in JSON backup. See DATA_MODEL_V2.md. This is not an automatic migration or durable rollback implementation; those are next before cutover.
+Schema V2 conversion/validation and backup V3 adapters are implemented; live storage stays version 1. New domains are reserved and reject nonempty data until their validators exist. Current app protection blocks ordinary writes/removal, CSV and encrypted restoration for unsupported store versions and offers the original main data in JSON backup. See DATA_MODEL_V2.md. This is not an automatic migration. The subsequent encrypted recovery preview draft adds explicit durable recovery, but automatic pre-import snapshots and the live schema bridge remain before cutover.
+
+## Encrypted recovery preview draft
+
+Adds a preview-only Settings migration validation and confirmed encrypted one-generation recovery save/restore, with exact prior slots, atomic ciphertext commit, stale-preview/tab protection, rollback undo and erasure of history. Production stays unchanged. This is part of Packs 1–3, not completion of all-domain migration: live schema V2, automatic pre-import recovery, imported recovery-history restoration and the future domain schemas remain outstanding. Next: wire atomic pre-import snapshots and test the live-schema bridge in a separate draft before owner preview acceptance.

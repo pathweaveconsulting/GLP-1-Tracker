@@ -10,7 +10,7 @@ Created/updated timestamps and integration/import identifiers are unknown for ol
 
 Schedule, supply, reminder, milestone, preference and standalone-note domains are reserved and must remain empty in this initial contract. Nonempty domains and new provenance formats are rejected until their own validators, storage adapters and backup fidelity tests are implemented. This is explicitly not completion of all Pack 1 domain features.
 
-`prepareDataModelMigration` validates before conversion, builds a candidate in memory, serializes it, validates the result and returns the original bytes on success and failure. It performs no storage writes or clock reads. A future cutover must save and verify an encrypted pre-operation recovery snapshot before writing a candidate, preserve newer-tab checks, and prove rollback on write failure. Returning original bytes in this engine is not a claim that durable rollback is already implemented.
+`prepareDataModelMigration` validates before conversion, builds a candidate in memory, serializes it, validates the result and returns the original bytes on success and failure. It performs no storage writes or clock reads. The migration preview now has an explicit encrypted recovery-point action, described below. The engine itself still performs no storage writes. A future live cutover must use a pre-operation recovery snapshot and preserve newer-tab checks.
 
 ## Backups
 
@@ -22,4 +22,14 @@ The storage adapter now checks the outer store version before sanitizing. Future
 
 ## Release gate and next work
 
-Complete the encrypted durable recovery/rollback adapter and user-confirmed migration preview before enabling live schema cutover. Add each domain with its own schema and tests, then expand all-domain backup previews. Credential-gated browser behavior, old-tab/new-app interactions and recovery on real devices need owner testing. No production merge, DNS change, paid service, new medical value or clinical recommendation is included.
+The explicit encrypted recovery-point adapter and preview are implemented as a draft. Automatic pre-import snapshots and the live schema bridge are still required before enabling live schema cutover. Add each domain with its own schema and tests, then expand all-domain backup previews. Credential-gated browser behavior, old-tab/new-app interactions and recovery on real devices need owner testing. No production merge, DNS change, paid service, new medical value or clinical recommendation is included.
+
+## Encrypted recovery preview draft
+
+`VITE_ENABLE_MIGRATION_PREVIEW=true` enables a Settings preview and confirmed recovery-point save. Validation reads the actual encrypted main/daily slots, rejects unsupported versions/fields, and shows counts without switching the live store or storing a second canonical model. It does not complete migration to live schema V2. No medical values change.
+
+A recovery point retains exact prior main, daily, rescue and reminder slot strings inside the existing AES-GCM envelope. Only one generation is retained; saving another replaces it, and the confirmation explains this. It is not a separate localStorage plaintext key. The transaction waits for ordinary queued writes, checks saved ciphertext before and after encryption under the existing browser lock, decrypts the candidate to verify its payload, saves one atomic envelope and checks its readback before publishing slots. A quota failure leaves the old envelope and slot view intact. An earlier failed ordinary save still blocks recovery instead of being silently bypassed. Ordinary edits during a transaction are rejected with the existing save-error path; the recovery UI blocks interaction while saving.
+
+Confirmed restore swaps all prior slots together, then hydrates the current store. Current saved records become the new recovery point so the rollback itself can be reversed. Unsupported current or recovery formats are rejected rather than normalized. Whole-data erasure removes the generation as well. Existing points remain visible/restorable when the preview flag is turned off.
+
+Encrypted exports contain the recovery slot, but the existing backup importer restores only the backup's current records, not its recovery history; the UI states this. Automatic snapshots before backup import are not yet implemented. A browser-data clear deletes local recovery; separate downloaded backups remain necessary. Builds predating the recovery slot reject these newer vault files rather than dropping an unknown slot. Old-tab/new-build interactions and handoff to older versions need explicit owner testing. Browser credential creation/unlock is not performed by the agent. This does not protect an unlocked browser against an administrator delivering malicious JavaScript.
