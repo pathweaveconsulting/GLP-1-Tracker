@@ -13,12 +13,13 @@ import { exportBackupJson, exportTidyCsv, readFileAsText } from '../lib/dataTran
 import { BackupData, parseBackup } from '../lib/backup';
 import { OfflineSettings } from '../components/OfflineSettings';
 import { confirmBackupSaved } from '../lib/backupReminder';
-import { hasVault, flushVault } from '../lib/vault';
+import { hasVault } from '../lib/vault';
+import { backupRestoreBaseline, restoreBackupWithRecovery } from '../lib/vaultRecovery';
 import { decryptBackup, isEncryptedBackup } from '../lib/encryptedRestore';
 import { MAX_VAULT_BYTES } from '../lib/vaultCrypto';
 import { MigrationRecovery } from '../components/MigrationRecovery';
 
-type PendingRestore = { data: BackupData; counts: { doses: number; weights: number; effects: number } };
+type PendingRestore = { data: BackupData; counts: { doses: number; weights: number; effects: number }; baseline: string | null };
 
 export function Settings() {
   const { settings, doses, weights, effects, resetAllData, replaceAllData } = useStore();
@@ -27,6 +28,8 @@ export function Settings() {
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [confirmErase, setConfirmErase] = useState(false);
   const [pendingRestore, setPendingRestore] = useState<PendingRestore | null>(null);
+  const [restoring, setRestoring] = useState(false);
+  const restoreInProgress = useRef(false);
   const [restoreErrors, setRestoreErrors] = useState<string[] | null>(null);
   const [backupStarted, setBackupStarted] = useState(false);
   const [encryptedFile, setEncryptedFile] = useState<string | null>(null);
@@ -66,7 +69,7 @@ export function Settings() {
       const text = await readFileAsText(file);
       if (isEncryptedBackup(text)) { setBackupUnlockError(''); setBackupSecret(''); setBackupRecovery(false); setEncryptedFile(text); return; }
       const result = parseBackup(text);
-      if (result.ok) setPendingRestore({ data: result.data, counts: result.counts });
+      if (result.ok) setPendingRestore({ data: result.data, counts: result.counts, baseline: hasVault() ? backupRestoreBaseline() : null });
       else setRestoreErrors(result.errors);
     } catch {
       setRestoreErrors(['This file could not be read. Please check that it is available on your device and try again.']);
@@ -74,11 +77,31 @@ export function Settings() {
   };
 
   const confirmRestore = async () => {
-    if (!pendingRestore) return;
-    replaceAllData(pendingRestore.data);
+    if (!pendingRestore || restoreInProgress.current) return;
+    restoreInProgress.current = true;
+    setRestoring(true);
+    const approved = pendingRestore;
+    let encryptedCommit = false;
     setPendingRestore(null);
-    try { if (hasVault()) await flushVault(); showToast('Backup restored.'); }
-    catch { showToast('Backup loaded in this tab, but encrypted saving failed. Keep this tab open and download a backup before reloading.'); }
+    try {
+      if (hasVault()) {
+        if (approved.baseline === null) throw Error('Storage changed after preview. Select the backup again.');
+        await restoreBackupWithRecovery(approved.data, approved.baseline);
+        encryptedCommit = true;
+        await useStore.persist.rehydrate();
+        if (useStore.getState().readFailed) throw Error('Backup saved, but the view could not be refreshed. Keep your backup and reload to unlock the vault again.');
+        showToast('Backup restored. Your previous saved records are available under encrypted recovery.');
+      } else {
+        if (approved.baseline !== null) throw Error('Vault changed after preview. Reload and unlock it before restoring.');
+        replaceAllData(approved.data);
+        showToast('Backup restored.');
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Encrypted restoration failed.';
+      if (encryptedCommit) showToast(message);
+      else setRestoreErrors([message]);
+    }
+    finally { restoreInProgress.current = false; setRestoring(false); }
   };
 
   const handleEraseData = () => {
@@ -179,7 +202,7 @@ export function Settings() {
           try {
             const result = await decryptBackup(encryptedFile, backupSecret, backupRecovery);
             setBackupSecret(''); setEncryptedFile(null);
-            if (result.ok) setPendingRestore({ data: result.data, counts: result.counts });
+            if (result.ok) setPendingRestore({ data: result.data, counts: result.counts, baseline: hasVault() ? backupRestoreBaseline() : null });
             else setRestoreErrors(result.errors);
           } catch { setBackupUnlockError('Could not decrypt this backup. Check its passphrase or recovery key; the file may also be damaged. Nothing was changed.'); }
           finally { setDecrypting(false); }
@@ -214,7 +237,8 @@ export function Settings() {
             <>
               The backup contains {pendingRestore.counts.doses} {pendingRestore.counts.doses === 1 ? 'dose' : 'doses'}, {pendingRestore.counts.weights} {pendingRestore.counts.weights === 1 ? 'weight' : 'weights'} and {pendingRestore.counts.effects} symptom {pendingRestore.counts.effects === 1 ? 'log' : 'logs'}.
               {' '}It also contains {pendingRestore.data.dailyLogs?.length ?? 0} daily protein/water logs. Your current daily logs will be replaced too; an older backup contains none.
-              Everything currently stored here (including your profile) will be <strong>replaced</strong>. This can’t be undone.
+              Everything currently stored here (including your profile) will be <strong>replaced</strong>.
+              {pendingRestore.baseline !== null ? ' Your current saved records will become the one encrypted recovery point, replacing any previous point. The backup’s own recovery history is not imported. Download a separate backup first.' : ' This can’t be undone.'}
               {getWeightUnit(pendingRestore.data.settings) !== unit && <> Your display unit will change to {getWeightUnit(pendingRestore.data.settings)}.</>}
             </>
           )
@@ -224,6 +248,8 @@ export function Settings() {
         onConfirm={confirmRestore}
         onCancel={() => setPendingRestore(null)}
       />
+
+      <Modal open={restoring} onClose={() => {}} title="Restoring encrypted backup"><p role="status">Wait until encrypted saving finishes before editing records or closing this tab.</p></Modal>
 
       <Modal open={!!restoreErrors} onClose={() => setRestoreErrors(null)} title="This backup can’t be restored" subtitle="Nothing was changed.">
         <ul role="alert" className="list-disc pl-5 space-y-1 text-xs text-[#344054]">
