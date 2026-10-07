@@ -13,9 +13,12 @@ import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { useToast } from '../components/ui/Toast';
 import { readFileAsText } from '../lib/dataTransfer';
 import { importWeightsCsv, MAX_IMPORT_BYTES, WeightImportResult } from '../lib/weightImport';
+import type { WeightEntry } from '../types';
 
 export function Weight() {
-  const { weights, deleteWeight, settings, addWeights } = useStore();
+  const { weights, deleteWeight, restoreWeight, settings, addWeights } = useStore();
+  const [deleting, setDeleting] = useState<WeightEntry>();
+  const [deleted, setDeleted] = useState<{entry:WeightEntry;index:number}>();
   const { show: showToast } = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
   const [pendingImport, setPendingImport] = useState<WeightImportResult | null>(null);
@@ -196,7 +199,7 @@ export function Weight() {
                         </td>
                         <td className="px-6 py-4 text-right">
                           <button 
-                            onClick={() => deleteWeight(w.id)} 
+                            onClick={() => setDeleting(w)}
                             className="text-subtle hover:text-danger p-1.5 rounded-lg hover:bg-red-50 transition-colors"
                             aria-label={`Delete weight entry from ${format(new Date(w.date), 'MMM d, yyyy')}`}
                           >
@@ -213,6 +216,16 @@ export function Weight() {
         </>
       )}
 
+      {deleted && <div role="status" className="text-sm text-muted">Weight entry removed. <Button onClick={() => { if (restoreWeight(deleted.entry,deleted.index)) setDeleted(undefined); else showToast('Could not undo: a record with this ID already exists. It was kept unchanged.'); }}>Undo last deletion</Button></div>}
+      <ConfirmDialog open={!!deleting} title="Delete weight entry?" description={deleting && <>Remove {formatWeight(deleting.weightLbs,unit)} from {format(new Date(deleting.date),'MMM d, yyyy h:mm a')}? You can undo the last deletion while this page remains open.</>} confirmLabel="Delete weight entry" destructive onCancel={() => setDeleting(undefined)} onConfirm={() => {
+        if (deleting) {
+          const index = useStore.getState().weights.findIndex(w => w.id === deleting.id);
+          const current = useStore.getState().weights[index];
+          if (!current || JSON.stringify(current) !== JSON.stringify(deleting)) showToast('This record changed. Review it again before deleting.');
+          else { deleteWeight(current.id); setDeleted({entry:current,index}); }
+        }
+        setDeleting(undefined);
+      }}/>
       <ConfirmDialog
         open={!!pendingImport}
         title={pendingImport ? `Import ${pendingImport.rows.length} ${pendingImport.rows.length === 1 ? 'weight' : 'weights'}?` : ''}

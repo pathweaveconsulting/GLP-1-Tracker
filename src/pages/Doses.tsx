@@ -5,9 +5,15 @@ import { format } from 'date-fns';
 import { Syringe, Plus, Filter, Trash2, Clock } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { LogDoseModal } from '../components/modals/LogDoseModal';
+import { ConfirmDialog } from '../components/ui/ConfirmDialog';
+import { useToast } from '../components/ui/Toast';
+import type { DoseEvent } from '../types';
 
 export function Doses() {
-  const { doses, deleteDose } = useStore();
+  const { doses, deleteDose, restoreDose } = useStore();
+  const { show } = useToast();
+  const [deleting, setDeleting] = useState<DoseEvent>();
+  const [deleted, setDeleted] = useState<{entry:DoseEvent;index:number}>();
   const [isLogDoseOpen, setIsLogDoseOpen] = useState(false);
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
 
@@ -87,7 +93,7 @@ export function Doses() {
                   Injection #{sortedDoses.length - i}
                 </span>
                 <button
-                  onClick={() => deleteDose(dose.id)}
+                  onClick={() => setDeleting(dose)}
                   className="p-2 rounded-[16px] text-subtle hover:text-danger hover:bg-red-50 transition-colors cursor-pointer"
                   aria-label={`Delete ${dose.amountMg} mg injection from ${format(new Date(dose.date), 'MMM d, yyyy')}`}
                 >
@@ -99,6 +105,16 @@ export function Doses() {
         ))}
       </div>
 
+      {deleted && <div role="status" className="text-sm text-muted">Injection log removed. <Button onClick={() => { if (restoreDose(deleted.entry,deleted.index)) setDeleted(undefined); else show('Could not undo: a record with this ID already exists. It was kept unchanged.'); }}>Undo last deletion</Button></div>}
+      <ConfirmDialog open={!!deleting} title="Delete injection log?" description={deleting && <>Remove the recorded {deleting.amountMg} mg {deleting.medication} injection from {format(new Date(deleting.date),'MMM d, yyyy h:mm a')}? You can undo the last deletion while this page remains open.</>} confirmLabel="Delete injection log" destructive onCancel={() => setDeleting(undefined)} onConfirm={() => {
+        if (deleting) {
+          const index = useStore.getState().doses.findIndex(d => d.id === deleting.id);
+          const current = useStore.getState().doses[index];
+          if (!current || JSON.stringify(current) !== JSON.stringify(deleting)) show('This record changed. Review it again before deleting.');
+          else { deleteDose(current.id); setDeleted({entry:current,index}); }
+        }
+        setDeleting(undefined);
+      }}/>
       <LogDoseModal 
         isOpen={isLogDoseOpen} 
         onClose={() => setIsLogDoseOpen(false)} 
