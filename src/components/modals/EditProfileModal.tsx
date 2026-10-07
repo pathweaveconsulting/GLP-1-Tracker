@@ -30,6 +30,7 @@ function ProfileForm({ onClose }: { onClose: () => void }) {
     goalWeight: settings.targetWeight > 0 ? String(lbsToInput(settings.targetWeight, unit0)) : '',
     heightFt: settings.heightInches > 0 ? String(Math.floor(settings.heightInches / 12)) : '',
     heightIn: settings.heightInches > 0 ? String(Math.round(settings.heightInches % 12)) : '',
+    heightCm: settings.heightInches > 0 ? String(Number((settings.heightInches * 2.54).toFixed(2))) : '',
     startDate: isoToLocalDateString(settings.startDate),
   });
   const [errors, setErrors] = useState<Partial<Record<ProfileField, string>>>({});
@@ -41,13 +42,16 @@ function ProfileForm({ onClose }: { onClose: () => void }) {
     setTouched((t) => new Set(t).add(k));
   };
 
-  const switchUnit = (to: WeightUnit) =>
-    setForm((f) => ({
-      ...f,
-      unit: to,
+  const switchUnit = (to: WeightUnit) => {
+    const heightTouched = touched.has('heightFt') || touched.has('heightIn') || touched.has('heightCm');
+    const height = !heightTouched ? settings.heightInches : form.unit === 'kg' ? Number(form.heightCm) / 2.54 : Number(form.heightFt) * 12 + Number(form.heightIn);
+    const hasHeight = !heightTouched || (form.unit === 'kg' ? form.heightCm : form.heightFt)?.trim();
+    setForm(f => ({ ...f, unit: to,
       startingWeight: convertTyped(f.startingWeight, f.unit, to),
       goalWeight: convertTyped(f.goalWeight, f.unit, to),
+      ...(hasHeight && Number.isFinite(height) ? (to === 'kg' ? { heightCm: String(Number((height * 2.54).toFixed(6))) } : { heightFt: String(Math.floor(height / 12)), heightIn: String(Number((height % 12).toFixed(6))) }) : {}),
     }));
+  };
 
   const err = (f: ProfileField) =>
     errors[f] ? <p id={id(`${f}-err`)} role="alert" className="text-xs text-danger mt-1">{errors[f]}</p> : null;
@@ -60,7 +64,7 @@ function ProfileForm({ onClose }: { onClose: () => void }) {
     if (!result.value) return;
     // Keep the original start instant. Weights and height are only replaced when the user edited them, so opening
     // and saving the form (or flipping the unit toggle) can never nudge a stored value through display rounding.
-    const heightTouched = touched.has('heightFt') || touched.has('heightIn');
+    const heightTouched = touched.has('heightFt') || touched.has('heightIn') || touched.has('heightCm');
     updateSettings({
       ...result.value,
       startDate: settings.startDate,
@@ -80,7 +84,7 @@ function ProfileForm({ onClose }: { onClose: () => void }) {
         </select>
         {err('medication')}
         <p className="mt-2 text-xs text-muted">Weekly injection models only. For oral semaglutide, including Wegovy tablets or Rybelsus, select Other. Verify your exact product and prescription with your pharmacist.</p>
-        <OtherMedicationNote medication={form.medication} className="mt-2" />
+        <OtherMedicationNote medication={form.medication || undefined} className="mt-2" />
       </div>
 
       <fieldset>
@@ -88,7 +92,7 @@ function ProfileForm({ onClose }: { onClose: () => void }) {
         <div className="flex gap-2">
           {(['lbs', 'kg'] as WeightUnit[]).map((u) => (
             <button key={u} type="button" aria-pressed={form.unit === u} onClick={() => switchUnit(u)}
-              className={`px-4 py-2 rounded-[14px] text-sm font-semibold border ${form.unit === u ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-[#344054] border-[#E5E7EB] hover:bg-[#F8F9FC]'}`}>
+              className={`min-h-11 px-4 py-2 rounded-[14px] text-sm font-semibold border ${form.unit === u ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-[#344054] border-[#E5E7EB] hover:bg-[#F8F9FC]'}`}>
               {u}
             </button>
           ))}
@@ -109,7 +113,11 @@ function ProfileForm({ onClose }: { onClose: () => void }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      {form.unit === 'kg' ? <div>
+        <label htmlFor={id('hc')} className={labelCls}>Height (cm)</label>
+        <input id={id('hc')} type="number" step="any" inputMode="decimal" value={form.heightCm} onChange={e => set('heightCm', e.target.value)} className={inputCls} {...aria('heightCm')} />
+        {err('heightCm')}
+      </div> : <div className="grid grid-cols-2 gap-3">
         <div>
           <label htmlFor={id('hf')} className={labelCls}>Height (feet)</label>
           <input id={id('hf')} type="number" inputMode="numeric" value={form.heightFt} onChange={(e) => set('heightFt', e.target.value)} className={inputCls} {...aria('heightFt')} />
@@ -122,6 +130,7 @@ function ProfileForm({ onClose }: { onClose: () => void }) {
         </div>
       </div>
 
+      }
       <div className="pt-2 flex gap-3">
         <button type="button" onClick={onClose} className="flex-1 py-3 px-4 rounded-[16px] border border-[#E5E7EB] text-[#344054] font-semibold text-sm hover:bg-[#F8F9FC] transition-colors">Cancel</button>
         <button type="submit" className="flex-1 py-3 px-4 rounded-[16px] bg-slate-900 text-white font-semibold text-sm hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">

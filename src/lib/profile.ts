@@ -4,12 +4,14 @@ import { dateOnlyToIso, isoToLocalDateString, parseDateOnly, todayLocalDateStrin
 import { MEDICATION_OPTIONS } from './medications';
 
 export interface ProfileFormInput {
-  medication: Medication;
+  medication: Medication | '';
   unit: WeightUnit;
   startingWeight: string;
   goalWeight: string;
   heightFt: string;
   heightIn: string;
+  /** When present with kg selected, centimetres are the input; stored height remains inches. */
+  heightCm?: string;
   startDate: string; // YYYY-MM-DD (local)
 }
 
@@ -36,17 +38,26 @@ function parseWeight(raw: string, unit: WeightUnit, label: string): { lbs?: numb
 export function validateProfile(input: ProfileFormInput, today: string = todayLocalDateString()): ProfileValidation {
   const errors: ProfileValidation['errors'] = {};
 
-  if (!MEDICATION_OPTIONS.includes(input.medication)) errors.medication = 'Choose a medication.';
+  const medication = MEDICATION_OPTIONS.find(m => m === input.medication);
+  if (!medication) errors.medication = 'Choose a medication.';
 
   const start = parseWeight(input.startingWeight, input.unit, 'starting weight');
   if (start.error) errors.startingWeight = start.error;
   const goal = parseWeight(input.goalWeight, input.unit, 'goal weight');
   if (goal.error) errors.goalWeight = goal.error;
+  if (start.lbs != null && goal.lbs != null && goal.lbs >= start.lbs) errors.goalWeight = 'For this weight-loss tracker, enter a goal below your starting weight. Agree your goal with your clinician.';
 
   const ft = Number(input.heightFt.trim());
   const inch = input.heightIn.trim() === '' ? 0 : Number(input.heightIn.trim());
-  if (!input.heightFt.trim() || !Number.isInteger(ft) || ft < 3 || ft > 8) errors.heightFt = 'Height feet should be a whole number from 3 to 8.';
-  if (!Number.isFinite(inch) || inch < 0 || inch >= 12) errors.heightIn = 'Height inches should be from 0 to 11.';
+  let heightInches = ft * 12 + inch;
+  if (input.unit === 'kg' && input.heightCm !== undefined) {
+    const cm = Number(input.heightCm.trim());
+    heightInches = cm / 2.54;
+    if (!input.heightCm.trim() || !Number.isFinite(cm) || heightInches < 36 || heightInches >= 108) errors.heightCm = 'Enter a height from 91.44 to below 274.32 cm.';
+  } else {
+    if (!input.heightFt.trim() || !Number.isInteger(ft) || ft < 3 || ft > 8) errors.heightFt = 'Height feet should be a whole number from 3 to 8.';
+    if (!Number.isFinite(inch) || inch < 0 || inch >= 12) errors.heightIn = 'Height inches should be from 0 to 11.';
+  }
 
   if (!parseDateOnly(input.startDate)) {
     errors.startDate = 'Enter a valid start date.';
@@ -61,10 +72,10 @@ export function validateProfile(input: ProfileFormInput, today: string = todayLo
   return {
     errors,
     value: {
-      medication: input.medication,
+      medication: medication!,
       startingWeight: start.lbs!,
       targetWeight: goal.lbs!,
-      heightInches: ft * 12 + inch,
+      heightInches,
       startDate: dateOnlyToIso(input.startDate),
       weightUnit: input.unit,
     },

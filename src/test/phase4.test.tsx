@@ -120,7 +120,7 @@ describe('SafetyNotice placement', () => {
     const { Onboarding } = await import('../pages/Onboarding');
     useStore.getState().resetAllData();
     render(<Onboarding />);
-    expect(screen.getByTestId('safety-full')).toBeInTheDocument();
+    expect(screen.getByTestId('safety-compact')).toBeInTheDocument();
   });
 });
 

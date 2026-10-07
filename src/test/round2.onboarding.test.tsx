@@ -43,8 +43,12 @@ describe('R4: Onboarding unit toggle converts what was already typed', () => {
     await user.type(start(), '90');
     await user.type(screen.getByLabelText(/Goal weight/), '70');
     await user.click(screen.getByRole('button', { name: 'lbs' }));
+    await user.selectOptions(screen.getByLabelText(/^Medication$/), 'Tirzepatide');
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
     await user.type(screen.getByLabelText(/Height \(feet\)/), '5');
     await user.type(screen.getByLabelText(/Height \(inches\)/), '8');
+    await user.type(screen.getByLabelText('Treatment start date'), '2026-01-05');
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
     await user.click(screen.getByRole('checkbox'));
     await user.click(screen.getByRole('button', { name: /Start my journey/ }));
     const s = useStore.getState().settings;
