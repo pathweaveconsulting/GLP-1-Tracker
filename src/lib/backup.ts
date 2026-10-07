@@ -1,15 +1,17 @@
 import type { DoseEvent, EffectEntry, UserSettings, WeightEntry } from '../types';
 import { normalizeMedication } from './medications';
 import { checkDose, checkEffect, checkWeight, isIso, isObj, RowResult } from './rowValidation';
+import { DailyLog, validateDailyRows } from './dailyLogs';
 
 export const BACKUP_FORMAT = 'glp1-tracker-backup';
-export const BACKUP_VERSION = 1;
+export const BACKUP_VERSION = 2;
 
 export interface BackupData {
   settings: UserSettings;
   doses: DoseEvent[];
   weights: WeightEntry[];
   effects: EffectEntry[];
+  dailyLogs?: DailyLog[];
 }
 
 export interface BackupFile {
@@ -20,7 +22,7 @@ export interface BackupFile {
 }
 
 export function createBackup(data: BackupData, now: Date = new Date()): BackupFile {
-  return { format: BACKUP_FORMAT, version: BACKUP_VERSION, exportedAt: now.toISOString(), data };
+  return { format: BACKUP_FORMAT, version: data.dailyLogs === undefined ? 1 : BACKUP_VERSION, exportedAt: now.toISOString(), data };
 }
 
 export type ParseBackupResult = { ok: true; data: BackupData; counts: { doses: number; weights: number; effects: number } } | { ok: false; errors: string[] };
@@ -49,6 +51,11 @@ export function parseBackup(text: string): ParseBackupResult {
   const errors: string[] = [];
   const err = (m: string) => { if (errors.length < MAX_ERRORS) errors.push(m); else if (errors.length === MAX_ERRORS) errors.push('…and more problems.'); };
   const d = raw.data;
+  let dailyLogs: DailyLog[] | undefined;
+  if (raw.version === 1 && d.dailyLogs !== undefined) err('Daily records need backup version 2.');
+  if (raw.version === 2) {
+    try { dailyLogs = validateDailyRows(d.dailyLogs); } catch (error) { err(error instanceof Error ? error.message : 'Daily records could not be read.'); }
+  }
 
   const arr = (key: 'doses' | 'weights' | 'effects'): unknown[] => {
     const v = d[key];
@@ -104,6 +111,5 @@ export function parseBackup(text: string): ParseBackupResult {
   }
 
   if (errors.length > 0 || !settings) return { ok: false, errors: errors.length ? errors : ['The backup could not be read.'] };
-  return { ok: true, data: { settings, doses, weights, effects }, counts: { doses: doses.length, weights: weights.length, effects: effects.length } };
+  return { ok: true, data: { settings, doses, weights, effects, ...(dailyLogs === undefined ? {} : {dailyLogs}) }, counts: { doses: doses.length, weights: weights.length, effects: effects.length } };
 }
-

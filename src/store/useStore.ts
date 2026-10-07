@@ -6,7 +6,8 @@ import { emptyData, migrateStore, STORE_VERSION } from './migrate';
 import { CORRUPT_KEY, STORAGE_KEY } from './keys';
 import { createSafeStorage, resumeWrites, storageEvents, storageReport } from './storage';
 import { clearBackupReminder } from '../lib/backupReminder';
-import { hasVault, writeVaultSlot } from '../lib/vault';
+import { hasVault, isVaultUnlocked, writeVaultSlot } from '../lib/vault';
+import { replaceDailyLogs } from './dailyLogs';
 
 export { STORAGE_KEY, CORRUPT_KEY };
 
@@ -46,6 +47,7 @@ export const useStore = create<AppState>()(
         })),
 
       resetAllData: () => {
+        if (isVaultUnlocked()) void replaceDailyLogs([]).catch(() => storageEvents.onWriteError?.());
         clearBackupReminder();
         resumeWrites(); // Erase is an explicit action, so saving resumes
         set({ ...emptyData(), skippedEntries: 0, unreadable: false, malformed: false, readFailed: false });
@@ -59,8 +61,10 @@ export const useStore = create<AppState>()(
         }
       },
 
-      replaceAllData: (data) =>
-        set({ doses: data.doses, weights: data.weights, effects: data.effects, settings: data.settings, hasOnboarded: true }),
+      replaceAllData: (data) => {
+        if (isVaultUnlocked()) void replaceDailyLogs(data.dailyLogs ?? []).catch(() => storageEvents.onWriteError?.());
+        set({ doses: data.doses, weights: data.weights, effects: data.effects, settings: data.settings, hasOnboarded: true });
+      },
 
       addWeights: (rows) =>
         set((state) => ({ weights: [...state.weights, ...rows.map((r) => ({ ...r, id: newId() }))] })),

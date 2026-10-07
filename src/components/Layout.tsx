@@ -7,6 +7,8 @@ import { cn } from '../lib/utils';
 import { SafetyNotice } from './SafetyNotice';
 import { MobileMenuDrawer } from './modals/MobileMenuDrawer';
 import { BackupReminder } from './BackupReminder';
+import { useDailyLogs } from '../store/dailyLogs';
+import { dailyLogsEnabled } from '../lib/features';
 
 const navSections = [
   {
@@ -51,6 +53,7 @@ const navSections = [
 export function Layout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const settings = useStore((s) => s.settings);
+  const daily = useDailyLogs();
 
   return (
     <>
@@ -116,6 +119,7 @@ export function Layout() {
       <main id="main-content" tabIndex={-1} className="flex-1 overflow-y-auto print:overflow-visible pb-24 md:pb-8 focus:outline-none">
         <div className="max-w-6xl mx-auto p-4 md:p-8">
           <BackupReminder />
+          {(dailyLogsEnabled() || daily.rows.length > 0 || daily.error) && <NavLink to="/daily" className="inline-block min-h-11 px-3 py-2 mb-4 rounded-xl border border-[#E5E7EB] bg-white text-sm font-semibold print:hidden">Daily protein & water</NavLink>}
           <Suspense fallback={<p role="status" className="py-24 text-center text-sm text-muted">Loading…</p>}>
             <Outlet />
           </Suspense>

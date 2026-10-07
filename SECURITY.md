@@ -10,6 +10,8 @@ Only ciphertext and format metadata are saved under `glp1-encrypted-vault`. Plai
 
 WebCrypto and Web Locks are required in a secure context. Saves are serialized and compare the previous ciphertext under a browser lock. If another tab changes the vault, this tab refuses to overwrite it; download unsaved data before reloading. This is conflict protection, not simultaneous multi-tab editing support.
 
+Daily protein/water logs use a separate slot within the same encrypted payload and serialized write queue, with no separate plaintext fallback. Existing daily history remains readable/exportable when its preview entry flag is disabled. The new slot is rejected by older app builds rather than silently discarded. JSON backup version 2 validates daily rows strictly; old version 1 backups contain no daily rows and replace current daily history only after the explicit replacement confirmation. Failed daily writes are kept optimistically in this tab and included in encrypted unsaved recovery; no successful-save message is shown on failure. Corrupt daily bytes block new daily writes and remain in encrypted exports.
+
 ## Migration, backup and loss
 
 Migration captures the legacy records and rescue/reminder metadata. It verifies the encrypted stored copy and decrypts it for comparison before removing any plaintext copy. Failed writes keep the originals. If removal fails, the app stays gated and retries on unlocking; plaintext may still exist until cleanup succeeds. Browser storage quotas apply; encrypted files are limited to 12 MiB.

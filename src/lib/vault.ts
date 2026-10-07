@@ -1,4 +1,4 @@
-import { CORRUPT_KEY, STORAGE_KEY, BACKUP_REMINDER_KEY, VAULT_KEY } from '../store/keys';
+import { CORRUPT_KEY, STORAGE_KEY, BACKUP_REMINDER_KEY, VAULT_KEY, DAILY_LOGS_KEY } from '../store/keys';
 import { createEncryptedVault, decryptSlots, encryptSlots, openEncryptedVault, serializeVault, type VaultEnvelope, type VaultSlots } from './vaultCrypto';
 
 export { VAULT_KEY } from '../store/keys';
@@ -11,6 +11,9 @@ export const hasPendingVaultWrites = () => pending > 0;
 export const hasVault = () => localStorage.getItem(VAULT_KEY) !== null;
 export const isVaultUnlocked = () => session !== null;
 export const flushVault = () => queue;
+const listeners = new Set<() => void>();
+export const subscribeVaultSlots = (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; };
+const changed = () => { listeners.forEach(listener => listener()); };
 
 export function readVaultSlot(name: string): string | null {
   if (!session) throw new Error('Vault is locked.');
@@ -21,9 +24,10 @@ export function readVaultSlot(name: string): string | null {
 export function writeVaultSlot(name: string, value: string | null): Promise<void> {
   const active = session;
   if (!active) return Promise.reject(new Error('Vault is locked.'));
-  if (![STORAGE_KEY, CORRUPT_KEY, BACKUP_REMINDER_KEY].includes(name)) return Promise.reject(new Error('Unsupported record key.'));
+  if (![STORAGE_KEY, CORRUPT_KEY, BACKUP_REMINDER_KEY, DAILY_LOGS_KEY].includes(name)) return Promise.reject(new Error('Unsupported record key.'));
   const previous = active.slots[name];
   if (value === null) delete active.slots[name]; else active.slots[name] = value;
+  changed();
   const slots = { ...active.slots };
   pending++;
   queue = queue.then(async () => {
@@ -97,12 +101,14 @@ export async function unlockVault(secret: string, recovery = false): Promise<voi
   queue = Promise.resolve();
   try { cleanLegacyCopies(); } catch (error) { session = null; throw error; }
   lockedBackup = null;
+  changed();
 }
 
 export function discardVaultSession(preserveUnsaved = false): void {
   session = null;
   queue = Promise.resolve();
   if (!preserveUnsaved) lockedBackup = null;
+  changed();
 }
 
 /** A failed save never forces the UI to stay unlocked: retain only ciphertext for unsaved recovery. */
@@ -114,6 +120,7 @@ export async function lockVault(main: string): Promise<boolean> {
   const hasUnsaved = lockedBackup !== null;
   session = null;
   queue = Promise.resolve();
+  changed();
   return hasUnsaved;
 }
 

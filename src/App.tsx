@@ -20,6 +20,7 @@ const Results = lazy(() => import('./pages/Results').then((m) => ({ default: m.R
 const CalendarView = lazy(() => import('./pages/CalendarView').then((m) => ({ default: m.CalendarView })));
 const AllLogs = lazy(() => import('./pages/AllLogs').then((m) => ({ default: m.AllLogs })));
 const Reports = lazy(() => import('./pages/Reports').then((m) => ({ default: m.Reports })));
+const DailyLogs = lazy(() => import('./pages/DailyLogs').then(m => ({default:m.DailyLogs})));
 const Settings = lazy(() => import('./pages/Settings').then((m) => ({ default: m.Settings })));
 const Recommendations = lazy(() => import('./pages/Recommendations').then((m) => ({ default: m.Recommendations })));
 const HealthCenter = lazy(() => import('./pages/HealthCenter').then((m) => ({ default: m.HealthCenter })));
@@ -47,6 +48,7 @@ export default function App() {
             <Route path="calendar" element={<CalendarView />} />
             <Route path="logs" element={<AllLogs />} />
             <Route path="reports" element={<Reports />} />
+            <Route path="daily" element={<DailyLogs />} />
             <Route path="settings" element={<Settings />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>

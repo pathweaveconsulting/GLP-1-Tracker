@@ -69,7 +69,13 @@ Weights can also be imported from a CSV (up to 5 MB / 50,000 rows) (Weight page 
 
 The worker caches the app shell and built assets for offline use; it ignores external URLs, non-GET requests and unknown resource paths. Installation failures remove the incomplete cache. Updates use the browser's waiting lifecycle, with no forced reload or `skipWaiting`. Save a backup, close all app tabs and reopen before testing a new build. Test actual offline navigation and installation on the devices you use; unit checks do not prove browser installability. In-app reminders do not provide background or exact-time notifications.
 
-`VITE_ENABLE_DAILY_LOGS` is reserved for the next separately reviewed tracking enhancement. Never put credentials in a `VITE_*` value.
+Never put credentials in a `VITE_*` value.
+
+## Daily protein and water preview
+
+`VITE_ENABLE_DAILY_LOGS=true` enables daily protein (grams), water (mL) and notes at `/daily`. Totals are self-reported; there are no prescribed targets. Saving an existing date replaces that day's totals, not an incremental intake. Blank is unrecorded and explicit zero is retained. History and exports remain available even if the flag is later disabled. These records require an unlocked encrypted vault and are never written as a separate plaintext browser key.
+
+Daily records are included in encrypted JSON backups, validated restorations, CSV exports and period reports. Backup format 2 carries daily records; legacy format 1 remains readable and is still emitted when no daily data is supplied. Restoring a backup replaces daily history too, including clearing it when the old backup contains none. Unknown/damaged daily fields block new daily saves and restore instead of silently dropping records; export the encrypted original before recovery. Older app versions cannot open vaults containing this new slot; update instead of resetting. Input caps (100,000 per total, 10,000 note characters, 50,000 days) are technical limits, never recommended intakes.
 
 ## Clinician report preview
 
