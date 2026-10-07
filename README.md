@@ -71,6 +71,10 @@ The worker caches the app shell and built assets for offline use; it ignores ext
 
 `VITE_ENABLE_DAILY_LOGS` is reserved for the next separately reviewed tracking enhancement. Never put credentials in a `VITE_*` value.
 
+## Clinician report preview
+
+`VITE_ENABLE_DOCTOR_REPORT=true` enables an opt-in individual-record appendix on Reports. Choose a week/month, review the notes, tick “Include individual records and notes for my clinician”, then use “Print / save PDF”. The browser print dialog may offer Save as PDF; the app does not claim the file was saved. The appendix preserves separate symptom entries, explicit None ratings, custom ratings, dose notes and unknown versus zero injection discomfort. Date/time and timezone are labelled. Printed/PDF copies are unencrypted selected-period reports, not restorable backups. Actual print pagination and assistive-technology behaviour need device verification before enabling production.
+
 ## Setup and units
 
 New onboarding uses three steps: medication/weight, height/start date, then review and the full safety notice. Medication and date are blank until explicitly selected. Returning users see values derived from their preserved entries. Kilogram users enter height in centimetres; pounds users enter feet/inches. Canonical storage remains pounds and inches. Goals must be below starting weight for this weight-loss tracker; the app does not prescribe a target. Saving an unchanged profile keeps the exact original values, avoiding rounding drift.

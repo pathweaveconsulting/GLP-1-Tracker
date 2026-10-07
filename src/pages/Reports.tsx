@@ -7,6 +7,8 @@ import { useStore } from '../store/useStore';
 import { buildPeriodReport, periodFor, PeriodRange, ReportKind, shiftPeriod } from '../lib/reports';
 import { formatWeight, formatWeightChange, getWeightUnit, lbsToDisplay } from '../lib/units';
 import { severityLabel } from '../lib/symptoms';
+import { DoctorRecords } from '../components/DoctorRecords';
+import { doctorReportEnabled } from '../lib/features';
 
 const card = 'bg-white p-6 rounded-[24px] border border-[#E5E7EB] shadow-xs print:shadow-none';
 
@@ -20,6 +22,7 @@ export function Reports() {
   const { doses, weights, effects, settings } = useStore();
   const unit = getWeightUnit(settings);
   const [kind, setKind] = useState<ReportKind>('weekly');
+  const [includeRecords, setIncludeRecords] = useState(false);
   const [range, setRange] = useState<PeriodRange>(() => periodFor('weekly', new Date()));
 
   const now = new Date();
@@ -36,12 +39,12 @@ export function Reports() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-[#111827]">Reports</h1>
           <p className="text-sm text-muted mt-0.5">A plain summary of what you logged in a week or a month.</p>
         </div>
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-3 flex-wrap print:hidden">
           <div className="flex bg-[#F8F9FC] p-1 rounded-[14px] border border-[#E5E7EB]" role="group" aria-label="Report length">
             {(['weekly', 'monthly'] as ReportKind[]).map((k) => (
               <button key={k} type="button" aria-pressed={kind === k} onClick={() => changeKind(k)}
@@ -51,10 +54,15 @@ export function Reports() {
             ))}
           </div>
           <button type="button" onClick={() => window.print()} className="inline-flex items-center gap-2 px-4 py-2 rounded-[14px] border border-[#E5E7EB] bg-white text-xs font-semibold text-[#111827] hover:bg-[#F8F9FC]">
-            <Printer className="w-4 h-4 text-muted" aria-hidden="true" /> Print
+            <Printer className="w-4 h-4 text-muted" aria-hidden="true" /> Print / save PDF
           </button>
         </div>
       </header>
+
+      {doctorReportEnabled() && <div className="space-y-2 print:hidden">
+        <label className="flex items-start gap-3 text-sm"><input type="checkbox" checked={includeRecords} onChange={event => setIncludeRecords(event.target.checked)} className="mt-1 h-5 w-5" />Include individual records and notes for my clinician</label>
+        <p className="text-xs text-muted">Review the selected period and notes before sharing. Print / save PDF opens your browser’s print dialog; choose Save as PDF if available. Copies are unencrypted. This does not save a restorable backup.</p>
+      </div>}
 
       <div className="flex items-center justify-between gap-3">
         <button type="button" onClick={() => setRange(shiftPeriod(range, -1))} aria-label={`Previous ${kind === 'weekly' ? 'week' : 'month'}`}
@@ -150,7 +158,8 @@ export function Reports() {
           </section>
         </>
       )}
-      <p className="text-[11px] text-subtle text-center">Generated from your own logs on this device. Not medical advice.</p>
+      {doctorReportEnabled() && includeRecords && <DoctorRecords doses={doses} weights={weights} effects={effects} settings={settings} range={range} />}
+      <p className="text-[11px] text-subtle text-center">Generated from your own logs on this device. Not medical advice. Printed/PDF copies are unencrypted.</p>
     </div>
   );
 }
