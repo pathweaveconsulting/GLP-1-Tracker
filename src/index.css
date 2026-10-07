@@ -25,3 +25,9 @@
     opacity: 1;
   }
 }
+
+/* Touch controls need room for a finger; inline text links retain normal prose layout. */
+@media (pointer: coarse) {
+  button, select { min-height: 44px; min-width: 44px; }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]) { min-height: 44px; }
+}

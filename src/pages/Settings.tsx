@@ -11,6 +11,7 @@ import { EditProfileModal } from '../components/modals/EditProfileModal';
 import { formatHeight, formatWeight, getWeightUnit } from '../lib/units';
 import { exportBackupJson, exportTidyCsv, readFileAsText } from '../lib/dataTransfer';
 import { BackupData, parseBackup } from '../lib/backup';
+import { OfflineSettings } from '../components/OfflineSettings';
 import { confirmBackupSaved } from '../lib/backupReminder';
 import { hasVault } from '../lib/vault';
 import { decryptBackup, isEncryptedBackup } from '../lib/encryptedRestore';
@@ -163,6 +164,7 @@ export function Settings() {
         </CardContent>
       </Card>
 
+      <OfflineSettings />
       <SafetyNotice variant="full" />
 
       <Modal open={encryptedFile !== null} onClose={() => { if (!decrypting) { setEncryptedFile(null); setBackupSecret(''); } }} title="Unlock encrypted backup" subtitle="Use the passphrase or recovery key for the vault that created this file.">
