@@ -76,11 +76,23 @@ export const useStore = create<AppState>()(
       updateDose: (id, updatedDose) =>
         set((state) => ({ doses: state.doses.map((d) => (d.id === id ? { ...d, ...updatedDose } : d)) })),
       deleteDose: (id) => set((state) => ({ doses: state.doses.filter((d) => d.id !== id) })),
+      restoreDose: (dose, originalIndex) => {
+        if (useStore.getState().doses.some(d => d.id === dose.id)) return false;
+        if (originalIndex !== undefined && (!Number.isInteger(originalIndex) || originalIndex < 0)) return false;
+        set(state => { const i = Math.min(originalIndex ?? state.doses.length,state.doses.length); return {doses:[...state.doses.slice(0,i),dose,...state.doses.slice(i)]}; });
+        return true;
+      },
 
       addWeight: (weight) => set((state) => ({ weights: [...state.weights, { ...weight, id: newId() }] })),
       updateWeight: (id, updatedWeight) =>
         set((state) => ({ weights: state.weights.map((w) => (w.id === id ? { ...w, ...updatedWeight } : w)) })),
       deleteWeight: (id) => set((state) => ({ weights: state.weights.filter((w) => w.id !== id) })),
+      restoreWeight: (weight, originalIndex) => {
+        if (useStore.getState().weights.some(w => w.id === weight.id)) return false;
+        if (originalIndex !== undefined && (!Number.isInteger(originalIndex) || originalIndex < 0)) return false;
+        set(state => { const i = Math.min(originalIndex ?? state.weights.length,state.weights.length); return {weights:[...state.weights.slice(0,i),weight,...state.weights.slice(i)]}; });
+        return true;
+      },
 
       addEffect: (effect) => set((state) => ({ effects: [...state.effects, { ...effect, id: newId() }] })),
       deleteEffect: (id) => set((state) => ({ effects: state.effects.filter((e) => e.id !== id) })),

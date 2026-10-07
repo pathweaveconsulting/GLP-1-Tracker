@@ -92,9 +92,12 @@ export interface AppState extends PersistedData {
   addDose: (dose: Omit<DoseEvent, 'id'>) => void;
   updateDose: (id: string, dose: Partial<DoseEvent>) => void;
   deleteDose: (id: string) => void;
+  /** Restore the exact record; false if its ID now belongs to an existing record. */
+  restoreDose: (dose: DoseEvent, originalIndex?: number) => boolean;
   addWeight: (weight: Omit<WeightEntry, 'id'>) => void;
   updateWeight: (id: string, weight: Partial<WeightEntry>) => void;
   deleteWeight: (id: string) => void;
+  restoreWeight: (weight: WeightEntry, originalIndex?: number) => boolean;
   addEffect: (effect: Omit<EffectEntry, 'id'>) => void;
   deleteEffect: (id: string) => void;
   restoreEffect: (effect: EffectEntry) => void;

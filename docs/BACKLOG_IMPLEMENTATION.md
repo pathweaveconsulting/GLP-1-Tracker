@@ -6,7 +6,7 @@ The owner's complete Packs 0–60 are preserved in MASTER_PRODUCT_BACKLOG.md. Ex
 
 Draft PRs #4–9 are stacked: backup recovery, encrypted vault, onboarding accessibility, offline installation, clinician records and daily protein/water totals. They are not production releases. PR #9 remote head 7a19809e6c41729427eb900c2543a1826dd81e7e was verified open, draft and unmerged when this foundation step started. Its existing CI/preview results are recorded in its description.
 
-Symptom history foundation work (part of Pack 3) adds editing, confirmation before deletion, and undo of the most recent deletion while the page remains open. All collected and legacy recorded ratings, including explicit none, now appear in history. Edits preserve identity and the original timestamp when the date is unchanged. Clearing a rating means unrecorded. Undo preserves the original record and refuses to overwrite an existing ID. Existing assertions have not been changed. This does not complete Pack 3: dose/weight undo, duplicate warnings, provenance and durable history remain outstanding.
+Symptom history foundation work (part of Pack 3) adds editing, confirmation before deletion, and undo of the most recent deletion while the page remains open. All collected and legacy recorded ratings, including explicit none, now appear in history. Edits preserve identity and the original timestamp when the date is unchanged. Clearing a rating means unrecorded. Undo preserves the original record and refuses to overwrite an existing ID. Existing assertions have not been changed. This does not complete Pack 3: dose/weight undo is added in the record-deletion draft below; duplicate warnings, provenance and durable history remain outstanding.
 
 ## Next sequence
 
@@ -33,3 +33,7 @@ Adds a preview-only Settings migration validation and confirmed encrypted one-ge
 ## Atomic backup restoration draft
 
 Automatic pre-import recovery and atomic main/daily replacement are now implemented for the encrypted path. Restore preserves old records as the single recovery point, checks the confirmation baseline, and changes the view only after verified saving. This is part of Pack 2. Live-schema bridge, future-domain validators, imported recovery-history restoration, record safeguards and the device/clinical release checks remain outstanding.
+
+## Dose / weight deletion safeguards draft
+
+Dose and weight history now require explicit confirmation before deletion. A record changed after opening confirmation is kept and must be reviewed again. Last-deletion undo retains exact ID/time/value/notes and original array position, including tie order for equal timestamps. Duplicate-ID restoration refuses to overwrite existing records. Undo is only available while the page stays mounted and only for the latest deletion; this is stated in the confirmation. Existing encrypted save failures still use the storage warning/recovery path. This is not durable per-record history, editing UI or completion of Pack 3.
