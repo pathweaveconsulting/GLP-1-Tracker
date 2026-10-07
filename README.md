@@ -63,6 +63,14 @@ If stored data can't be read (invalid JSON, rows that fail validation), the app 
 
 Weights can also be imported from a CSV (up to 5 MB / 50,000 rows) (Weight page → import button).
 
+## Offline installation
+
+`npm run build` generates `sw.js` and `offline-assets.json` from all built public files, checking the HTML references, icons and chart chunk before succeeding. It does not cache health records or backups. Registration is opt-in in Settings and requires `VITE_ENABLE_OFFLINE=true`; the flag defaults off. This downloads the chart files deliberately, after onboarding, without loading them on the first screen. The manifest provides browser installation metadata and icons.
+
+The worker caches the app shell and built assets for offline use; it ignores external URLs, non-GET requests and unknown resource paths. Installation failures remove the incomplete cache. Updates use the browser's waiting lifecycle, with no forced reload or `skipWaiting`. Save a backup, close all app tabs and reopen before testing a new build. Test actual offline navigation and installation on the devices you use; unit checks do not prove browser installability. In-app reminders do not provide background or exact-time notifications.
+
+`VITE_ENABLE_DAILY_LOGS` is reserved for the next separately reviewed tracking enhancement. Never put credentials in a `VITE_*` value.
+
 ## Setup and units
 
 New onboarding uses three steps: medication/weight, height/start date, then review and the full safety notice. Medication and date are blank until explicitly selected. Returning users see values derived from their preserved entries. Kilogram users enter height in centimetres; pounds users enter feet/inches. Canonical storage remains pounds and inches. Goals must be below starting weight for this weight-loss tracker; the app does not prescribe a target. Saving an unchanged profile keeps the exact original values, avoiding rounding drift.
@@ -92,7 +100,7 @@ Notes:
 
 - `public/_headers` is copied into `dist` by the build. It sends `X-Robots-Tag: noindex, nofollow` so a test site stays out of search results, plus a few hardening headers and long caching for the hashed files in `/assets`. **Delete the `X-Robots-Tag` line before the site is meant to be public.**
 - The app uses browser-history routing, so deep links such as `/results` need the host to fall back to `index.html`. Cloudflare Pages does this when the project has no top-level `404.html`; confirm it on the first deploy by opening a deep link and refreshing.
-- `public/_headers` sets a Content-Security-Policy (CSP) with a self-only script policy, prohibits connections (`connect-src 'none'`), disallows framing and form submission, and disables camera, microphone and location. Inline CSS remains allowed for chart/UI styles; inline scripts are prohibited. Recheck the actual response headers and every route on preview before release.
+- `public/_headers` sets a Content-Security-Policy (CSP) with a self-only script policy, restricts connections to this origin (`connect-src 'self'`) for static offline preparation, disallows framing and form submission, and disables camera, microphone and location. Inline CSS remains allowed for chart/UI styles; inline scripts are prohibited. Recheck the actual response headers and every route on preview before release.
 - The medication values and safety wording still need clinician review (see the next section) before the site is shared beyond testers.
 
 ## Review medication reference data

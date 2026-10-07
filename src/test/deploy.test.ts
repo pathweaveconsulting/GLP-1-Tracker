@@ -43,10 +43,13 @@ describe('deploy: public/_headers (Cloudflare Pages)', () => {
     for (const line of read('public/_headers').split('\n')) expect(line.length).toBeLessThanOrEqual(2000);
   });
 
-  it('allows local app assets and blocks outbound connections and third-party scripts', () => {
+  it('allows local app assets and blocks external connections and third-party scripts', () => {
     const csp = rules['/*']['Content-Security-Policy'];
     expect(csp).toContain("script-src 'self'");
-    expect(csp).toContain("connect-src 'none'");
+    expect(csp).toContain("connect-src 'self'");
+    expect(csp).toContain("worker-src 'self'");
+    expect(rules['/sw.js']['Cache-Control']).toMatch(/no-cache/);
+    expect(rules['/sw.js']['Cache-Control']).not.toMatch(/immutable/);
     expect(csp).toContain("style-src 'self' 'unsafe-inline'");
     expect(csp).not.toMatch(/https?:/);
   });
@@ -58,7 +61,7 @@ describe('deploy: README documents what the build produces', () => {
 
   it('has a Deploy section naming the build command and output directory that really exist', () => {
     expect(readme).toMatch(/^## Deploy/m);
-    expect(pkg.scripts.build).toBe('vite build');
+    expect(pkg.scripts.build).toBe('vite build && node scripts/offlineBundle.mjs');
     expect(readme).toMatch(/npm run build/);
     expect(readme).toMatch(/`dist`/);
     expect(read('.gitignore')).toMatch(/^dist\/?$/m);
