@@ -9,6 +9,14 @@ import { clearBackupReminder } from '../lib/backupReminder';
 import { hasVault, isVaultUnlocked, writeVaultSlot } from '../lib/vault';
 import { replaceDailyLogs } from './dailyLogs';
 
+/** Replace the record equal to `expected` with `next` (same ID, same position); undefined when it changed or is gone. */
+function replaceExact<T extends { id: string }>(list: T[], expected: T, next: Omit<T, 'id'>): T[] | undefined {
+  const index = list.findIndex((r) => r.id === expected.id);
+  if (index < 0 || JSON.stringify(list[index]) !== JSON.stringify(expected)) return undefined;
+  const updated = { ...expected, ...next, id: expected.id } as T; // keeps the original key order and identity
+  return [...list.slice(0, index), updated, ...list.slice(index + 1)];
+}
+
 export { STORAGE_KEY, CORRUPT_KEY };
 
 // After the user dismisses the banner it stays away until the page is reloaded, even if later writes also fail.
@@ -75,6 +83,12 @@ export const useStore = create<AppState>()(
       addDose: (dose) => set((state) => ({ doses: [...state.doses, { ...dose, id: newId() }] })),
       updateDose: (id, updatedDose) =>
         set((state) => ({ doses: state.doses.map((d) => (d.id === id ? { ...d, ...updatedDose } : d)) })),
+      editDose: (expected, next) => {
+        const doses = replaceExact(useStore.getState().doses, expected, next);
+        if (!doses) return false;
+        set({ doses });
+        return true;
+      },
       deleteDose: (id) => set((state) => ({ doses: state.doses.filter((d) => d.id !== id) })),
       restoreDose: (dose, originalIndex) => {
         if (useStore.getState().doses.some(d => d.id === dose.id)) return false;
@@ -86,6 +100,12 @@ export const useStore = create<AppState>()(
       addWeight: (weight) => set((state) => ({ weights: [...state.weights, { ...weight, id: newId() }] })),
       updateWeight: (id, updatedWeight) =>
         set((state) => ({ weights: state.weights.map((w) => (w.id === id ? { ...w, ...updatedWeight } : w)) })),
+      editWeight: (expected, next) => {
+        const weights = replaceExact(useStore.getState().weights, expected, next);
+        if (!weights) return false;
+        set({ weights });
+        return true;
+      },
       deleteWeight: (id) => set((state) => ({ weights: state.weights.filter((w) => w.id !== id) })),
       restoreWeight: (weight, originalIndex) => {
         if (useStore.getState().weights.some(w => w.id === weight.id)) return false;

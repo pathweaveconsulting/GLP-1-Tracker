@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { EDIT_UNDO_REFUSED, useEditUndo } from '../hooks/useEditUndo';
 import { useStore } from '../store/useStore';
 import { format } from 'date-fns';
-import { Syringe, Plus, ArrowDownUp, Trash2 } from 'lucide-react';
+import { Syringe, Plus, ArrowDownUp, Pencil, Trash2 } from 'lucide-react';
 import { buttonClass, EmptyState, PageHeader, Panel, Stat } from '../components/ds';
 import { Button } from '../components/ui/button';
 import { LogDoseModal } from '../components/modals/LogDoseModal';
@@ -17,6 +18,8 @@ export function Doses() {
   const [deleting, setDeleting] = useState<DoseEvent>();
   const [deleted, setDeleted] = useState<{entry:DoseEvent;index:number}>();
   const [isLogDoseOpen, setIsLogDoseOpen] = useState(false);
+  const [editing, setEditing] = useState<DoseEvent>();
+  const lastEdit = useEditUndo(() => useStore.getState().doses, useStore.getState().editDose);
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
   const [showLevelInfo, setShowLevelInfo] = useState(false);
 
@@ -85,6 +88,14 @@ export function Doses() {
                 </span>
                 <button
                   type="button"
+                  onClick={() => setEditing(dose)}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-control)] text-muted hover:bg-sunken hover:text-ink"
+                  aria-label={`Edit ${dose.amountMg} mg injection from ${format(new Date(dose.date), 'MMM d, yyyy')}`}
+                >
+                  <Pencil className="h-4 w-4" aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
                   onClick={() => setDeleting(dose)}
                   className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-control)] text-muted hover:bg-danger-soft hover:text-danger"
                   aria-label={`Delete ${dose.amountMg} mg injection from ${format(new Date(dose.date), 'MMM d, yyyy')}`}
@@ -98,6 +109,7 @@ export function Doses() {
         )}
       </Panel>
 
+      {lastEdit.last && <div role="status" className="flex flex-wrap items-center gap-3 text-sm text-muted">Injection updated. <Button onClick={() => { if (!lastEdit.undo()) show(EDIT_UNDO_REFUSED); }}>Undo last edit</Button></div>}
       {deleted && <div role="status" className="flex flex-wrap items-center gap-3 text-sm text-muted">Injection log removed. <Button onClick={() => { if (restoreDose(deleted.entry,deleted.index)) setDeleted(undefined); else show('Could not undo: a record with this ID already exists. It was kept unchanged.'); }}>Undo last deletion</Button></div>}
       <ConfirmDialog open={!!deleting} title="Delete injection log?" description={deleting && <>Remove the recorded {deleting.amountMg} mg {deleting.medication} injection from {format(new Date(deleting.date),'MMM d, yyyy h:mm a')}? You can undo the last deletion while this page remains open.</>} confirmLabel="Delete injection log" destructive onCancel={() => setDeleting(undefined)} onConfirm={() => {
         if (deleting) {
@@ -108,6 +120,7 @@ export function Doses() {
         }
         setDeleting(undefined);
       }}/>
+      <LogDoseModal isOpen={!!editing} entry={editing} onClose={() => setEditing(undefined)} onEdited={lastEdit.record} />
       <LogDoseModal 
         isOpen={isLogDoseOpen} 
         onClose={() => setIsLogDoseOpen(false)} 

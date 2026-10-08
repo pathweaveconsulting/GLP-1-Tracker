@@ -94,10 +94,17 @@ export interface AppState extends PersistedData {
   deleteDose: (id: string) => void;
   /** Restore the exact record; false if its ID now belongs to an existing record. */
   restoreDose: (dose: DoseEvent, originalIndex?: number) => boolean;
+  /**
+   * Replace a dose in place, keeping its ID and list position. Refuses (returns false) unless the stored record still
+   * equals `expected` exactly, so an edit made from a stale view never overwrites a newer change.
+   */
+  editDose: (expected: DoseEvent, next: Omit<DoseEvent, 'id'>) => boolean;
   addWeight: (weight: Omit<WeightEntry, 'id'>) => void;
   updateWeight: (id: string, weight: Partial<WeightEntry>) => void;
   deleteWeight: (id: string) => void;
   restoreWeight: (weight: WeightEntry, originalIndex?: number) => boolean;
+  /** Same guarantees as editDose, for a weigh-in. */
+  editWeight: (expected: WeightEntry, next: Omit<WeightEntry, 'id'>) => boolean;
   addEffect: (effect: Omit<EffectEntry, 'id'>) => void;
   deleteEffect: (id: string) => void;
   restoreEffect: (effect: EffectEntry) => void;

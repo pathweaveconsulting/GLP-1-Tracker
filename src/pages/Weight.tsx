@@ -1,10 +1,11 @@
 import React, { useRef, useState } from 'react';
+import { EDIT_UNDO_REFUSED, useEditUndo } from '../hooks/useEditUndo';
 import { useStore } from '../store/useStore';
 import { Button } from '../components/ui/button';
 import { WeightLossProgressChart } from '../components/WeightLossProgressChart';
 import { WeightInjectionsChart } from '../components/WeightInjectionsChart';
 import { format } from 'date-fns';
-import { TrendingDown, TrendingUp, Plus, Upload, Trash2 } from 'lucide-react';
+import { TrendingDown, TrendingUp, Pencil, Plus, Upload, Trash2 } from 'lucide-react';
 import { buttonClass, EmptyState, noteClass, PageHeader, Panel, Segmented, Stat } from '../components/ds';
 import { LogWeightModal } from '../components/modals/LogWeightModal';
 import { WeightJourneyDashboard } from '../components/WeightJourneyDashboard';
@@ -26,6 +27,8 @@ export function Weight() {
   const [importError, setImportError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'journey' | 'table'>('journey');
   const [isLogWeightOpen, setIsLogWeightOpen] = useState(false);
+  const [editing, setEditing] = useState<WeightEntry>();
+  const lastEdit = useEditUndo(() => useStore.getState().weights, useStore.getState().editWeight);
   
   const unit = getWeightUnit(settings);
   const sortedWeights = sortByDate(weights, 'desc');
@@ -138,7 +141,15 @@ export function Weight() {
                             <span className="text-muted">No change</span>
                           )}
                         </td>
-                        <td className="px-2 py-1 text-right sm:px-3">
+                        <td className="whitespace-nowrap px-2 py-1 text-right sm:px-3">
+                          <button
+                            type="button"
+                            onClick={() => setEditing(w)}
+                            className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-control)] text-muted hover:bg-sunken hover:text-ink"
+                            aria-label={`Edit weight entry from ${format(new Date(w.date), 'MMM d, yyyy')}`}
+                          >
+                            <Pencil className="h-4 w-4" aria-hidden="true" />
+                          </button>
                           <button
                             type="button"
                             onClick={() => setDeleting(w)}
@@ -159,6 +170,7 @@ export function Weight() {
         </>
       )}
 
+      {lastEdit.last && <div role="status" className="flex flex-wrap items-center gap-3 text-sm text-muted">Weight entry updated. <Button onClick={() => { if (!lastEdit.undo()) showToast(EDIT_UNDO_REFUSED); }}>Undo last edit</Button></div>}
       {deleted && <div role="status" className="flex flex-wrap items-center gap-3 text-sm text-muted">Weight entry removed. <Button onClick={() => { if (restoreWeight(deleted.entry,deleted.index)) setDeleted(undefined); else showToast('Could not undo: a record with this ID already exists. It was kept unchanged.'); }}>Undo last deletion</Button></div>}
       <ConfirmDialog open={!!deleting} title="Delete weight entry?" description={deleting && <>Remove {formatWeight(deleting.weightLbs,unit)} from {format(new Date(deleting.date),'MMM d, yyyy h:mm a')}? You can undo the last deletion while this page remains open.</>} confirmLabel="Delete weight entry" destructive onCancel={() => setDeleting(undefined)} onConfirm={() => {
         if (deleting) {
@@ -193,6 +205,7 @@ export function Weight() {
         onCancel={() => setPendingImport(null)}
       />
 
+      <LogWeightModal isOpen={!!editing} entry={editing} onClose={() => setEditing(undefined)} onEdited={lastEdit.record} />
       <LogWeightModal 
         isOpen={isLogWeightOpen} 
         onClose={() => setIsLogWeightOpen(false)} 

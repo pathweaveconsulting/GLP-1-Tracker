@@ -1,10 +1,10 @@
 import React, { useId, useState } from 'react';
 import { Check } from 'lucide-react';
 import { useStore } from '../../store/useStore';
-import { Medication } from '../../types';
+import type { DoseEvent, Medication } from '../../types';
 import { INJECTION_SITES_ABDOMEN, INJECTION_SITES_OTHER, getRecommendedNextSite } from '../../lib/glp1Utils';
 import { APPROXIMATE_NOTE, MEDICATION_OPTIONS, defaultDoseAmount, doseWarning, medicationInfo } from '../../lib/medications';
-import { dstGapAdjustment, localDateTimeToIso, nowLocalTimeString, parseDateOnly, todayLocalDateString } from '../../lib/dates';
+import { dstGapAdjustment, isoToLocalDateString, isoToLocalTimeString, localDateTimeToIso, nowLocalTimeString, parseDateOnly, todayLocalDateString } from '../../lib/dates';
 import { lastDoseOf } from '../../lib/insights';
 import { Modal } from '../ui/Modal';
 import { OtherMedicationNote } from '../OtherMedicationNote';
@@ -12,8 +12,12 @@ import { choiceClass, errorClass, FormActions, helpClass, inputClass, labelClass
 
 interface Props {
   isOpen: boolean;
+  /** When given, the dialog edits this injection instead of adding a new one. */
+  entry?: DoseEvent;
   onClose: () => void;
   onSuccess?: () => void;
+  /** Called after an edit is saved, with the record as it was before the edit (for undo). */
+  onEdited?: (before: DoseEvent) => void;
 }
 
 const field = inputClass();
@@ -44,23 +48,29 @@ function SiteGrid({ sites, site, lastSite, recommended, onPick }: { sites: strin
   );
 }
 
-function DoseForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
-  const { addDose, settings, doses } = useStore();
+function DoseForm({ entry, onClose, onSuccess, onEdited }: Omit<Props, 'isOpen'>) {
+  const { addDose, editDose, settings, doses } = useStore();
   const uid = useId();
   const today = todayLocalDateString();
   const lastDose = lastDoseOf(doses);
   const recommendedNextSite = getRecommendedNextSite(lastDose?.site, settings.customSites);
 
-  const [medication, setMedication] = useState<Medication>(settings.medication);
+  // Editing starts from the stored record exactly; untouched fields are written back unchanged.
+  const initial = entry
+    ? { amount: String(entry.amountMg), date: isoToLocalDateString(entry.date), time: isoToLocalTimeString(entry.date) }
+    : null;
+  const [medication, setMedication] = useState<Medication>(entry?.medication ?? settings.medication);
   const [amount, setAmount] = useState<string>(() => {
+    if (initial) return initial.amount;
     const a = defaultDoseAmount(settings.medication, doses);
     return a == null ? '' : String(a);
   });
-  const [dateStr, setDateStr] = useState<string>(today);
-  const [timeStr, setTimeStr] = useState<string>(nowLocalTimeString());
-  const [site, setSite] = useState<string>(recommendedNextSite);
-  const [painLevel, setPainLevel] = useState<number | null>(null); // null = not recorded
-  const [notes, setNotes] = useState<string>('');
+  const [dateStr, setDateStr] = useState<string>(initial?.date ?? today);
+  const [timeStr, setTimeStr] = useState<string>(initial?.time ?? nowLocalTimeString());
+  const [site, setSite] = useState<string>(entry?.site ?? recommendedNextSite);
+  const [painLevel, setPainLevel] = useState<number | null>(entry ? entry.painLevel : null); // null = not recorded
+  const [notes, setNotes] = useState<string>(entry?.notes ?? '');
+  const [staleError, setStaleError] = useState<string>();
   const [confirmed, setConfirmed] = useState(false);
   const [customOpen, setCustomOpen] = useState(false);
   const [customSite, setCustomSite] = useState('');
@@ -73,22 +83,50 @@ function DoseForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
 
   const changeMedication = (m: Medication) => {
     setMedication(m);
-    const a = defaultDoseAmount(m, doses);
-    setAmount(a == null ? '' : String(a));
+    // When editing, keep the recorded amount; the user decides whether it also needs changing.
+    if (!entry) {
+      const a = defaultDoseAmount(m, doses);
+      setAmount(a == null ? '' : String(a));
+    }
     setConfirmed(false);
   };
+  const amountUnchanged = !!entry && medication === entry.medication && amount.trim() === initial!.amount;
+  const whenUnchanged = !!entry && dateStr === initial!.date && timeStr === initial!.time;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const next: typeof errors = {};
-    if (warning?.level === 'error') next.amount = warning.text;
-    if (!parseDateOnly(dateStr) || !/^\d{2}:\d{2}$/.test(timeStr)) next.when = 'Enter a valid date and time.';
-    else if (new Date(localDateTimeToIso(dateStr, timeStr)).getTime() > Date.now() + 5 * 60_000) next.when = 'The injection time can’t be in the future.';
-    if (warning?.requiresConfirmation && !confirmed) next.confirm = 'Please confirm you’ve double-checked this amount.';
+    // An edit that leaves medication and amount alone is not re-checked: the user already saved that amount.
+    if (!amountUnchanged && warning?.level === 'error') next.amount = warning.text;
+    if (!whenUnchanged) {
+      if (!parseDateOnly(dateStr) || !/^\d{2}:\d{2}$/.test(timeStr)) next.when = 'Enter a valid date and time.';
+      else if (new Date(localDateTimeToIso(dateStr, timeStr)).getTime() > Date.now() + 5 * 60_000) next.when = 'The injection time can’t be in the future.';
+    }
+    if (!amountUnchanged && warning?.requiresConfirmation && !confirmed) next.confirm = 'Please confirm you’ve double-checked this amount.';
     setErrors(next);
     if (Object.keys(next).length) return;
 
-    addDose({ medication, amountMg: amountNum, date: localDateTimeToIso(dateStr, timeStr), site, painLevel, notes });
+    if (!entry) {
+      addDose({ medication, amountMg: amountNum, date: localDateTimeToIso(dateStr, timeStr), site, painLevel, notes });
+      onSuccess?.();
+      onClose();
+      return;
+    }
+    const fields = {
+      medication,
+      amountMg: amountUnchanged ? entry.amountMg : amountNum,
+      date: whenUnchanged ? entry.date : localDateTimeToIso(dateStr, timeStr),
+      site,
+      painLevel,
+      notes,
+    };
+    const { id: _id, ...before } = entry;
+    if (JSON.stringify({ ...before, ...fields }) === JSON.stringify(before)) { onClose(); return; }
+    if (!editDose(entry, { ...before, ...fields })) {
+      setStaleError('This injection changed or was removed after you opened it. Nothing was saved. Close this window and review it again.');
+      return;
+    }
+    onEdited?.(entry);
     onSuccess?.();
     onClose();
   };
@@ -212,21 +250,22 @@ function DoseForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
         <textarea id={`${uid}-notes`} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="How did the injection feel?" className={field} />
       </div>
 
-      <FormActions onCancel={onClose} submitLabel="Save Dose" submitIcon={<Check className="h-4 w-4" aria-hidden="true" />} />
+      {staleError && <p role="alert" className={noteClass('danger')}>{staleError}</p>}
+      <FormActions onCancel={onClose} submitLabel={entry ? 'Save changes' : 'Save Dose'} submitIcon={<Check className="h-4 w-4" aria-hidden="true" />} />
     </form>
   );
 }
 
-export function LogDoseModal({ isOpen, onClose, onSuccess }: Props) {
+export function LogDoseModal({ isOpen, entry, onClose, onSuccess, onEdited }: Props) {
   return (
     <Modal
       open={isOpen}
       onClose={onClose}
-      title="Log shot or dose"
-      subtitle="Medication, amount, date, time and injection site"
+      title={entry ? 'Edit injection' : 'Log shot or dose'}
+      subtitle={entry ? 'Correct the medication, amount, time, site or notes of this injection' : 'Medication, amount, date, time and injection site'}
       widthClass="max-w-lg"
     >
-      <DoseForm onClose={onClose} onSuccess={onSuccess} />
+      <DoseForm key={entry?.id ?? 'new'} entry={entry} onClose={onClose} onSuccess={onSuccess} onEdited={onEdited} />
     </Modal>
   );
 }

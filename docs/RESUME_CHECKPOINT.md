@@ -139,3 +139,7 @@ Behaviour fixes found during the redesign:
 The contrast scanner now also checks the global `:focus-visible` outline (mutation-checked); no assertion was weakened. Results of the final checks are in docs/REDESIGN.md and the PR body. Screenshots: docs/redesign-preview/m2-*.png (development-only preview, synthetic data).
 
 Next: functional backlog in dependency order (weight/dose editing, duplicate warnings, live schema V2 bridge).
+
+## Dose and weight editing — 2026-10-08
+
+Owner asked to proceed with weight and dose editing. Branch `claude/record-editing`, stacked on `claude/product-redesign` (PR #15). Details: docs/BACKLOG_IMPLEMENTATION.md, "Dose / weight editing draft". Final-tree check results are in the draft PR body. Next in dependency order: duplicate warnings (Pack 3.4), then the live schema V2 bridge.

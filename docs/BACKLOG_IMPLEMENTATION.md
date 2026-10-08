@@ -37,3 +37,17 @@ Automatic pre-import recovery and atomic main/daily replacement are now implemen
 ## Dose / weight deletion safeguards draft
 
 Dose and weight history now require explicit confirmation before deletion. A record changed after opening confirmation is kept and must be reviewed again. Last-deletion undo retains exact ID/time/value/notes and original array position, including tie order for equal timestamps. Duplicate-ID restoration refuses to overwrite existing records. Undo is only available while the page stays mounted and only for the latest deletion; this is stated in the confirmation. Existing encrypted save failures still use the storage warning/recovery path. This is not durable per-record history, editing UI or completion of Pack 3.
+
+## Dose / weight editing draft (Pack 3.1–3.2)
+
+Injections and weigh-ins can be edited from Medication, Progress (weigh-in table) and All history. The edit dialogs are the logging dialogs in edit mode ("Edit injection", "Edit weight", "Save changes").
+- **Exact values:** an edit starts from the stored record. Fields the user leaves untouched are written back exactly, so opening and saving never nudges a weight through kg/lb display rounding and never re-times a dose. Saving with no changes writes nothing.
+- **Identity:** ID, list position, key order and any fields the form does not know about are kept.
+- **Stale records:** a record changed or deleted after the dialog opened is not overwritten or recreated. The dialog says nothing was saved.
+- **Dose amount checks:** changing the medication or amount re-runs the amount checks, including the double-check above the usual maximum. An unchanged saved amount is not re-checked. Changing the medication while editing keeps the recorded amount instead of substituting a default.
+- **Undo:** the latest edit can be undone while the page stays open, through the same stale-safe path. Undo is refused if the record changed again.
+- **Store:** `editDose` / `editWeight` do the compare-and-replace.
+
+Tests: `src/test/recordEditing.test.tsx` (11), passing in UTC, New York, Los Angeles, Kolkata and Auckland. Mutation-checked: removing the stale check, always converting weight, or always re-timing doses each fails tests.
+
+Still outstanding in Pack 3: duplicate warnings (3.4), provenance (3.5), durable per-record history. Real-browser editing in the vault-gated app is unverified.
