@@ -2,26 +2,34 @@ import React, { useId, useState } from 'react';
 import { Check } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { Modal } from '../ui/Modal';
-import { Field, FormActions, inputClass } from '../ds';
+import { Field, FormActions, inputClass, noteClass } from '../ds';
 import { WEIGHT_BOUNDS, displayToLbs, getWeightUnit, lbsToDisplay } from '../../lib/units';
-import { dateOnlyToIso, parseDateOnly, todayLocalDateString } from '../../lib/dates';
+import { dateOnlyToIso, isoToLocalDateString, parseDateOnly, todayLocalDateString } from '../../lib/dates';
+import type { WeightEntry } from '../../types';
 import { latestWeight } from '../../lib/insights';
 
 interface Props {
   isOpen: boolean;
+  /** When given, the dialog edits this weigh-in instead of adding a new one. */
+  entry?: WeightEntry;
   onClose: () => void;
   onSuccess?: () => void;
+  /** Called after an edit is saved, with the record as it was before the edit (for undo). */
+  onEdited?: (before: WeightEntry) => void;
 }
 
-function WeightForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
-  const { addWeight, weights, settings } = useStore();
+function WeightForm({ entry, onClose, onSuccess, onEdited }: Omit<Props, 'isOpen'>) {
+  const { addWeight, editWeight, weights, settings } = useStore();
   const unit = getWeightUnit(settings);
   const { min, max } = WEIGHT_BOUNDS[unit];
   const latest = latestWeight(weights);
-  const [value, setValue] = useState<string>(latest ? String(lbsToDisplay(latest.weightLbs, unit)) : '');
-  const [date, setDate] = useState<string>(todayLocalDateString());
+  const initialValue = entry ? String(lbsToDisplay(entry.weightLbs, unit)) : latest ? String(lbsToDisplay(latest.weightLbs, unit)) : '';
+  const initialDate = entry ? isoToLocalDateString(entry.date) : todayLocalDateString();
+  const [value, setValue] = useState<string>(initialValue);
+  const [date, setDate] = useState<string>(initialDate);
   const [error, setError] = useState<string>();
   const [dateError, setDateError] = useState<string>();
+  const [staleError, setStaleError] = useState<string>();
   const uid = useId();
   const today = todayLocalDateString();
 
@@ -39,7 +47,26 @@ function WeightForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
     } else setDateError(undefined);
     if (!ok) return;
     // Canonical storage is pounds; the date is anchored at local noon so it stays on the chosen day.
-    addWeight({ weightLbs: displayToLbs(n, unit), date: dateOnlyToIso(date) });
+    if (!entry) {
+      addWeight({ weightLbs: displayToLbs(n, unit), date: dateOnlyToIso(date) });
+      onSuccess?.();
+      onClose();
+      return;
+    }
+    // Untouched fields keep their exact stored value, so opening and saving never nudges a weight through display
+    // rounding or moves a weigh-in's original time.
+    const next = {
+      ...entry,
+      weightLbs: value.trim() === initialValue ? entry.weightLbs : displayToLbs(n, unit),
+      date: date === initialDate ? entry.date : dateOnlyToIso(date),
+    };
+    if (next.weightLbs === entry.weightLbs && next.date === entry.date) { onClose(); return; }
+    const { id: _id, ...fields } = next;
+    if (!editWeight(entry, fields)) {
+      setStaleError('This weigh-in changed or was removed after you opened it. Nothing was saved. Close this window and review it again.');
+      return;
+    }
+    onEdited?.(entry);
     onSuccess?.();
     onClose();
   };
@@ -78,20 +105,21 @@ function WeightForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
         />
       </Field>
 
-      <FormActions onCancel={onClose} submitLabel="Save Weight" submitIcon={<Check className="h-4 w-4" aria-hidden="true" />} />
+      {staleError && <p role="alert" className={noteClass('danger')}>{staleError}</p>}
+      <FormActions onCancel={onClose} submitLabel={entry ? 'Save changes' : 'Save Weight'} submitIcon={<Check className="h-4 w-4" aria-hidden="true" />} />
     </form>
   );
 }
 
-export function LogWeightModal({ isOpen, onClose, onSuccess }: Props) {
+export function LogWeightModal({ isOpen, entry, onClose, onSuccess, onEdited }: Props) {
   return (
     <Modal
       open={isOpen}
       onClose={onClose}
-      title="Log weight"
-      subtitle="Record your body weight for a day"
+      title={entry ? 'Edit weight' : 'Log weight'}
+      subtitle={entry ? 'Change the weight or the day of this weigh-in' : 'Record your body weight for a day'}
     >
-      <WeightForm onClose={onClose} onSuccess={onSuccess} />
+      <WeightForm key={entry?.id ?? 'new'} entry={entry} onClose={onClose} onSuccess={onSuccess} onEdited={onEdited} />
     </Modal>
   );
 }

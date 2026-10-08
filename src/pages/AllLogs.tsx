@@ -1,7 +1,10 @@
 import { useState } from 'react';
+import { EDIT_UNDO_REFUSED, useEditUndo } from '../hooks/useEditUndo';
+import { LogDoseModal } from '../components/modals/LogDoseModal';
+import { LogWeightModal } from '../components/modals/LogWeightModal';
 import { useStore } from '../store/useStore';
 import { format } from 'date-fns';
-import { Download, Trash2 } from 'lucide-react';
+import { Download, Pencil, Trash2 } from 'lucide-react';
 import { formatWeight, getWeightUnit } from '../lib/units';
 import { sortByDate } from '../lib/insights';
 import { exportTidyCsv } from '../lib/dataTransfer';
@@ -16,6 +19,7 @@ type Removed = { kind: 'dose'; entry: DoseEvent; index: number } | { kind: 'weig
 
 const th = 'px-4 py-2.5 font-semibold sm:px-5';
 const td = 'px-4 py-3 sm:px-5';
+const editBtn = 'inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-control)] text-muted hover:bg-sunken hover:text-ink';
 const deleteBtn = 'inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-control)] text-muted hover:bg-danger-soft hover:text-danger';
 
 export function AllLogs() {
@@ -25,6 +29,10 @@ export function AllLogs() {
   const [activeTab, setActiveTab] = useState<'doses' | 'weights' | 'effects'>('doses');
   const [pending, setPending] = useState<Pending>();
   const [removed, setRemoved] = useState<Removed>();
+  const [editingDose, setEditingDose] = useState<DoseEvent>();
+  const [editingWeight, setEditingWeight] = useState<WeightEntry>();
+  const doseEdit = useEditUndo(() => useStore.getState().doses, useStore.getState().editDose);
+  const weightEdit = useEditUndo(() => useStore.getState().weights, useStore.getState().editWeight);
 
   const sortedWeights = sortByDate(weights, 'desc');
   const sortedEffects = sortByDate(effects, 'desc');
@@ -77,6 +85,12 @@ export function AllLogs() {
         ]}
       />
 
+      {(doseEdit.last || weightEdit.last) && (
+        <div role="status" className="flex flex-wrap items-center gap-3 text-sm text-muted">
+          {doseEdit.last ? 'Injection updated.' : 'Weight entry updated.'}
+          <button type="button" onClick={() => { if (!(doseEdit.last ? doseEdit.undo() : weightEdit.undo())) show(EDIT_UNDO_REFUSED); }} className={buttonClass('secondary', 'sm')}>Undo last edit</button>
+        </div>
+      )}
       {removed && (
         <div role="status" className="flex flex-wrap items-center gap-3 text-sm text-muted">
           {removed.kind === 'dose' ? 'Injection log removed.' : 'Weight entry removed.'}
@@ -122,7 +136,10 @@ export function AllLogs() {
                     <td className={`${td} text-ink-2`}>{d.medication}</td>
                     <td className={`${td} font-semibold tabular-nums text-ink`}>{d.amountMg} mg</td>
                     <td className={`${td} text-ink-2`}>{d.site}</td>
-                    <td className="px-2 py-1 text-right sm:px-3">
+                    <td className="whitespace-nowrap px-2 py-1 text-right sm:px-3">
+                      <button type="button" onClick={() => setEditingDose(d)} aria-label={`Edit ${d.amountMg} mg dose from ${format(new Date(d.date), 'MMM d, yyyy')}`} className={editBtn}>
+                        <Pencil className="h-4 w-4" aria-hidden="true" />
+                      </button>
                       <button type="button" onClick={() => setPending({ kind: 'dose', entry: d })} aria-label={`Delete ${d.amountMg} mg dose from ${format(new Date(d.date), 'MMM d, yyyy')}`} className={deleteBtn}>
                         <Trash2 className="h-4 w-4" aria-hidden="true" />
                       </button>
@@ -134,7 +151,10 @@ export function AllLogs() {
                   <tr key={w.id}>
                     <td className={`${td} whitespace-nowrap font-medium text-ink`}>{format(new Date(w.date), 'MMM d, yyyy')}</td>
                     <td className={`${td} font-semibold tabular-nums text-ink`}>{formatWeight(w.weightLbs, unit)}</td>
-                    <td className="px-2 py-1 text-right sm:px-3">
+                    <td className="whitespace-nowrap px-2 py-1 text-right sm:px-3">
+                      <button type="button" onClick={() => setEditingWeight(w)} aria-label={`Edit weight entry from ${format(new Date(w.date), 'MMM d, yyyy')}`} className={editBtn}>
+                        <Pencil className="h-4 w-4" aria-hidden="true" />
+                      </button>
                       <button type="button" onClick={() => setPending({ kind: 'weight', entry: w })} aria-label={`Delete weight entry from ${format(new Date(w.date), 'MMM d, yyyy')}`} className={deleteBtn}>
                         <Trash2 className="h-4 w-4" aria-hidden="true" />
                       </button>
@@ -157,6 +177,8 @@ export function AllLogs() {
         )}
       </Panel>
 
+      <LogDoseModal isOpen={!!editingDose} entry={editingDose} onClose={() => setEditingDose(undefined)} onEdited={(b) => { weightEdit.clear(); doseEdit.record(b); }} />
+      <LogWeightModal isOpen={!!editingWeight} entry={editingWeight} onClose={() => setEditingWeight(undefined)} onEdited={(b) => { doseEdit.clear(); weightEdit.record(b); }} />
       <ConfirmDialog
         open={!!pending}
         title={pending?.kind === 'weight' ? 'Delete weight entry?' : 'Delete injection log?'}
