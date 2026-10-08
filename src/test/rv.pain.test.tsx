@@ -35,6 +35,8 @@ describe('3b: the dose form records pain only when the user chooses to', () => {
     ctx = await openDoseModal();
     await ctx.user.selectOptions(within(ctx.dialog).getByLabelText(/discomfort/i), '0');
     await ctx.user.click(within(ctx.dialog).getByRole('button', { name: /save dose/i }));
+    // The same dose a minute later is flagged as a possible duplicate (Pack 3.4); confirming saves it.
+    await ctx.user.click(within(ctx.dialog).getByRole('button', { name: 'Save anyway' }));
     expect(useStore.getState().doses.map((d) => d.painLevel)).toEqual([3, 0]);
   });
 

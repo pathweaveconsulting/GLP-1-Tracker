@@ -143,3 +143,7 @@ Next: functional backlog in dependency order (weight/dose editing, duplicate war
 ## Dose and weight editing — 2026-10-08
 
 Owner asked to proceed with weight and dose editing. Branch `claude/record-editing`, stacked on `claude/product-redesign` (PR #15). Details: docs/BACKLOG_IMPLEMENTATION.md, "Dose / weight editing draft". Final-tree check results are in the draft PR body. Next in dependency order: duplicate warnings (Pack 3.4), then the live schema V2 bridge.
+
+## Duplicate warnings — 2026-10-08
+
+Owner approved the order: duplicate warnings, then the live schema V2 bridge. Branch `claude/duplicate-warnings`, stacked on `claude/record-editing` (PR #16). Details are in docs/BACKLOG_IMPLEMENTATION.md, "Duplicate warnings draft". Next: live schema V2 bridge.
