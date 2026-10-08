@@ -8,6 +8,7 @@ import { createSafeStorage, resumeWrites, storageEvents, storageReport } from '.
 import { clearBackupReminder } from '../lib/backupReminder';
 import { hasVault, isVaultUnlocked, writeVaultSlot } from '../lib/vault';
 import { replaceDailyLogs } from './dailyLogs';
+import { provenanceHint } from './mainSlot';
 
 /** Replace the record equal to `expected` with `next` (same ID, same position); undefined when it changed or is gone. */
 function replaceExact<T extends { id: string }>(list: T[], expected: T, next: Omit<T, 'id'>): T[] | undefined {
@@ -77,8 +78,11 @@ export const useStore = create<AppState>()(
         set({ doses: data.doses, weights: data.weights, effects: data.effects, settings: data.settings, hasOnboarded: true });
       },
 
-      addWeights: (rows) =>
-        set((state) => ({ weights: [...state.weights, ...rows.map((r) => ({ ...r, id: newId() }))] })),
+      addWeights: (rows) => {
+        // In an upgraded vault these rows are recorded as one CSV import batch (no effect on original-format data).
+        provenanceHint('csv_import', newId());
+        set((state) => ({ weights: [...state.weights, ...rows.map((r) => ({ ...r, id: newId() }))] }));
+      },
 
       addDose: (dose) => set((state) => ({ doses: [...state.doses, { ...dose, id: newId() }] })),
       updateDose: (id, updatedDose) =>

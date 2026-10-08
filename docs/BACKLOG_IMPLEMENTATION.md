@@ -76,3 +76,15 @@ The record being edited is never compared with itself. The thresholds are narrow
 - One existing test in `rv.pain.test.tsx` logs the same dose twice a minute apart. It now confirms with "Save anyway" before its unchanged assertion.
 
 **Still outstanding in Pack 3:** provenance (3.5) and durable per-record history.
+
+## Live schema V2 bridge draft (Pack 1)
+
+Upgraded schema-2 records can be stored and used live. The upgrade is explicit, confirmed, atomic and recoverable, and is offered only behind `VITE_ENABLE_LIVE_SCHEMA_V2`. Reading schema-2 data is always supported. Provenance is recorded from the upgrade on (part of Pack 3.5).
+
+Details are in DATA_MODEL_V2.md, "Live schema bridge draft". Tests: `src/test/liveSchema.test.tsx` (9), mutation-checked.
+
+**Not done:**
+- Showing provenance in the UI.
+- Carrying provenance in regular JSON backups.
+- The reserved domains: schedules, supplies, reminders, milestones, preferences and notes.
+- Real-device checks.

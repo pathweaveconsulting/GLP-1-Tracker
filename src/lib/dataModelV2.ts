@@ -82,16 +82,49 @@ export function migrateDataModelV2(input: BackupData): DataModelV2 {
     metadata:{migratedFrom:1,dailyLogsPresent:input.dailyLogs !== undefined,provenance:{doses:provenance(doses.map(r=>r.id)),weights:provenance(weights.map(r=>r.id)),legacyEffects:provenance(legacyEffects.map(r=>r.id)),checkIns:provenance(checkIns.map(r=>`daily:${r.date}`))}},
   };
 }
-/** Validate before a future cutover. Reserved domains must stay empty until their schemas are implemented. */
+const PROVENANCE_KEYS = ['id','createdAt','updatedAt','source','importBatchId','externalIntegrationSource'] as const;
+const LIVE_SOURCES: readonly Provenance['source'][] = ['manual','csv_import','backup_restore','legacy'];
+/**
+ * One provenance entry per record, in record order. Sources the app can actually produce are accepted; integrations
+ * are not implemented, so an integration source or external identifier is rejected rather than trusted.
+ */
+function checkProvenance(value: unknown, ids: string[], label: string): Provenance[] {
+  if (!Array.isArray(value) || value.length !== ids.length) throw Error(`${label} provenance does not match its records. Nothing was migrated.`);
+  return value.map((entry, i) => {
+    if (!isObj(entry)) throw Error(`${label} provenance is invalid.`);
+    exactKeys(entry, PROVENANCE_KEYS, `${label} provenance`);
+    const ok = entry.id === ids[i]
+      && LIVE_SOURCES.includes(entry.source as Provenance['source'])
+      && (entry.createdAt === null || isIso(entry.createdAt))
+      && (entry.updatedAt === null || isIso(entry.updatedAt))
+      && (entry.importBatchId === null || (entry.source === 'csv_import' && typeof entry.importBatchId === 'string' && entry.importBatchId.length > 0 && entry.importBatchId.length <= 100))
+      && entry.externalIntegrationSource === null
+      // Legacy records have no known creation time; updatedAt records an edit made after the upgrade.
+      && (entry.source !== 'legacy' || entry.createdAt === null);
+    if (!ok) throw Error(`${label} provenance is invalid or unsupported. Nothing was migrated.`);
+    return { ...entry } as unknown as Provenance;
+  });
+}
+/** Validate a stored or imported model. Reserved domains must stay empty until their schemas are implemented. */
 export function validateDataModelV2(value: unknown): DataModelV2 {
   if (!isObj(value) || value.format !== DATA_MODEL_FORMAT || value.schemaVersion !== 2) throw Error('Unsupported companion schema. Update the app before opening this data.');
   if (!isObj(value.metadata) || typeof value.metadata.dailyLogsPresent !== 'boolean') throw Error('Missing model metadata.');
   if (!Array.isArray(value.checkIns)) throw Error('Missing check-ins.');
   if (!value.metadata.dailyLogsPresent && value.checkIns.length) throw Error('Check-in presence metadata conflicts with records.');
   const expected = migrateDataModelV2({settings:value.profile as UserSettings,doses:value.doses as DoseEvent[],weights:value.weights as WeightEntry[],effects:value.legacyEffects as EffectEntry[],...(value.metadata.dailyLogsPresent ? {dailyLogs:value.checkIns as DailyLog[]} : {})});
-  // This first migration contract accepts only its explicit legacy provenance. Later versions must add their own validator.
-  if (!sameJson(value, expected)) throw Error('Unsupported model fields, provenance or nonempty reserved domains. Nothing was migrated.');
-  return expected;
+  const given = value.metadata.provenance;
+  if (!isObj(given)) throw Error('Missing provenance. Nothing was migrated.');
+  exactKeys(given, ['doses','weights','legacyEffects','checkIns'], 'Provenance');
+  const provenance = {
+    doses: checkProvenance(given.doses, expected.doses.map(r => r.id), 'Dose'),
+    weights: checkProvenance(given.weights, expected.weights.map(r => r.id), 'Weight'),
+    legacyEffects: checkProvenance(given.legacyEffects, expected.legacyEffects.map(r => r.id), 'Symptom'),
+    checkIns: checkProvenance(given.checkIns, expected.checkIns.map(r => `daily:${r.date}`), 'Check-in'),
+  };
+  const result: DataModelV2 = { ...expected, metadata: { ...expected.metadata, provenance } };
+  // Everything except provenance must equal the strict conversion exactly: no extra fields, no nonempty reserved domains.
+  if (!sameJson(value, result)) throw Error('Unsupported model fields or nonempty reserved domains. Nothing was migrated.');
+  return result;
 }
 /** Reversible adapter for currently implemented domains; unsupported future data is rejected, never discarded. */
 export function legacyDataFromV2(value: unknown): BackupData {
