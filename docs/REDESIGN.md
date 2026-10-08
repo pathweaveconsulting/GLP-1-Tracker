@@ -6,8 +6,8 @@ Branch `claude/product-redesign`, started from `codex/record-delete-safety` at `
 
 | Milestone | Status |
 |---|---|
-| 1. Design system + navigation + Today (home) | Implemented on this branch, awaiting owner direction acceptance |
-| 2. Remaining screens on the same system | Not started (after acceptance). Interim: old hard-coded purple values were mapped onto the new tokens so no screen still uses the old scheme |
+| 1. Design system + navigation + Today (home) | Implemented; direction accepted by the owner on 2026-10-08 |
+| 2. Remaining screens on the same system | Implemented on this branch (see below) |
 | 3. Functional backlog (weight/dose editing, duplicate warnings, live schema V2 bridge) | Not started; order unchanged from BACKLOG_IMPLEMENTATION.md |
 
 ## Design system (milestone 1)
@@ -19,7 +19,15 @@ Branch `claude/product-redesign`, started from `codex/record-delete-safety` at `
 - **Components** (`src/components/ds`): `Button` / `buttonClass`, `Panel`, `PageHeader`, `Stat`, `StatusLabel` (icon shape + words, never colour alone), `EmptyState` (says what is missing; never a zero, "normal" or "on track").
 - **Shared primitives restyled**: `Modal` (bottom sheet on phones), `ConfirmDialog`, `Toast`, vault gate and lock bar, backup reminder.
 
-## Navigation (master backlog Pack 4)
+## Milestone 2 — every screen on the same system
+
+- **Form controls** (`ds/Field`): one input/select/textarea style (3.3:1 border, 44px tall, red border when invalid), label, help and error text in a fixed order, pressed-state choice chips, tinted notes that also carry their meaning in words, and one Cancel/Save row. **`ds/Segmented`** is the single view switcher (labelled group, `aria-pressed`).
+- **Dialogs**: Log weight, Log shot or dose, Log how you feel, Edit profile, Notifications and About the estimated level. Labels, button names and every safety sentence are unchanged. Severity choices no longer use colour; "Not recorded" is shown as a status until a rating is chosen, then as a reset button.
+- **Screens**: Progress, Medication, Health, Protein & water, Insights, This week, Health summary, Reports (and doctor records), Guidance, Calendar, All history, Settings, onboarding. Each has one h1 (`PageHeader`), titled `Panel`s instead of stacked cards, honest empty states, `Stat` figures with tabular numerals, and charts with written legends or descriptions that name line styles.
+- **Behaviour fixes**: All history now confirms deletes, refuses stale records and offers undo. A no-op time filter was removed from Insights. Calendar says "Check-in" instead of guessing "Symptom". Unrated symptoms say "Not recorded". Weight gains are no longer coloured red. Injection numbers are correct in oldest-first order. Heatmap cells show whole words. Severity axes no longer clip.
+- **Contrast**: the scanner now also checks the global `:focus-visible` outline.
+
+
 
 Primary: Today `/`, Progress `/weight`, Health `/effects` (also `/health`, `/daily`), Medication `/doses` (also `/this-week`), Insights `/results` (also `/reports`, `/recommendations`). Desktop sidebar shows all five then Records (All history, Calendar, Protein & water when enabled or used, Health summary), Understand (This week, Reports, Guidance), Account (Settings & data). Phone tab bar: Today, Progress, Health, Medication, More (menu with Insights and every secondary page). `aria-current="page"` follows the destination, including its related routes.
 
@@ -58,5 +66,5 @@ Real-browser vault creation and unlock (owner must enter credentials), keyboard 
 ## Resume instructions
 
 1. Read AGENTS.md, this file and `docs/RESUME_CHECKPOINT.md`; verify branch head and PR state yourself.
-2. Do not start milestone 2 until the owner accepts the Today/navigation direction; record their feedback here.
+2. Milestones 1–2 are accepted/implemented. Next is the functional backlog in BACKLOG_IMPLEMENTATION.md order: weight/dose editing, duplicate warnings, live schema V2 bridge.
 3. Keep every existing assertion; add focused tests for new behaviour; run `npx tsc --noEmit`, the full suite (UTC and New York), the feature-flag build and `node scripts/contrast.mjs` before each push.

@@ -17,7 +17,7 @@ export function Segmented<T extends string>({ label, value, options, onChange, c
           aria-pressed={value === o.value}
           onClick={() => onChange(o.value)}
           className={clsx(
-            'min-h-10 whitespace-nowrap rounded-[8px] px-3 text-sm transition-colors sm:min-h-9',
+            'min-h-10 shrink-0 whitespace-nowrap rounded-[8px] px-3 text-sm transition-colors sm:min-h-9',
             value === o.value ? 'bg-surface font-semibold text-ink shadow-[0_0_0_1px_var(--color-line-strong)]' : 'font-medium text-muted hover:text-ink',
           )}
         >

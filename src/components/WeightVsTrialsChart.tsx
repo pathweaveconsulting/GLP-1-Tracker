@@ -144,7 +144,7 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
           aria-label="Reference trial"
           value={selectedDrug}
           onChange={(e) => setSelectedDrug(e.target.value as DrugOption)}
-          className={inputClass('w-auto text-sm')}
+          className={inputClass('max-w-xs text-sm')}
         >
           <option value="Retatrutide">Retatrutide</option>
           <option value="Tirzepatide">Tirzepatide</option>

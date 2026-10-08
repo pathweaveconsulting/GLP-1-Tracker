@@ -42,6 +42,13 @@ async function start() {
             React.createElement(Route, { path: 'effects', element: page(() => import('./pages/Effects'), 'Effects') }),
             React.createElement(Route, { path: 'results', element: page(() => import('./pages/Results'), 'Results') }),
             React.createElement(Route, { path: 'settings', element: page(() => import('./pages/Settings'), 'Settings') }),
+            React.createElement(Route, { path: 'this-week', element: page(() => import('./pages/ThisWeekPage'), 'ThisWeekPage') }),
+            React.createElement(Route, { path: 'health', element: page(() => import('./pages/HealthCenter'), 'HealthCenter') }),
+            React.createElement(Route, { path: 'reports', element: page(() => import('./pages/Reports'), 'Reports') }),
+            React.createElement(Route, { path: 'recommendations', element: page(() => import('./pages/Recommendations'), 'Recommendations') }),
+            React.createElement(Route, { path: 'calendar', element: page(() => import('./pages/CalendarView'), 'CalendarView') }),
+            React.createElement(Route, { path: 'logs', element: page(() => import('./pages/AllLogs'), 'AllLogs') }),
+            React.createElement(Route, { path: 'daily', element: page(() => import('./pages/DailyLogs'), 'DailyLogs') }),
           ))))
   );
 }

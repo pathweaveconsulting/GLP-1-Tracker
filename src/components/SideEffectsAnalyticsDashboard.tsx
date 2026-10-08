@@ -188,7 +188,7 @@ export function SideEffectsAnalyticsDashboard({ className = '' }: Props) {
         <Panel
           title="One injection, up close"
           action={sortedDoses.length > 0 ? (
-            <select aria-label="Choose an injection" value={detailDose?.id ?? ''} onChange={(e) => setSelectedDoseId(e.target.value)} className={inputClass('w-auto text-sm')}>
+            <select aria-label="Choose an injection" value={detailDose?.id ?? ''} onChange={(e) => setSelectedDoseId(e.target.value)} className={inputClass('max-w-xs text-sm')}>
               {sortedDoses.map((d) => <option key={d.id} value={d.id}>{format(new Date(d.date), 'MMM d, yyyy')} · {d.amountMg} mg</option>)}
             </select>
           ) : undefined}

@@ -1,5 +1,5 @@
 import React, { useId, useState } from 'react';
-import { Check, Plus } from 'lucide-react';
+import { Check, Plus, X } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import type { EffectEntry, Severity } from '../../types';
 import { Modal } from '../ui/Modal';
@@ -20,7 +20,9 @@ function SeveritySelector({ label, value, onChange }: { label: string; value: Se
     <div className="space-y-1.5" role="group" aria-labelledby={id}>
       <div className="flex items-baseline justify-between gap-2">
         <span id={id} className={labelClass}>{label}</span>
-        <button type="button" onClick={() => onChange(undefined)} className="min-h-9 px-1 text-[13px] text-muted underline underline-offset-2 hover:text-ink">Not recorded</button>
+        {value === undefined
+          ? <span className="text-[13px] text-muted">Not recorded</span>
+          : <button type="button" onClick={() => onChange(undefined)} className="inline-flex min-h-9 items-center gap-1 rounded-[var(--radius-control)] px-2 text-[13px] font-medium text-brand hover:bg-brand-soft"><X className="h-3.5 w-3.5" aria-hidden="true" />Not recorded</button>}
       </div>
       <div className="grid grid-cols-4 gap-1.5">
         {SEVERITIES.map((s) => (
@@ -29,7 +31,7 @@ function SeveritySelector({ label, value, onChange }: { label: string; value: Se
             type="button"
             aria-pressed={value === s}
             onClick={() => onChange(s)}
-            className={choiceClass(value === s, 'px-1')}
+            className={choiceClass(value === s, 'px-1 text-[13px] sm:text-sm')}
           >
             {severityLabel(s)}
           </button>

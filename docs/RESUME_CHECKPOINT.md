@@ -121,3 +121,21 @@ Checks on the final tree are recorded in the draft PR body. No assertion in an e
 Not available in this session: Cloudflare (no connector or credentials), so no preview deployment was created and preview allowlists were not changed; pathweave.co.in is blocked by the network policy, so Pathweave's brand colours could not be read. No production merge, DNS change, force-push or paid service.
 
 Next: owner reviews the screenshots (or a preview built from this branch) and accepts or redirects the direction. Only then milestone 2 (all remaining screens on the same system), then weight/dose editing, duplicate warnings and the live schema bridge in dependency order.
+
+## Product redesign milestone 2 — 2026-10-08
+
+Owner accepted the milestone 1 direction on 2026-10-08 ("direction accepted, go ahead with milestone 2") and asked not to be consulted on small decisions.
+
+Milestone 2 is implemented on `claude/product-redesign`. Every remaining screen now uses the same design system: logging, profile and notification dialogs; Progress (journey dashboard, weigh-in table, CSV import); Medication; Health; Protein & water; Insights (all three views, trial reference, heatmaps); This week; Health summary; Reports and doctor records; Guidance; Calendar; All history; Settings (profile, backup, restore, encrypted backup unlock, recovery point, offline, erase); and onboarding. New shared pieces: `ds/Field` (input, label, help, error, choice, note, form actions) and `ds/Segmented`. The legacy `ui/button` and `ui/card` now render with design-system shapes.
+
+Behaviour fixes found during the redesign:
+- All history deleted doses and weights immediately. It now confirms, refuses a record that changed meanwhile, and offers undo, like Medication and Progress (tests added; mutation-checked).
+- Insights > Progress & Benchmarks showed a time filter that changed nothing. It has been removed.
+- Calendar labelled any check-in without explicit "none" nausea as "Symptom". It now says "Check-in".
+- All history showed blank cells for unrated symptoms. They now say "Not recorded".
+- The Progress weigh-in table coloured weight gains red. Changes are now neutral, with arrow and words.
+- Injection numbering was wrong when sorted oldest first.
+
+The contrast scanner now also checks the global `:focus-visible` outline (mutation-checked); no assertion was weakened. Results of the final checks are in docs/REDESIGN.md and the PR body. Screenshots: docs/redesign-preview/m2-*.png (development-only preview, synthetic data).
+
+Next: functional backlog in dependency order (weight/dose editing, duplicate warnings, live schema V2 bridge).
