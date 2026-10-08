@@ -111,7 +111,7 @@ export function WeightJourneyDashboard({ className = '' }: Props) {
   return (
     <div className={`space-y-5 ${className}`}>
       <Panel title="At a glance" description={`Weigh-ins from ${dateRange}`}>
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 xl:grid-cols-6">
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-3">
           <Stat
             label="Current weight"
             value={formatWeight(latestLbs, unit, { unit: false })}
@@ -248,10 +248,10 @@ export function WeightJourneyDashboard({ className = '' }: Props) {
           ) : (
             <div className="h-[200px] w-full" role="img" aria-label="Change in average weight from one week to the next">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={velocity} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <BarChart data={velocity} margin={{ top: 10, right: 10, left: -8, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={GRID} />
                   <XAxis dataKey="week" axisLine={false} tickLine={false} tick={TICK} />
-                  <YAxis axisLine={false} tickLine={false} tick={TICK} />
+                  <YAxis axisLine={false} tickLine={false} tick={TICK} width={52} domain={[(min: number) => Math.min(0, min), (max: number) => Math.max(0, max)]} tickFormatter={(v: number) => (Math.round(v * 10) / 10).toString()} />
                   <ReferenceLine y={0} stroke="#7b8a9c" />
                   <Tooltip />
                   <Bar dataKey="change" name={`Change (${unit})`} fill="#1d5aa6" radius={[3, 3, 0, 0]} />
