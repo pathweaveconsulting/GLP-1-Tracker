@@ -1,115 +1,68 @@
 import { useId, useRef } from 'react';
-import { NavLink } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { X, LineChart } from 'lucide-react';
 import { useDialog } from '../../hooks/useDialog';
-import { X, Home, Syringe, Scale, ClipboardList, Activity, Lightbulb, HeartPulse, Database, Calendar, FileText, Settings, Sparkles } from 'lucide-react';
+import { cn } from '../../lib/utils';
+import { BrandMark } from '../BrandMark';
+import { isActive, secondaryNav, type NavGroup, type NavItem } from '../navigation';
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  /** Secondary destinations; defaults to the standard list when a page opens the menu itself. */
+  groups?: NavGroup[];
 }
 
-const navSections = [
-  {
-    title: 'Today',
-    items: [
-      { name: 'This Week', href: '/this-week', icon: Sparkles, highlight: true },
-      { name: 'Overview', href: '/', icon: Home },
-    ]
-  },
-  {
-    title: 'Analytics & Insights',
-    items: [
-      { name: 'Analytics & Insights', href: '/results', icon: Activity, highlight: true },
-    ]
-  },
-  {
-    title: 'Tracking & Logs',
-    items: [
-      { name: 'Dose History', href: '/doses', icon: Syringe },
-      { name: 'Record Weight', href: '/weight', icon: Scale },
-      { name: 'Record Symptoms', href: '/effects', icon: ClipboardList },
-      { name: 'Calendar View', href: '/calendar', icon: Calendar },
-      { name: 'All Logs', href: '/logs', icon: Database },
-    ]
-  },
-  {
-    title: 'Reports & Guidance',
-    items: [
-      { name: 'Weekly & Monthly Reports', href: '/reports', icon: FileText },
-      { name: 'Insights & Guidance', href: '/recommendations', icon: Lightbulb },
-      { name: 'Health Metrics', href: '/health', icon: HeartPulse },
-    ]
-  },
-  {
-    title: 'Preferences',
-    items: [
-      { name: 'Settings', href: '/settings', icon: Settings },
-    ]
-  }
-];
+const INSIGHTS: NavItem = { name: 'Insights', href: '/results', icon: LineChart, also: ['/reports', '/recommendations'] };
 
-export function MobileMenuDrawer({ isOpen, onClose }: Props) {
+/** The "More" menu on small screens: Insights plus every secondary destination. */
+export function MobileMenuDrawer({ isOpen, onClose, groups }: Props) {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
+  const { pathname } = useLocation();
   useDialog(isOpen, onClose, panelRef);
   if (!isOpen) return null;
+  const list: NavGroup[] = [{ title: 'Analyse', items: [INSIGHTS] }, ...(groups ?? secondaryNav({ showDaily: false }))];
 
   return (
-    <div className="fixed inset-0 z-50 flex animate-in fade-in duration-200">
-      {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} aria-hidden="true"></div>
-
-      {/* Drawer */}
-      <div ref={panelRef} role="dialog" aria-modal="true" aria-labelledby={titleId} className="relative w-4/5 max-w-xs bg-white h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-left duration-200">
-        <div className="p-6 border-b border-[#E5E7EB] flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-[#6D4AFF] text-white flex items-center justify-center rounded-[16px] font-semibold text-sm">
-              GLP
-            </div>
-            <h2 id={titleId} className="font-semibold text-[#111827] tracking-tight">GLP-1 Companion menu</h2>
+    <div className="fixed inset-0 z-50 flex justify-end">
+      <div className="fixed inset-0 bg-ink/40" onClick={onClose} aria-hidden="true" />
+      <div ref={panelRef} role="dialog" aria-modal="true" aria-labelledby={titleId} className="relative z-10 flex h-full w-[86%] max-w-sm flex-col bg-surface shadow-2xl">
+        <div className="flex items-center justify-between border-b border-line px-5 py-4">
+          <div className="flex items-center gap-3">
+            <BrandMark className="h-7 w-7" />
+            <h2 id={titleId} className="text-[15px] font-semibold text-ink">Menu</h2>
           </div>
-          <button 
-            type="button"
-            onClick={onClose}
-            aria-label="Close menu"
-            className="w-8 h-8 rounded-full bg-[#F1F5F9] flex items-center justify-center text-muted hover:bg-[#E5E7EB]"
-          >
-            <X className="w-4 h-4" aria-hidden="true" />
+          <button type="button" onClick={onClose} aria-label="Close menu" className="flex h-11 w-11 items-center justify-center rounded-[var(--radius-control)] text-muted hover:bg-sunken">
+            <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
-
-        <nav aria-label="Main menu" className="flex-1 overflow-y-auto p-4 space-y-4">
-          {navSections.map((section, idx) => (
-            <div key={idx} className="space-y-1">
-              <span className="px-3.5 text-[10px] font-semibold text-subtle tracking-wider block mb-1">
-                {section.title}
-              </span>
-              {section.items.map((item) => (
-                <NavLink
-                  key={item.name}
-                  to={item.href}
-                  onClick={onClose}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-3.5 py-2.5 rounded-[16px] text-sm font-semibold transition-colors ${
-                      isActive
-                        ? 'bg-[#6D4AFF] text-white shadow-md shadow-purple-200'
-                        : item.highlight
-                        ? 'bg-purple-50 text-[#6D4AFF]'
-                        : 'text-muted hover:bg-[#F8F9FC] hover:text-[#111827]'
-                    }`
-                  }
-                >
-                  <item.icon className="w-5 h-5" />
-                  {item.name}
-                </NavLink>
-              ))}
+        <nav aria-label="More destinations" className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
+          {list.map((group) => (
+            <div key={group.title}>
+              <p className="px-3 pb-1 text-xs font-semibold text-subtle">{group.title}</p>
+              <ul className="space-y-0.5">
+                {group.items.map((item) => {
+                  const active = isActive(item, pathname);
+                  return (
+                    <li key={item.href}>
+                      <Link
+                        to={item.href}
+                        onClick={onClose}
+                        aria-current={active ? 'page' : undefined}
+                        className={cn('flex min-h-12 items-center gap-3 rounded-[var(--radius-control)] px-3 text-[15px] font-medium',
+                          active ? 'bg-brand-soft text-brand-strong font-semibold' : 'text-ink-2 hover:bg-sunken')}
+                      >
+                        <item.icon className={cn('h-5 w-5', active ? 'text-brand' : 'text-subtle')} aria-hidden="true" />
+                        {item.name}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           ))}
         </nav>
-
-        <div className="p-4 border-t border-[#E5E7EB] text-center">
-          <p className="text-xs text-subtle font-medium">GLP-1 Companion</p>
-        </div>
       </div>
     </div>
   );

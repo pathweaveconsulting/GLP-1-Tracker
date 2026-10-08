@@ -69,7 +69,7 @@ export class ErrorBoundary extends React.Component<{ children: React.ReactNode }
 
   render() {
     if (!this.state.error) return this.props.children;
-    const btn = 'px-4 py-2.5 rounded-[14px] text-sm font-semibold border';
+    const btn = 'px-4 py-2.5 rounded-[var(--radius-control)] text-sm font-semibold border';
     const encrypted = readKey(VAULT_KEY) !== null;
     return (
       <div role="alert" style={{ maxWidth: 560, margin: '10vh auto', padding: 24, fontFamily: 'system-ui, sans-serif', color: '#111827' }}>

@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { useStore } from '../store/useStore';
-import { Card, CardContent, CardHeader } from '../components/ui/card';
 import { Button } from '../components/ui/button';
-import { Download, Trash2, Shield, User, FileJson, Upload } from 'lucide-react';
+import { Download, Trash2, FileJson, Upload } from 'lucide-react';
+import { buttonClass, errorClass, inputClass, labelClass, noteClass, PageHeader, Panel, Stat } from '../components/ds';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
 import { Modal } from '../components/ui/Modal';
 import { useToast } from '../components/ui/Toast';
@@ -109,85 +109,72 @@ export function Settings() {
     resetAllData();
   };
 
-  const stat = (label: string, value: string) => (
-    <div className="bg-[#F8F9FC] p-4 rounded-[16px] border border-[#E5E7EB]">
-      <dt className="text-xs font-medium text-muted block mb-1">{label}</dt>
-      <dd className="text-sm font-semibold text-[#111827]">{value}</dd>
-    </div>
-  );
+  const action = (variant: 'secondary' | 'danger' = 'secondary') =>
+    variant === 'danger'
+      ? 'flex min-h-11 w-full items-center gap-2.5 rounded-[var(--radius-control)] border border-danger/50 bg-surface px-4 text-left text-sm font-semibold text-danger hover:bg-danger-soft'
+      : 'flex min-h-11 w-full items-center gap-2.5 rounded-[var(--radius-control)] border border-line-strong bg-surface px-4 text-left text-sm font-semibold text-ink hover:bg-sunken';
 
   return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="text-3xl font-semibold tracking-tight text-[#111827]">Settings & Privacy</h1>
-        <p className="text-sm text-muted mt-0.5">Manage your profile, goals, and local health data</p>
-      </header>
+    <div className="space-y-5">
+      <PageHeader title="Settings & data" description="Your profile, goals, backups and the health records stored on this device." />
 
-      <Card className="rounded-[24px] border-[#E5E7EB] bg-white shadow-xs p-2">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div className="flex items-center gap-2">
-            <User className="w-5 h-5 text-[#6D4AFF]" aria-hidden="true" />
-            <h2 className="text-base font-semibold text-[#111827]">Profile & Medication Setup</h2>
-          </div>
-          <Button onClick={() => setIsEditProfileOpen(true)} variant="outline" size="sm" className="rounded-[14px] border-[#E5E7EB] text-xs font-semibold text-[#111827]">
-            Edit Profile
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <dl className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {stat('Medication', settings.medication)}
-            {stat('Starting Weight', settings.startingWeight > 0 ? formatWeight(settings.startingWeight, unit) : '–')}
-            {stat('Goal Weight', settings.targetWeight > 0 ? formatWeight(settings.targetWeight, unit) : '–')}
-            {stat('Height', formatHeight(settings.heightInches))}
-          </dl>
-        </CardContent>
-      </Card>
+      <Panel
+        title="Profile and medication"
+        action={<button type="button" onClick={() => setIsEditProfileOpen(true)} className={buttonClass('secondary', 'sm')}>Edit Profile</button>}
+      >
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-4 md:grid-cols-4">
+          <Stat label="Medication" value={<span className="text-base">{settings.medication}</span>} />
+          <Stat label="Starting weight" value={<span className="text-base">{settings.startingWeight > 0 ? formatWeight(settings.startingWeight, unit) : '–'}</span>} />
+          <Stat label="Goal weight" value={<span className="text-base">{settings.targetWeight > 0 ? formatWeight(settings.targetWeight, unit) : '–'}</span>} />
+          <Stat label="Height" value={<span className="text-base">{formatHeight(settings.heightInches)}</span>} />
+        </dl>
+      </Panel>
 
-      <Card className="rounded-[24px] border-[#E5E7EB] bg-white shadow-xs p-2">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-positive" aria-hidden="true" />
-            <h2 className="text-base font-semibold text-[#111827]">Privacy & your data</h2>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="text-xs text-muted font-normal leading-relaxed space-y-2">
-            <p>
-              Your data lives only in this browser on this device. This app has no account and no server, and it doesn’t send your logs anywhere.
-            </p>
-            <p>
-              {hasVault() ? <>Your records and rescue copies are stored encrypted. Unlocking uses your passphrase or recovery key; neither is stored here. JSON backups are encrypted too. An unlocked browser can still display and export your records.</> : <>It is stored <strong>unencrypted</strong> in the browser’s local storage, so anyone who can open this browser profile can read it.</>}
-              If you clear your browser data (or use a private window), it is deleted for good. Download a backup now and then.
-            </p>
-          </div>
-          {effects.length > 0 && <p className="text-xs text-muted">Earlier versions filled unanswered symptom ratings with None. Older ratings are preserved because we cannot tell which ones you chose. New logs save only your selections.</p>}
-          <div id="backup" className="space-y-2 pt-2">
-            <p id="csv-privacy" className="text-xs text-muted">CSV exports are unencrypted. Anyone with the file can read it; use an encrypted JSON backup for private recovery.</p>
-            <Button aria-describedby="csv-privacy" onClick={handleExportCSV} variant="outline" className="w-full justify-start gap-2.5 rounded-[14px] border-[#E5E7EB] text-[#111827] font-semibold text-xs py-3">
-              <Download className="w-4 h-4 text-muted" aria-hidden="true" /> Export everything as CSV
-            </Button>
-            <Button onClick={handleExportJSON} variant="outline" className="w-full justify-start gap-2.5 rounded-[14px] border-[#E5E7EB] text-[#111827] font-semibold text-xs py-3">
-              <FileJson className="w-4 h-4 text-muted" aria-hidden="true" /> Download a backup (JSON)
-            </Button>
-            {backupStarted && <div className="p-3 rounded-[12px] border border-[#E5E7EB] text-xs text-muted">
+      <Panel title="Privacy and your data">
+        <div className="max-w-3xl space-y-2 text-sm leading-6 text-ink-2">
+          <p>
+            Your data lives only in this browser on this device. This app has no account and no server, and it doesn’t send your logs anywhere.
+          </p>
+          <p>
+            {hasVault() ? <>Your records and rescue copies are stored encrypted. Unlocking uses your passphrase or recovery key; neither is stored here. JSON backups are encrypted too. An unlocked browser can still display and export your records.</> : <>It is stored <strong>unencrypted</strong> in the browser’s local storage, so anyone who can open this browser profile can read it.</>}
+            {' '}If you clear your browser data (or use a private window), it is deleted for good. Download a backup now and then.
+          </p>
+        </div>
+        {effects.length > 0 && <p className={noteClass('neutral', 'mt-3 max-w-3xl')}>Earlier versions filled unanswered symptom ratings with None. Older ratings are preserved because we cannot tell which ones you chose. New logs save only your selections.</p>}
+
+        <div id="backup" className="mt-5 grid gap-5 border-t border-line pt-5 md:grid-cols-2">
+          <section aria-labelledby="backup-heading" className="space-y-2">
+            <h3 id="backup-heading" className="text-sm font-semibold text-ink">Back up and restore</h3>
+            <button type="button" onClick={handleExportJSON} className={action()}>
+              <FileJson className="h-4 w-4 text-muted" aria-hidden="true" /> Download a backup (JSON)
+            </button>
+            {backupStarted && <div className={noteClass('info')}>
               <p>The app cannot tell whether the browser saved your file. Check your downloads and keep the JSON file somewhere private before confirming.</p>
-              <Button type="button" variant="outline" className="mt-2" onClick={async () => {
+              <button type="button" className={buttonClass('secondary', 'sm', 'mt-2')} onClick={async () => {
                 if (await confirmBackupSaved()) {
                   setBackupStarted(false);
                   showToast('You confirmed saving a backup. We’ll remind you again in a week.');
                 } else showToast('This browser could not save your confirmation. Backup reminders will continue.');
-              }}>I saved my backup file</Button>
+              }}>I saved my backup file</button>
             </div>}
-            <Button onClick={() => fileRef.current?.click()} variant="outline" className="w-full justify-start gap-2.5 rounded-[14px] border-[#E5E7EB] text-[#111827] font-semibold text-xs py-3">
-              <Upload className="w-4 h-4 text-muted" aria-hidden="true" /> Restore from a backup
-            </Button>
+            <button type="button" onClick={() => fileRef.current?.click()} className={action()}>
+              <Upload className="h-4 w-4 text-muted" aria-hidden="true" /> Restore from a backup
+            </button>
             <input ref={fileRef} type="file" accept="application/json,.json" aria-label="Choose a backup file to restore" className="sr-only" tabIndex={-1} onChange={handleRestoreFile} />
-            <Button onClick={() => setConfirmErase(true)} variant="outline" className="w-full justify-start gap-2.5 rounded-[14px] border-rose-100 text-rose-700 hover:text-rose-800 hover:bg-rose-50 font-semibold text-xs py-3">
-              <Trash2 className="w-4 h-4" aria-hidden="true" /> Erase local data
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </section>
+
+          <section aria-labelledby="export-heading" className="space-y-2">
+            <h3 id="export-heading" className="text-sm font-semibold text-ink">Export and erase</h3>
+            <button type="button" aria-describedby="csv-privacy" onClick={handleExportCSV} className={action()}>
+              <Download className="h-4 w-4 text-muted" aria-hidden="true" /> Export everything as CSV
+            </button>
+            <p id="csv-privacy" className="text-[13px] text-muted">CSV exports are unencrypted. Anyone with the file can read it; use an encrypted JSON backup for private recovery.</p>
+            <button type="button" onClick={() => setConfirmErase(true)} className={action('danger')}>
+              <Trash2 className="h-4 w-4" aria-hidden="true" /> Erase local data
+            </button>
+          </section>
+        </div>
+      </Panel>
 
       <OfflineSettings />
       <MigrationRecovery />
@@ -207,17 +194,15 @@ export function Settings() {
           } catch { setBackupUnlockError('Could not decrypt this backup. Check its passphrase or recovery key; the file may also be damaged. Nothing was changed.'); }
           finally { setDecrypting(false); }
         }}>
-          <label className="flex gap-2 text-sm"><input type="checkbox" checked={backupRecovery} disabled={decrypting} onChange={e => { setBackupRecovery(e.target.checked); setBackupSecret(''); }} />Use the backup’s recovery key</label>
-          <label htmlFor="backup-secret" className="block text-sm font-semibold">{backupRecovery ? 'Backup recovery key' : 'Backup passphrase'}</label>
-          <input id="backup-secret" type="password" autoComplete="off" required maxLength={1024} disabled={decrypting} value={backupSecret} onChange={e => setBackupSecret(e.target.value)} className="w-full p-3 border border-[#D0D5DD] rounded-xl" />
-          <Button type="submit" disabled={decrypting}>{decrypting ? 'Decrypting…' : 'Check backup'}</Button>
-          {backupUnlockError && <p role="alert" className="text-sm text-danger">{backupUnlockError}</p>}
+          <label className="flex min-h-11 items-center gap-2.5 text-sm text-ink"><input className="h-5 w-5 accent-brand" type="checkbox" checked={backupRecovery} disabled={decrypting} onChange={e => { setBackupRecovery(e.target.checked); setBackupSecret(''); }} />Use the backup’s recovery key</label>
+          <label htmlFor="backup-secret" className={labelClass}>{backupRecovery ? 'Backup recovery key' : 'Backup passphrase'}</label>
+          <input id="backup-secret" type="password" autoComplete="off" required maxLength={1024} disabled={decrypting} value={backupSecret} onChange={e => setBackupSecret(e.target.value)} className={inputClass()} />
+          <Button type="submit" disabled={decrypting} className="border-0 bg-brand text-white hover:bg-brand-strong">{decrypting ? 'Decrypting…' : 'Check backup'}</Button>
+          {backupUnlockError && <p role="alert" className={errorClass}>{backupUnlockError}</p>}
         </form>
       </Modal>
 
-      <div className="text-center pb-8 pt-4">
-        <p className="text-[11px] text-muted font-medium">GLP-1 Companion • Not medical advice. Always consult your care team.</p>
-      </div>
+      <p className="pb-4 text-center text-[13px] text-muted">GLP-1 Companion · Not medical advice. Always consult your care team.</p>
 
       <ConfirmDialog
         open={confirmErase}
@@ -252,11 +237,11 @@ export function Settings() {
       <Modal open={restoring} onClose={() => {}} title="Restoring encrypted backup"><p role="status">Wait until encrypted saving finishes before editing records or closing this tab.</p></Modal>
 
       <Modal open={!!restoreErrors} onClose={() => setRestoreErrors(null)} title="This backup can’t be restored" subtitle="Nothing was changed.">
-        <ul role="alert" className="list-disc pl-5 space-y-1 text-xs text-[#344054]">
+        <ul role="alert" className="list-disc space-y-1 pl-5 text-sm text-ink-2">
           {restoreErrors?.map((m, i) => <li key={i}>{m}</li>)}
         </ul>
         <div className="mt-5 flex justify-end">
-          <button type="button" onClick={() => setRestoreErrors(null)} className="px-5 py-2.5 bg-slate-900 text-white font-semibold text-xs rounded-[16px]">OK</button>
+          <button type="button" onClick={() => setRestoreErrors(null)} className={buttonClass('primary')}>OK</button>
         </div>
       </Modal>
 

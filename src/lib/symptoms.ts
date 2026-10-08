@@ -17,7 +17,7 @@ export function normalizeSeverity(v: unknown): Severity | undefined {
   return s === 'none' ? 'none' : undefined;
 }
 
-type FieldKey = Exclude<keyof EffectEntry, 'id' | 'date' | 'notes' | 'customEffects'>;
+export type FieldKey = Exclude<keyof EffectEntry, 'id' | 'date' | 'notes' | 'customEffects'>;
 
 export interface SymptomField {
   key: FieldKey;

@@ -1,5 +1,5 @@
 import React, { useId, useState } from 'react';
-import { Syringe, Check, Clock, Sparkles } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { Medication } from '../../types';
 import { INJECTION_SITES_ABDOMEN, INJECTION_SITES_OTHER, getRecommendedNextSite } from '../../lib/glp1Utils';
@@ -8,6 +8,7 @@ import { dstGapAdjustment, localDateTimeToIso, nowLocalTimeString, parseDateOnly
 import { lastDoseOf } from '../../lib/insights';
 import { Modal } from '../ui/Modal';
 import { OtherMedicationNote } from '../OtherMedicationNote';
+import { choiceClass, errorClass, FormActions, helpClass, inputClass, labelClass, noteClass } from '../ds';
 
 interface Props {
   isOpen: boolean;
@@ -15,12 +16,12 @@ interface Props {
   onSuccess?: () => void;
 }
 
-const field = 'w-full px-3.5 py-2.5 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-sm font-medium focus:ring-2 focus:ring-purple-500 focus:outline-none';
-const label = 'block text-xs font-semibold text-muted mb-1.5';
+const field = inputClass();
+const label = `${labelClass} mb-1.5`;
 
 function SiteGrid({ sites, site, lastSite, recommended, onPick }: { sites: string[]; site: string; lastSite?: string; recommended: string; onPick: (s: string) => void }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+    <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
       {sites.map((s) => {
         const isLast = s === lastSite;
         const isRecommended = s === recommended;
@@ -31,13 +32,11 @@ function SiteGrid({ sites, site, lastSite, recommended, onPick }: { sites: strin
             type="button"
             aria-pressed={isSelected}
             onClick={() => onPick(s)}
-            className={`text-left px-3 py-2 rounded-[16px] text-xs font-semibold border transition-all flex items-center justify-between ${
-              isSelected ? 'bg-purple-100 border-purple-500 text-purple-900 shadow-xs' : isRecommended ? 'bg-purple-50/70 border-purple-200 text-[#4C1D95]' : 'bg-white border-[#E5E7EB] text-[#344054] hover:bg-[#F1F5F9]'
-            }`}
+            className={choiceClass(isSelected, 'justify-between text-left')}
           >
             <span className="truncate">{s}</span>
-            {isLast && <span className="text-[10px] text-subtle font-normal italic ml-1 shrink-0">(last site)</span>}
-            {isRecommended && !isLast && <span className="text-[10px] text-[#6D4AFF] font-semibold ml-1 shrink-0">(suggested next)</span>}
+            {isLast && <span className="ml-1 shrink-0 text-xs font-normal text-muted">(last site)</span>}
+            {isRecommended && !isLast && <span className="ml-1 shrink-0 text-xs font-medium text-brand">(suggested next)</span>}
           </button>
         );
       })}
@@ -95,13 +94,13 @@ function DoseForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
   };
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="space-y-4">
+    <form onSubmit={handleSubmit} noValidate className="space-y-5">
       <div>
         <label htmlFor={`${uid}-med`} className={label}>Medication</label>
         <select id={`${uid}-med`} value={medication} onChange={(e) => changeMedication(e.target.value as Medication)} className={field}>
           {MEDICATION_OPTIONS.map((m) => <option key={m} value={m}>{m}</option>)}
         </select>
-        <p className="mt-2 text-xs text-muted">Weekly injection models only. For oral semaglutide, including Wegovy tablets or Rybelsus, select Other. Verify your exact product and prescription with your pharmacist.</p>
+        <p className={`mt-1.5 ${helpClass}`}>Weekly injection models only. For oral semaglutide, including Wegovy tablets or Rybelsus, select Other. Verify your exact product and prescription with your pharmacist.</p>
         <OtherMedicationNote medication={medication} className="mt-2" />
       </div>
 
@@ -121,36 +120,36 @@ function DoseForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
         />
         {info.doseSteps.length > 0 && (
           <>
-          <div className="flex flex-wrap gap-1.5 mt-2" role="group" aria-label={`Standard ${medication} dose steps`}>
+          <div className="mt-2 flex flex-wrap gap-1.5" role="group" aria-label={`Standard ${medication} dose steps`}>
             {info.doseSteps.map((step) => (
               <button
                 key={step}
                 type="button"
                 aria-pressed={amountNum === step}
                 onClick={() => { setAmount(String(step)); setConfirmed(false); }}
-                className={`px-3 py-1 rounded-full text-xs font-semibold border ${amountNum === step ? 'bg-[#6D4AFF] text-white border-[#6D4AFF]' : 'bg-white text-[#344054] border-[#E5E7EB] hover:bg-[#F8F9FC]'}`}
+                className={choiceClass(amountNum === step, 'tabular-nums')}
               >
                 {step} mg
               </button>
             ))}
           </div>
-          <p className="text-[11px] text-subtle mt-1.5">Standard steps are {APPROXIMATE_NOTE}.</p>
+          <p className={`mt-1.5 ${helpClass}`}>Standard steps are {APPROXIMATE_NOTE}.</p>
           </>
         )}
         <div id={`${uid}-amt-help`} className="mt-1.5 space-y-1">
-          <p className="text-[11px] text-subtle">Log the amount your prescriber told you to use. We never suggest a dose.</p>
+          <p className={helpClass}>Log the amount your prescriber told you to use. We never suggest a dose.</p>
           {warning && warning.level !== 'error' && (
-            <p className={`text-xs rounded-[12px] px-3 py-2 ${warning.level === 'caution' ? 'bg-amber-50 text-amber-900 border border-amber-200' : 'bg-slate-50 text-slate-700 border border-slate-200'}`}>{warning.text}</p>
+            <p className={noteClass(warning.level === 'caution' ? 'caution' : 'neutral')}>{warning.text}</p>
           )}
-          {errors.amount && <p role="alert" className="text-xs text-danger">{errors.amount}</p>}
+          {errors.amount && <p role="alert" className={errorClass}>{errors.amount}</p>}
         </div>
         {warning?.requiresConfirmation && (
           <div className="mt-2">
-            <label className="flex items-start gap-2 text-xs text-[#344054]">
-              <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-[#D0D5DD]" />
+            <label className="flex min-h-11 items-start gap-2.5 text-sm text-ink">
+              <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 rounded border-line-strong accent-brand" />
               <span>I’ve double-checked this amount against my prescription.</span>
             </label>
-            {errors.confirm && <p role="alert" className="text-xs text-danger mt-1">{errors.confirm}</p>}
+            {errors.confirm && <p role="alert" className={`mt-1 ${errorClass}`}>{errors.confirm}</p>}
           </div>
         )}
       </div>
@@ -161,37 +160,37 @@ function DoseForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
           <input id={`${uid}-date`} type="date" max={today} value={dateStr} onChange={(e) => setDateStr(e.target.value)} className={field} aria-invalid={errors.when ? true : undefined} />
         </div>
         <div>
-          <label htmlFor={`${uid}-time`} className={`${label} flex items-center gap-1`}><Clock className="w-3 h-3 text-[#6D4AFF]" aria-hidden="true" /> Time</label>
+          <label htmlFor={`${uid}-time`} className={label}>Time</label>
           <input id={`${uid}-time`} type="time" value={timeStr} onChange={(e) => setTimeStr(e.target.value)} className={field} aria-invalid={errors.when ? true : undefined} />
         </div>
-        {gapTime && <p role="status" className="text-xs text-slate-700 sm:col-span-2 -mt-1">That time doesn&apos;t exist on this date; saved as {gapTime}.</p>}
-        {errors.when && <p role="alert" className="text-xs text-danger sm:col-span-2 -mt-1">{errors.when}</p>}
+        {gapTime && <p role="status" className={`sm:col-span-2 ${helpClass}`}>That time doesn&apos;t exist on this date; saved as {gapTime}.</p>}
+        {errors.when && <p role="alert" className={`sm:col-span-2 ${errorClass}`}>{errors.when}</p>}
       </div>
 
       <div>
-        <div className="flex justify-between items-center mb-1.5">
-          <span className={`${label} mb-0`} id={`${uid}-site`}>Injection site</span>
-          {lastDose?.site && <span className="text-[11px] text-[#6D4AFF] font-semibold flex items-center gap-1"><Sparkles className="w-3 h-3" aria-hidden="true" /> Rotation suggested</span>}
+        <div className="mb-1.5 flex items-baseline justify-between gap-2">
+          <span className={labelClass} id={`${uid}-site`}>Injection site</span>
+          {lastDose?.site && <span className={helpClass}>Rotation suggested</span>}
         </div>
-        <div role="group" aria-labelledby={`${uid}-site`} className="bg-[#F8F9FC] rounded-[16px] p-3 border border-[#E5E7EB] space-y-3 max-h-56 overflow-y-auto">
+        <div role="group" aria-labelledby={`${uid}-site`} className="max-h-64 space-y-3 overflow-y-auto rounded-[var(--radius-control)] border border-line bg-canvas p-3">
           <div>
-            <span className="text-[11px] font-semibold text-subtle block mb-2">Abdomen</span>
+            <span className="mb-1.5 block text-[13px] font-semibold text-ink-2">Abdomen</span>
             <SiteGrid sites={INJECTION_SITES_ABDOMEN} site={site} lastSite={lastDose?.site} recommended={recommendedNextSite} onPick={setSite} />
           </div>
           <div>
-            <span className="text-[11px] font-semibold text-subtle block mb-2">Other sites</span>
+            <span className="mb-1.5 block text-[13px] font-semibold text-ink-2">Other sites</span>
             <SiteGrid sites={[...INJECTION_SITES_OTHER, ...(settings.customSites ?? [])]} site={site} lastSite={lastDose?.site} recommended={recommendedNextSite} onPick={setSite} />
           </div>
           {!customOpen ? (
-            <button type="button" onClick={() => setCustomOpen(true)} className="w-full py-1.5 text-xs text-[#6D4AFF] font-semibold hover:underline text-left px-1">+ Add a custom site</button>
+            <button type="button" onClick={() => setCustomOpen(true)} className="min-h-11 px-1 text-left text-sm font-semibold text-brand hover:underline">+ Add a custom site</button>
           ) : (
             <div className="flex gap-2 pt-1">
-              <input type="text" aria-label="Custom injection site" placeholder="e.g. Upper hip" value={customSite} onChange={(e) => setCustomSite(e.target.value)} className="flex-1 px-3 py-1.5 text-xs rounded-lg border border-[#D0D5DD] bg-white" />
-              <button type="button" onClick={() => { if (customSite.trim()) { setSite(customSite.trim()); setCustomOpen(false); setCustomSite(''); } }} className="px-3 py-1.5 bg-[#6D4AFF] text-white rounded-lg text-xs font-semibold">Add</button>
+              <input type="text" aria-label="Custom injection site" placeholder="e.g. Upper hip" value={customSite} onChange={(e) => setCustomSite(e.target.value)} className={inputClass('flex-1')} />
+              <button type="button" onClick={() => { if (customSite.trim()) { setSite(customSite.trim()); setCustomOpen(false); setCustomSite(''); } }} className="min-h-11 rounded-[var(--radius-control)] bg-brand px-4 text-sm font-semibold text-white hover:bg-brand-strong">Add</button>
             </div>
           )}
         </div>
-        <p className="text-[11px] text-subtle mt-1">Selected: {site}</p>
+        <p className={`mt-1.5 ${helpClass}`}>Selected: {site}</p>
       </div>
 
       <div>
@@ -210,15 +209,10 @@ function DoseForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
 
       <div>
         <label htmlFor={`${uid}-notes`} className={label}>Notes (optional)</label>
-        <textarea id={`${uid}-notes`} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="How did the injection feel?" className="w-full px-3.5 py-2 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none" />
+        <textarea id={`${uid}-notes`} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="How did the injection feel?" className={field} />
       </div>
 
-      <div className="pt-2 flex gap-3">
-        <button type="button" onClick={onClose} className="flex-1 py-3 px-4 rounded-[16px] border border-[#E5E7EB] text-[#344054] font-semibold text-sm hover:bg-[#F8F9FC] transition-colors">Cancel</button>
-        <button type="submit" className="flex-1 py-3 px-4 rounded-[16px] bg-[#6D4AFF] text-white font-semibold text-sm hover:bg-[#5B3FE0] transition-colors shadow-md shadow-purple-200 flex items-center justify-center gap-2">
-          <Check className="w-4 h-4" aria-hidden="true" /> Save Dose
-        </button>
-      </div>
+      <FormActions onCancel={onClose} submitLabel="Save Dose" submitIcon={<Check className="h-4 w-4" aria-hidden="true" />} />
     </form>
   );
 }
@@ -228,10 +222,9 @@ export function LogDoseModal({ isOpen, onClose, onSuccess }: Props) {
     <Modal
       open={isOpen}
       onClose={onClose}
-      title="Log Shot / Dose"
-      subtitle="Record the date, time, medication and injection site"
+      title="Log shot or dose"
+      subtitle="Medication, amount, date, time and injection site"
       widthClass="max-w-lg"
-      icon={<div className="w-10 h-10 rounded-[16px] bg-purple-50 flex items-center justify-center text-[#6D4AFF]"><Syringe className="w-5 h-5" aria-hidden="true" /></div>}
     >
       <DoseForm onClose={onClose} onSuccess={onSuccess} />
     </Modal>

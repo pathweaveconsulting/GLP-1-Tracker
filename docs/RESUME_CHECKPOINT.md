@@ -107,3 +107,35 @@ Current codex/record-delete-safety adds dose/weight delete confirmation, refusal
 Actual commands: npx tsc --noEmit exit0. Targeted recordDeleteSafety and symptomHistory tests --maxWorkers=1 initially 2 files/9 passed in UTC and New York; after adding original-position preservation, final npx tsc --noEmit && TZ=America/New_York npx vitest run src/test/recordDeleteSafety.test.tsx src/test/symptomHistory.test.tsx --maxWorkers=1 exit0 (2 files/10 passed/0 skipped). npm test -- --maxWorkers=1 exit0 (66 files,658 passed,7 expected DST skips,665 total,143.17s). Feature-enabled build with all four preview flags exit0;49 public files,entry227.66kB/72.56gzip,Doses5.52/2.23,Weight13.62/4.78,Settings27.19/9.11,CSS52.78/9.78,Recharts436.23/124.19. Contrast exit0:715 text,112 chart/focus plus placeholder,0 failures. git diff --check exit0. Seven new tests cover confirmation/cancel, exact undo, stale records, duplicate IDs, latest-only/page-lifetime scope, equal-time ordering and actual encrypted persistence. No fresh local npm ci/audit/full New York run; current draft CI pending publication. npm proxy deprecation and jsdom performance warnings remain.
 
 Cloudflare allowlisted only this preview branch. Production remains main with no production VITE_ENABLE flags; no merges/DNS/paid services/force pushes. Publish a matching stacked draft into codex/atomic-backup-restore and record actual CI/preview in its description. Real-browser credential-gated CRUD/undo/import/recovery, keyboard/screen readers, mobile, true offline installation/update, PDF/print and rendered chart/heatmap colours remain unverified. Clinical registry/reference reviews and owner licence choice remain required. User must enter credentials personally; do not bypass the gate. Next unblocked work: weight/dose editing and duplicate warnings, then live-schema bridge and future domain schemas in dependency order; do not claim the whole Packs 0–60 backlog complete. Keep Pack 40 on hold and preserve production approval gates.
+
+## Product redesign milestone 1 — 2026-10-08
+
+Owner feedback after phone onboarding of the combined preview: the app looks amateurish; preview NOT accepted. Priority is a coherent redesign before any production release.
+
+Verified state before work: PRs #4–#14 open, draft, unmerged and stacked (main ← #4 … ← #14). Every remote branch, including main, is an ancestor of `codex/record-delete-safety` at f405d139bdfbf77ad3b6aef3567360ec5d5c85fa, so that head is the combined source. Clean baseline on that exact tree (separate worktree): `npx tsc --noEmit` exit 0; `npm test -- --maxWorkers=2` 66 files, 658 passed, 7 DST skips; `TZ=America/New_York npx vitest run` 665 passed; contrast 715 text / 112 chart-focus, 0 failures; `npm ci` and `npm audit` (0 vulnerabilities) exit 0.
+
+New branch `claude/product-redesign` from that head. Milestone 1 (design system, navigation, Today) is implemented and awaits owner direction acceptance. Details, inventory and regression checklist: docs/REDESIGN.md. Screenshots: docs/redesign-preview/ (from the development-only `/design-preview/` page with synthetic data and an in-memory storage stand-in; not the vault-gated app, no credentials entered, no browser storage seeded).
+
+Checks on the final tree are recorded in the draft PR body. No assertion in an existing test was changed. One full New York run failed once in `vault.storage.test.tsx` (auto-lock after unlock, a fake-timer race under parallel load); the file passed 4/4 alone and the next two full New York runs passed. Recorded, not hidden.
+
+Not available in this session: Cloudflare (no connector or credentials), so no preview deployment was created and preview allowlists were not changed; pathweave.co.in is blocked by the network policy, so Pathweave's brand colours could not be read. No production merge, DNS change, force-push or paid service.
+
+Next: owner reviews the screenshots (or a preview built from this branch) and accepts or redirects the direction. Only then milestone 2 (all remaining screens on the same system), then weight/dose editing, duplicate warnings and the live schema bridge in dependency order.
+
+## Product redesign milestone 2 — 2026-10-08
+
+Owner accepted the milestone 1 direction on 2026-10-08 ("direction accepted, go ahead with milestone 2") and asked not to be consulted on small decisions.
+
+Milestone 2 is implemented on `claude/product-redesign`. Every remaining screen now uses the same design system: logging, profile and notification dialogs; Progress (journey dashboard, weigh-in table, CSV import); Medication; Health; Protein & water; Insights (all three views, trial reference, heatmaps); This week; Health summary; Reports and doctor records; Guidance; Calendar; All history; Settings (profile, backup, restore, encrypted backup unlock, recovery point, offline, erase); and onboarding. New shared pieces: `ds/Field` (input, label, help, error, choice, note, form actions) and `ds/Segmented`. The legacy `ui/button` and `ui/card` now render with design-system shapes.
+
+Behaviour fixes found during the redesign:
+- All history deleted doses and weights immediately. It now confirms, refuses a record that changed meanwhile, and offers undo, like Medication and Progress (tests added; mutation-checked).
+- Insights > Progress & Benchmarks showed a time filter that changed nothing. It has been removed.
+- Calendar labelled any check-in without explicit "none" nausea as "Symptom". It now says "Check-in".
+- All history showed blank cells for unrated symptoms. They now say "Not recorded".
+- The Progress weigh-in table coloured weight gains red. Changes are now neutral, with arrow and words.
+- Injection numbering was wrong when sorted oldest first.
+
+The contrast scanner now also checks the global `:focus-visible` outline (mutation-checked); no assertion was weakened. Results of the final checks are in docs/REDESIGN.md and the PR body. Screenshots: docs/redesign-preview/m2-*.png (development-only preview, synthetic data).
+
+Next: functional backlog in dependency order (weight/dose editing, duplicate warnings, live schema V2 bridge).

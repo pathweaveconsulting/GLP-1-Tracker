@@ -30,7 +30,7 @@ export function StorageNotices() {
 
   const readFailedBanner = readFailed && (
     <>
-    <div role="alert" className="bg-rose-50 border-b border-rose-200 text-rose-950 text-xs px-4 py-2.5 flex items-start gap-3">
+    <div role="alert" className="bg-danger-soft border-b border-danger/40 text-ink text-xs px-4 py-2.5 flex items-start gap-3">
       <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
       <p className="flex-1">
         {storageReport.unsupportedVersion ? 'Your saved records use a newer or unsupported data version. Update the app before opening them. Saving is paused to protect the original records. Download a backup preserves those original records; changes on this screen are not included.' : 'Your saved data couldn’t be read from this browser, so it was not loaded. Saving is paused so it isn’t overwritten, which means changes you make now are lost when you close this page. Download a backup keeps a copy of what is on screen; saving stays paused.'}
@@ -75,7 +75,7 @@ export function StorageNotices() {
   };
 
   const storageBanner = (<>{exportError && <p role="alert">The backup download could not start. Please try again.</p>}{readFailedBanner}{storageError && (
-    <div role="alert" className="bg-rose-50 border-b border-rose-200 text-rose-950 text-xs px-4 py-2.5 flex items-start gap-3">
+    <div role="alert" className="bg-danger-soft border-b border-danger/40 text-ink text-xs px-4 py-2.5 flex items-start gap-3">
       <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
       <p className="flex-1">
         Your changes can’t be saved on this device (the browser’s storage is full or blocked). They will be lost if you close this page. Download a backup now.{' '}
@@ -90,7 +90,7 @@ export function StorageNotices() {
     return (
       <>
       {storageBanner}
-      <div role="status" className="bg-amber-50 border-b border-amber-200 text-amber-950 text-xs px-4 py-2.5 flex items-start gap-3">
+      <div role="status" className="bg-caution-soft border-b border-caution/40 text-ink text-xs px-4 py-2.5 flex items-start gap-3">
         <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
         <p className="flex-1">
           {malformed ? 'Some saved data couldn’t be read. The readable data was loaded.' : 'Your saved data couldn’t be read, so the app started empty.'}{' '}
@@ -112,7 +112,7 @@ export function StorageNotices() {
   return (
     <>
     {storageBanner}
-    <div role="status" className="bg-amber-50 border-b border-amber-200 text-amber-950 text-xs px-4 py-2.5 flex items-start gap-3">
+    <div role="status" className="bg-caution-soft border-b border-caution/40 text-ink text-xs px-4 py-2.5 flex items-start gap-3">
       <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
       <p className="flex-1">
         {malformed && <>Some saved data had an invalid structure. The readable data was loaded.{' '}</>}

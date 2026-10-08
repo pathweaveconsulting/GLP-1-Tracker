@@ -25,10 +25,10 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={{ show }}>
       {children}
-      <div role="status" aria-live="polite" className="fixed top-5 right-5 z-[70] pointer-events-none">
+      <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-4 top-4 z-[70] flex justify-center sm:inset-x-auto sm:right-6 sm:top-6">
         {message && (
-          <div className="bg-slate-900 text-white px-4 py-3 rounded-[16px] shadow-xl flex items-center gap-2 text-xs font-semibold">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" aria-hidden="true" />
+          <div className="flex items-center gap-2 rounded-[var(--radius-control)] bg-ink px-4 py-3 text-sm font-medium text-white shadow-xl">
+            <CheckCircle2 className="h-4 w-4 text-[#7fd4ad]" aria-hidden="true" />
             {message}
           </div>
         )}

@@ -169,7 +169,7 @@ export function blend(fg, bg, alpha) {
 }
 
 /** Fills a heatmap may use without a contrast check: the card surfaces and the empty "no data" cell. */
-const HEATMAP_EXEMPT_FILLS = new Set(['white', '[#F8F9FC]', '[#f8f9fc]', '[#F1F5F9]', '[#f1f5f9]']);
+const HEATMAP_EXEMPT_FILLS = new Set(['white', '[#F8F9FC]', '[#f8f9fc]', '[#F1F5F9]', '[#f1f5f9]', 'surface', 'canvas', 'sunken']);
 
 const FOCUS_RING = /^(?:focus|focus-visible|focus-within):ring-(?!offset|inset|0$|1$|2$|4$|8$)(.+)$/;
 
@@ -223,6 +223,15 @@ export function collectNonText(srcDir, tokens) {
         if (!hex) { results.push({ ...base, fg: null }); continue; }
         results.push({ ...base, fg: hex, alpha: alpha ? Number(alpha) / 100 : 1 });
       }
+    }
+  }
+  // The global :focus-visible outline in src/index.css is the app's main focus indicator; it must reach 3:1 too.
+  const cssFile = path.join(srcDir, 'index.css');
+  if (fs.existsSync(cssFile)) {
+    const css = fs.readFileSync(cssFile, 'utf8');
+    for (const m of css.matchAll(/:focus-visible\s*\{[^}]*?outline:[^;}]*?(var\(--color-([a-z0-9-]+)\)|#[0-9a-fA-F]{6})/g)) {
+      const hex = m[2] ? tokens[m[2]] : m[1].toLowerCase();
+      results.push({ file: cssFile, line: lineOf(css, m.index), kind: 'ring', cls: `:focus-visible outline ${m[1]}`, fg: hex ?? null, bg: LIGHT_SURFACES, need: AA_NON_TEXT });
     }
   }
   return results.map((u) => {

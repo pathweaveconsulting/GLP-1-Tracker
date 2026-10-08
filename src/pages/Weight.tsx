@@ -1,10 +1,11 @@
 import React, { useRef, useState } from 'react';
 import { useStore } from '../store/useStore';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { WeightLossProgressChart } from '../components/WeightLossProgressChart';
+import { WeightInjectionsChart } from '../components/WeightInjectionsChart';
 import { format } from 'date-fns';
-import { TrendingDown, TrendingUp, Plus, Upload, Trash2, ListFilter, Compass } from 'lucide-react';
+import { TrendingDown, TrendingUp, Plus, Upload, Trash2 } from 'lucide-react';
+import { buttonClass, EmptyState, noteClass, PageHeader, Panel, Segmented, Stat } from '../components/ds';
 import { LogWeightModal } from '../components/modals/LogWeightModal';
 import { WeightJourneyDashboard } from '../components/WeightJourneyDashboard';
 import { formatWeight, formatWeightChange, getWeightUnit } from '../lib/units';
@@ -58,59 +59,32 @@ export function Weight() {
   };
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-[#111827]">Weight Journey</h1>
-          <p className="text-muted text-sm mt-0.5">{settings.targetWeight > 0 ? `Goal weight: ${formatWeight(settings.targetWeight, unit)}` : 'No goal weight set yet'}</p>
-        </div>
+    <div className="space-y-5">
+      <PageHeader
+        title="Progress"
+        description={settings.targetWeight > 0 ? `Goal weight: ${formatWeight(settings.targetWeight, unit)}` : 'No goal weight set yet'}
+        actions={<>
+          <button type="button" aria-label="Import weights from CSV" onClick={() => fileRef.current?.click()} className={buttonClass('secondary')}>
+            <Upload className="h-4 w-4" aria-hidden="true" /><span className="hidden sm:inline" aria-hidden="true">Import CSV</span>
+          </button>
+          <input ref={fileRef} type="file" accept=".csv,text/csv" aria-label="Choose a CSV file of weights" className="sr-only" tabIndex={-1} onChange={handleImportFile} />
+          <button type="button" onClick={() => setIsLogWeightOpen(true)} className={buttonClass('primary')}>
+            <Plus className="h-4 w-4" aria-hidden="true" />Record weight
+          </button>
+        </>}
+      />
 
-        <div className="flex items-center gap-3 flex-wrap">
-          {/* View Tab Selector */}
-          <div className="flex bg-[#F8F9FC] p-1 rounded-[14px] border border-[#E5E7EB] shadow-xs">
-            <button
-              aria-pressed={activeTab === 'journey'}
-              onClick={() => setActiveTab('journey')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-[10px] transition-all ${
-                activeTab === 'journey'
-                  ? 'bg-white text-[#111827] shadow-xs'
-                  : 'text-muted hover:text-[#111827]'
-              }`}
-            >
-              <Compass className="w-3.5 h-3.5 text-[#6D4AFF]" />
-              <span>Weight Journey Dashboard</span>
-            </button>
-            <button
-              aria-pressed={activeTab === 'table'}
-              onClick={() => setActiveTab('table')}
-              className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-[10px] transition-all ${
-                activeTab === 'table'
-                  ? 'bg-white text-[#111827] shadow-xs'
-                  : 'text-muted hover:text-[#111827]'
-              }`}
-            >
-              <ListFilter className="w-3.5 h-3.5 text-muted" />
-              <span>Weight Log & Table</span>
-            </button>
-          </div>
-
-          <div className="flex gap-2">
-            <Button variant="outline" size="icon" aria-label="Import weights from CSV" onClick={() => fileRef.current?.click()} className="rounded-[14px] border-[#E5E7EB]">
-              <Upload className="w-4 h-4 text-muted" aria-hidden="true" />
-            </Button>
-            <input ref={fileRef} type="file" accept=".csv,text/csv" aria-label="Choose a CSV file of weights" className="sr-only" tabIndex={-1} onChange={handleImportFile} />
-            <Button onClick={() => setIsLogWeightOpen(true)} className="gap-2 bg-[#15803D] hover:bg-[#166534] text-white rounded-[14px] shadow-xs px-4 py-2.5 text-xs font-semibold">
-              <Plus className="w-4 h-4" />
-              <span>Record Weight</span>
-            </Button>
-          </div>
-        </div>
-      </header>
+      <Segmented
+        label="Progress view"
+        value={activeTab}
+        onChange={setActiveTab}
+        options={[{ value: 'journey', label: 'Journey' }, { value: 'table', label: 'Weight Log & Table' }]}
+      />
 
       {importError && (
-        <div role="alert" className="flex items-start justify-between gap-3 rounded-[16px] border border-rose-200 bg-rose-50 px-4 py-3 text-xs text-rose-900">
+        <div role="alert" className={noteClass('danger', 'flex items-start justify-between gap-3 text-sm')}>
           <span>{importError}</span>
-          <button type="button" onClick={() => setImportError(null)} className="font-semibold underline shrink-0">Dismiss</button>
+          <button type="button" onClick={() => setImportError(null)} className="shrink-0 font-semibold underline">Dismiss</button>
         </div>
       )}
 
@@ -118,92 +92,60 @@ export function Weight() {
         <WeightJourneyDashboard />
       ) : (
         <>
-          {/* KPI Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card className="rounded-[16px] border-[#E5E7EB] shadow-xs">
-              <CardContent className="p-4 flex flex-col gap-1">
-                <span className="text-xs font-semibold text-muted mb-1">Current Weight</span>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-semibold tracking-tighter text-[#111827]">{formatWeight(latestWeight, unit, { unit: false })}</span>
-                  <span className="text-xs font-semibold text-muted">{unit}</span>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="rounded-[16px] border-[#E5E7EB] shadow-xs">
-              <CardContent className="p-4 flex flex-col gap-1">
-                <span className="text-xs font-semibold text-muted mb-1">Change since start</span>
-                <div className="flex items-baseline gap-1">
-                  <span className={`text-3xl font-semibold tracking-tighter ${change != null && change < 0 ? 'text-positive' : 'text-[#111827]'}`}>{formatWeightChange(change, unit, { unit: false })}</span>
-                  <span className="text-xs font-semibold text-muted">{unit}</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="rounded-[16px] border-[#E5E7EB] shadow-xs">
-              <CardContent className="p-4 flex flex-col gap-1">
-                <span className="text-xs font-semibold text-muted mb-1">% Change</span>
-                <div className="flex items-baseline gap-1">
-                  <span className={`text-3xl font-semibold tracking-tighter ${percentChange != null && percentChange < 0 ? 'text-positive' : 'text-[#111827]'}`}>{percentChange == null ? '–' : `${percentChange > 0 ? '+' : ''}${percentChange.toFixed(1)}`}</span>
-                  <span className="text-xs font-semibold text-muted">%</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="rounded-[16px] border-[#E5E7EB] shadow-xs">
-              <CardContent className="p-4 flex flex-col gap-1">
-                <span className="text-xs font-semibold text-muted mb-1">To Goal</span>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-semibold tracking-tighter text-[#111827]">{formatWeight(goalRemaining, unit, { unit: false })}</span>
-                  <span className="text-xs font-semibold text-muted">{unit}</span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <Panel title="Summary">
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-5 md:grid-cols-4">
+              <Stat label="Current weight" value={formatWeight(latestWeight, unit, { unit: false })} unit={latestWeight != null ? unit : undefined} />
+              <Stat label="Change since start" value={formatWeightChange(change, unit, { unit: false })} unit={change != null ? unit : undefined} />
+              <Stat label="Change since start (%)" value={percentChange == null ? '–' : `${percentChange > 0 ? '+' : ''}${percentChange.toFixed(1)}`} unit={percentChange != null ? '%' : undefined} />
+              <Stat label="To goal" value={formatWeight(goalRemaining, unit, { unit: false })} unit={goalRemaining != null ? unit : undefined} />
+            </dl>
+          </Panel>
 
           <WeightLossProgressChart />
+          <WeightInjectionsChart />
 
-          <Card className="rounded-[24px] border-[#E5E7EB] shadow-xs p-2">
-            <CardHeader>
-              <CardTitle className="text-base font-semibold text-[#111827]">Log History ({sortedWeights.length})</CardTitle>
-            </CardHeader>
+          <Panel title={`Weigh-ins (${sortedWeights.length})`} description="Newest first. Change is compared with the weigh-in before it." bodyClassName="px-0 pb-0 sm:px-0 sm:pb-0">
+            {sortedWeights.length === 0 ? (
+              <div className="px-4 pb-4 sm:px-5 sm:pb-5"><EmptyState title="No weigh-ins yet">Record a weight or import a CSV file to build your history.</EmptyState></div>
+            ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="text-xs text-subtle bg-[#F8F9FC]/80 border-y border-[#E5E7EB]">
+              <table className="w-full text-left text-sm">
+                <thead className="border-y border-line bg-sunken text-[13px] text-ink-2">
                   <tr>
-                    <th className="px-6 py-3 font-semibold">Date</th>
-                    <th className="px-6 py-3 font-semibold">Weight</th>
-                    <th className="px-6 py-3 font-semibold">Change</th>
-                    <th className="px-6 py-3 font-semibold text-right">Actions</th>
+                    <th scope="col" className="px-4 py-2.5 font-semibold sm:px-5">Date</th>
+                    <th scope="col" className="px-4 py-2.5 font-semibold sm:px-5">Weight</th>
+                    <th scope="col" className="px-4 py-2.5 font-semibold sm:px-5">Change</th>
+                    <th scope="col" className="px-4 py-2.5 text-right font-semibold sm:px-5"><span className="sr-only">Actions</span></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-line">
                   {sortedWeights.map((w, index) => {
                     const prevWeight = index < sortedWeights.length - 1 ? sortedWeights[index + 1].weightLbs : w.weightLbs;
                     const delta = w.weightLbs - prevWeight;
                     const isLoss = delta < 0;
-                    
+
                     return (
-                      <tr key={w.id} className="hover:bg-[#F8F9FC]/60 transition-colors">
-                        <td className="px-6 py-4 font-medium text-[#111827]">{format(new Date(w.date), 'MMM d, yyyy')}</td>
-                        <td className="px-6 py-4 font-semibold text-[#111827]">{formatWeight(w.weightLbs, unit)}</td>
-                        <td className="px-6 py-4 font-semibold">
+                      <tr key={w.id}>
+                        <td className="whitespace-nowrap px-4 py-3 text-ink sm:px-5">{format(new Date(w.date), 'EEE d MMM yyyy')}</td>
+                        <td className="whitespace-nowrap px-4 py-3 font-semibold tabular-nums text-ink sm:px-5">{formatWeight(w.weightLbs, unit)}</td>
+                        <td className="whitespace-nowrap px-4 py-3 tabular-nums text-ink-2 sm:px-5">
                           {Math.abs(delta) > 0.0001 ? (
-                            <span className={`inline-flex items-center gap-1 ${isLoss ? 'text-positive' : 'text-danger'}`}>
-                              {isLoss ? <TrendingDown className="w-3.5 h-3.5" /> : <TrendingUp className="w-3.5 h-3.5" />}
-                              {formatWeight(Math.abs(delta), unit)}
+                            <span className="inline-flex items-center gap-1">
+                              {isLoss ? <TrendingDown className="h-4 w-4" aria-hidden="true" /> : <TrendingUp className="h-4 w-4" aria-hidden="true" />}
+                              <span className="sr-only">{isLoss ? 'Down' : 'Up'} </span>{formatWeight(Math.abs(delta), unit)}
                             </span>
                           ) : (
-                            <span className="text-subtle">-</span>
+                            <span className="text-muted">No change</span>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-right">
-                          <button 
+                        <td className="px-2 py-1 text-right sm:px-3">
+                          <button
+                            type="button"
                             onClick={() => setDeleting(w)}
-                            className="text-subtle hover:text-danger p-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                            className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-control)] text-muted hover:bg-danger-soft hover:text-danger"
                             aria-label={`Delete weight entry from ${format(new Date(w.date), 'MMM d, yyyy')}`}
                           >
-                            <Trash2 className="w-4 h-4" aria-hidden="true" />
+                            <Trash2 className="h-4 w-4" aria-hidden="true" />
                           </button>
                         </td>
                       </tr>
@@ -212,11 +154,12 @@ export function Weight() {
                 </tbody>
               </table>
             </div>
-          </Card>
+            )}
+          </Panel>
         </>
       )}
 
-      {deleted && <div role="status" className="text-sm text-muted">Weight entry removed. <Button onClick={() => { if (restoreWeight(deleted.entry,deleted.index)) setDeleted(undefined); else showToast('Could not undo: a record with this ID already exists. It was kept unchanged.'); }}>Undo last deletion</Button></div>}
+      {deleted && <div role="status" className="flex flex-wrap items-center gap-3 text-sm text-muted">Weight entry removed. <Button onClick={() => { if (restoreWeight(deleted.entry,deleted.index)) setDeleted(undefined); else showToast('Could not undo: a record with this ID already exists. It was kept unchanged.'); }}>Undo last deletion</Button></div>}
       <ConfirmDialog open={!!deleting} title="Delete weight entry?" description={deleting && <>Remove {formatWeight(deleting.weightLbs,unit)} from {format(new Date(deleting.date),'MMM d, yyyy h:mm a')}? You can undo the last deletion while this page remains open.</>} confirmLabel="Delete weight entry" destructive onCancel={() => setDeleting(undefined)} onConfirm={() => {
         if (deleting) {
           const index = useStore.getState().weights.findIndex(w => w.id === deleting.id);

@@ -38,41 +38,41 @@ export function SafetyNotice({ variant = 'full', medication, className = '', sho
       <p className={`text-[11px] text-muted leading-relaxed ${className}`} data-testid="safety-compact">
         <ShieldAlert className="inline w-3 h-3 mr-1 -mt-0.5 text-subtle" aria-hidden="true" />
         Not medical advice. Severe or lasting belly pain, repeated vomiting, an allergic reaction or thoughts of self-harm need urgent care. {EXAMPLES_NOT_EXHAUSTIVE}{' '}
-        {showHelpLink && <Link to="/health#safety" className="text-[#6D4AFF] font-semibold hover:underline">When to get help</Link>}
+        {showHelpLink && <Link to="/health#safety" className="text-brand font-semibold hover:underline">When to get help</Link>}
       </p>
     );
   }
 
   return (
-    <section id="safety" aria-labelledby="safety-heading" className={`rounded-[20px] border border-amber-200 bg-amber-50 p-5 text-amber-950 ${className}`} data-testid="safety-full">
-      <h2 id="safety-heading" className="flex items-center gap-2 text-sm font-semibold">
+    <section id="safety" aria-labelledby="safety-heading" className={`rounded-[var(--radius-panel)] border border-caution/40 border-l-4 border-l-caution bg-caution-soft p-4 text-ink sm:p-5 ${className}`} data-testid="safety-full">
+      <h2 id="safety-heading" className="flex items-center gap-2 text-[15px] font-semibold">
         <AlertTriangle className="w-4 h-4" aria-hidden="true" /> When to get help
       </h2>
-      <p className="text-xs mt-2 leading-relaxed">
+      <p className="mt-2 text-sm leading-6">
         Contact your prescriber or get urgent medical care (call your local emergency number if it is severe) if you notice any of these:
       </p>
-      <ul className="text-xs mt-2 space-y-1 list-disc pl-5 leading-relaxed">
+      <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6">
         {RED_FLAGS.map((f) => <li key={f}>{f}</li>)}
       </ul>
-      <p className="text-xs mt-2 font-medium leading-relaxed">{EXAMPLES_NOT_EXHAUSTIVE}</p>
+      <p className="mt-2 text-sm font-medium leading-6">{EXAMPLES_NOT_EXHAUSTIVE}</p>
 
-      <h3 className="text-xs font-semibold mt-4">If you miss a dose</h3>
-      <p className="text-xs mt-1 leading-relaxed">
+      <h3 className="mt-4 text-sm font-semibold">If you miss a dose</h3>
+      <p className="mt-1 text-sm leading-6">
         Check the instructions for your medication or ask your prescriber or pharmacist. Never take a double dose to catch up.
         {' '}{MEDICATION_INFO[med]?.missedDoseNote}
       </p>
       {!MEDICATION_INFO[med]?.missedDoseNote.includes(LEAFLET_LINE) && (
-        <p className="text-xs mt-1 leading-relaxed"><strong>{LEAFLET_LINE}</strong></p>
+        <p className="mt-1 text-sm leading-6"><strong>{LEAFLET_LINE}</strong></p>
       )}
 
       {investigational && (
-        <div className="mt-4 rounded-[14px] bg-white/70 border border-amber-300 p-3 text-xs leading-relaxed flex gap-2">
+        <div className="mt-4 flex gap-2 rounded-[var(--radius-control)] border border-caution/40 bg-surface p-3 text-sm leading-6">
           <FlaskConical className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
           <p><strong>Retatrutide is investigational.</strong> It is not an approved medicine, there are no approved doses, and this app can’t tell you what is safe. Use it only as directed by a study team or prescriber.</p>
         </div>
       )}
 
-      <p className="text-[11px] mt-4 opacity-80">This app is a personal log and a simplified explainer. It is not medical advice and does not replace your care team.</p>
+      <p className="mt-4 text-[13px] text-ink-2">This app is a personal log and a simplified explainer. It is not medical advice and does not replace your care team.</p>
     </section>
   );
 }

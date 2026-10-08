@@ -12,7 +12,7 @@ import { ToastProvider } from './components/ui/Toast';
 import { StorageNotices } from './components/StorageNotices';
 
 // Route-level code splitting: each page (and the charting library it pulls in) loads on demand.
-const ControlCenter = lazy(() => import('./pages/ControlCenter').then((m) => ({ default: m.ControlCenter })));
+const Today = lazy(() => import('./pages/Today').then((m) => ({ default: m.Today })));
 const Doses = lazy(() => import('./pages/Doses').then((m) => ({ default: m.Doses })));
 const Weight = lazy(() => import('./pages/Weight').then((m) => ({ default: m.Weight })));
 const Effects = lazy(() => import('./pages/Effects').then((m) => ({ default: m.Effects })));
@@ -35,7 +35,7 @@ export default function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Layout />}>
-            <Route index element={<ControlCenter />} />
+            <Route index element={<Today />} />
             <Route path="this-week" element={<ThisWeekPage />} />
             <Route path="journey" element={<Navigate to="/results?tab=journey" replace />} />
             <Route path="doses" element={<Doses />} />

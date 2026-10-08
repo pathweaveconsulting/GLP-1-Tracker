@@ -20,16 +20,16 @@ export function DoctorRecords({ doses, weights, effects, settings, range }: { do
   const inside = <T extends {date: string},>(entries: T[]) => entries.filter(e => { const t = new Date(e.date).getTime(); return t >= range.start.getTime() && t <= range.end.getTime(); }).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   const w = inside(weights), d = inside(doses), e = inside(effects);
   const unit = getWeightUnit(settings);
-  return <section aria-labelledby="doctor-records" className="bg-white p-6 rounded-[24px] border border-[#E5E7EB] space-y-5 doctor-records">
-    <h2 id="doctor-records" className="text-lg font-semibold">Records to discuss with your clinician</h2>
+  return <section aria-labelledby="doctor-records" className="doctor-records space-y-4 rounded-[var(--radius-panel)] border border-line bg-surface p-4 text-sm text-ink-2 sm:p-5">
+    <h2 id="doctor-records" className="text-[15px] font-semibold text-ink">Records to discuss with your clinician</h2>
     <p className="text-sm text-muted">Self-reported entries for the selected period. Missing entries do not mean no symptoms or no doses. This report does not verify a prescription or recommend treatment.</p>
-    <p className="text-xs text-muted">Dates and times use this browser’s timezone: {Intl.DateTimeFormat().resolvedOptions().timeZone}. Medication names describe what was logged; the exact product, route and prescription need clinician verification.</p>
-    <h3 className="font-semibold">Weigh-ins ({w.length})</h3>
-    {w.length ? <table className="w-full text-sm"><caption className="sr-only">Individual weigh-ins</caption><thead><tr><th scope="col">Local date/time</th><th scope="col">Weight ({unit})</th></tr></thead><tbody>{w.map(row => <tr key={row.id}><td>{time(row.date)}</td><td>{formatWeight(row.weightLbs, unit)}</td></tr>)}</tbody></table> : <p>No weigh-ins recorded.</p>}
-    <h3 className="font-semibold">Individual doses ({d.length})</h3>
+    <p className="text-[13px] text-muted">Dates and times use this browser’s timezone: {Intl.DateTimeFormat().resolvedOptions().timeZone}. Medication names describe what was logged; the exact product, route and prescription need clinician verification.</p>
+    <h3 className="border-t border-line pt-3 font-semibold text-ink">Weigh-ins ({w.length})</h3>
+    {w.length ? <table className="w-full text-left text-sm"><caption className="sr-only">Individual weigh-ins</caption><thead><tr><th scope="col" className="py-1 pr-4 font-semibold text-ink">Local date/time</th><th scope="col" className="py-1 pr-4 font-semibold text-ink">Weight ({unit})</th></tr></thead><tbody>{w.map(row => <tr key={row.id}><td className="py-1 pr-4 tabular-nums">{time(row.date)}</td><td className="py-1 pr-4 tabular-nums">{formatWeight(row.weightLbs, unit)}</td></tr>)}</tbody></table> : <p>No weigh-ins recorded.</p>}
+    <h3 className="border-t border-line pt-3 font-semibold text-ink">Individual doses ({d.length})</h3>
     {d.length ? <ul className="space-y-4">{d.map(row => <li key={row.id} className="space-y-1"><p>{time(row.date)} · {row.medication} · {row.amountMg} mg · {row.site || 'Site not recorded'}</p><p>Injection-site discomfort: {row.painLevel == null ? 'Not recorded' : `${row.painLevel}/10 (self-reported)`}</p><p className="whitespace-pre-wrap break-words">Notes: {notes(row.notes)}</p></li>)}</ul> : <p>No doses recorded.</p>}
-    <h3 className="font-semibold">Individual symptom logs ({e.length})</h3>
+    <h3 className="border-t border-line pt-3 font-semibold text-ink">Individual symptom logs ({e.length})</h3>
     {e.length ? <ul className="space-y-4">{e.map(row => <li key={row.id} className="space-y-1"><p className="font-semibold">{time(row.date)}</p><p>{recordedRatings(row).map(([name, rating]) => `${name}: ${rating}`).join('; ') || 'No ratings recorded'}. All other ratings: not recorded.</p><p className="whitespace-pre-wrap break-words">Notes: {notes(row.notes)}</p></li>)}</ul> : <p>No symptom logs recorded.</p>}
-    <p className="text-xs text-muted">This printed/PDF copy is unencrypted and may contain sensitive notes. Review it before saving or sharing. It is a selected-period report, not a backup.</p>
+    <p className="text-[13px] text-muted">This printed/PDF copy is unencrypted and may contain sensitive notes. Review it before saving or sharing. It is a selected-period report, not a backup.</p>
   </section>;
 }

@@ -7,22 +7,22 @@ export interface ButtonProps
   size?: 'default' | 'sm' | 'lg' | 'icon'
 }
 
+/** Legacy button API kept for older screens; it renders with the design-system shapes and colours (see ds/Button). */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'default', size = 'default', ...props }, ref) => {
+  ({ className, variant = 'default', size = 'default', type = 'button', ...props }, ref) => {
     return (
       <button
         ref={ref}
+        type={type}
         className={cn(
-          "inline-flex items-center justify-center whitespace-nowrap rounded-[14px] text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6D4AFF] disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
+          "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[var(--radius-control)] text-sm font-semibold transition-colors disabled:pointer-events-none disabled:opacity-55",
           {
-            'bg-[#111827] text-white shadow-xs hover:bg-[#1f2937]': variant === 'default',
-            'bg-[#F8F9FC] text-[#111827] hover:bg-[#E5E7EB]': variant === 'secondary',
-            'border border-[#E5E7EB] bg-white shadow-xs hover:bg-[#F8F9FC] text-[#111827]': variant === 'outline',
-            'hover:bg-[#F8F9FC] text-[#111827]': variant === 'ghost',
-            'h-10 px-4 py-2': size === 'default',
-            'h-8 rounded-[10px] px-3 text-xs': size === 'sm',
-            'h-12 rounded-[16px] px-8': size === 'lg',
-            'h-10 w-10': size === 'icon',
+            'border border-line-strong bg-surface text-ink hover:bg-sunken': variant === 'default' || variant === 'outline',
+            'bg-sunken text-ink hover:bg-line': variant === 'secondary',
+            'text-brand hover:bg-brand-soft': variant === 'ghost',
+            'min-h-11 px-4': size === 'default' || size === 'lg',
+            'min-h-9 px-3 text-[13px]': size === 'sm',
+            'h-11 w-11': size === 'icon',
           },
           className
         )}
