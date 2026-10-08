@@ -1,7 +1,8 @@
 import React, { useId, useState } from 'react';
-import { Scale, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { Modal } from '../ui/Modal';
+import { Field, FormActions, inputClass } from '../ds';
 import { WEIGHT_BOUNDS, displayToLbs, getWeightUnit, lbsToDisplay } from '../../lib/units';
 import { dateOnlyToIso, parseDateOnly, todayLocalDateString } from '../../lib/dates';
 import { latestWeight } from '../../lib/insights';
@@ -44,9 +45,8 @@ function WeightForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
   };
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="space-y-4">
-      <div>
-        <label htmlFor={`${uid}-w`} className="block text-xs font-semibold text-muted mb-1.5">Weight ({unit})</label>
+    <form onSubmit={handleSubmit} noValidate className="space-y-5">
+      <Field label={`Weight (${unit})`} htmlFor={`${uid}-w`} error={error} errorId={`${uid}-w-err`}>
         <div className="relative">
           <input
             id={`${uid}-w`}
@@ -59,15 +59,13 @@ function WeightForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
             onChange={(e) => setValue(e.target.value)}
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? `${uid}-w-err` : undefined}
-            className="w-full px-4 py-3 rounded-[16px] border border-line bg-canvas text-ink text-lg font-semibold focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+            className={inputClass('pr-14 text-lg font-semibold tabular-nums')}
           />
-          <span className="absolute right-4 top-3.5 text-sm font-semibold text-subtle" aria-hidden="true">{unit}</span>
+          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted" aria-hidden="true">{unit}</span>
         </div>
-        {error && <p id={`${uid}-w-err`} role="alert" className="text-xs text-danger mt-1">{error}</p>}
-      </div>
+      </Field>
 
-      <div>
-        <label htmlFor={`${uid}-d`} className="block text-xs font-semibold text-muted mb-1.5">Date</label>
+      <Field label="Date" htmlFor={`${uid}-d`} error={dateError} errorId={`${uid}-d-err`}>
         <input
           id={`${uid}-d`}
           type="date"
@@ -76,19 +74,11 @@ function WeightForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
           onChange={(e) => setDate(e.target.value)}
           aria-invalid={dateError ? true : undefined}
           aria-describedby={dateError ? `${uid}-d-err` : undefined}
-          className="w-full px-3.5 py-2.5 rounded-[16px] border border-line bg-canvas text-ink text-sm font-medium focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+          className={inputClass()}
         />
-        {dateError && <p id={`${uid}-d-err`} role="alert" className="text-xs text-danger mt-1">{dateError}</p>}
-      </div>
+      </Field>
 
-      <div className="pt-2 flex gap-3">
-        <button type="button" onClick={onClose} className="flex-1 py-3 px-4 rounded-[16px] border border-line text-ink-2 font-semibold text-sm hover:bg-canvas transition-colors">
-          Cancel
-        </button>
-        <button type="submit" className="flex-1 py-3 px-4 rounded-[16px] bg-[#15803D] text-white font-semibold text-sm hover:bg-[#166534] transition-colors shadow-md shadow-emerald-200 flex items-center justify-center gap-2">
-          <Check className="w-4 h-4" aria-hidden="true" /> Save Weight
-        </button>
-      </div>
+      <FormActions onCancel={onClose} submitLabel="Save Weight" submitIcon={<Check className="h-4 w-4" aria-hidden="true" />} />
     </form>
   );
 }
@@ -98,9 +88,8 @@ export function LogWeightModal({ isOpen, onClose, onSuccess }: Props) {
     <Modal
       open={isOpen}
       onClose={onClose}
-      title="Log Weight"
-      subtitle="Record your current body weight"
-      icon={<div className="w-10 h-10 rounded-[16px] bg-emerald-50 flex items-center justify-center text-positive"><Scale className="w-5 h-5" aria-hidden="true" /></div>}
+      title="Log weight"
+      subtitle="Record your body weight for a day"
     >
       <WeightForm onClose={onClose} onSuccess={onSuccess} />
     </Modal>

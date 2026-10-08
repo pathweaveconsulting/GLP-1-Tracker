@@ -1,8 +1,9 @@
 import React, { useId, useState } from 'react';
-import { User, Check } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { Medication } from '../../types';
 import { Modal } from '../ui/Modal';
+import { choiceClass, errorClass, FormActions, helpClass, inputClass, labelClass } from '../ds';
 import { OtherMedicationNote } from '../OtherMedicationNote';
 import { MEDICATION_OPTIONS } from '../../lib/medications';
 import { WeightUnit, convertTyped, getWeightUnit, lbsToInput } from '../../lib/units';
@@ -14,8 +15,8 @@ interface Props {
   onClose: () => void;
 }
 
-const inputCls = 'w-full px-3.5 py-2.5 rounded-[16px] border border-line bg-canvas text-ink text-sm font-medium focus:ring-2 focus:ring-brand focus:outline-none';
-const labelCls = 'block text-xs font-semibold text-muted mb-1.5';
+const inputCls = inputClass();
+const labelCls = `${labelClass} mb-1.5`;
 
 export { convertTyped };
 
@@ -54,7 +55,7 @@ function ProfileForm({ onClose }: { onClose: () => void }) {
   };
 
   const err = (f: ProfileField) =>
-    errors[f] ? <p id={id(`${f}-err`)} role="alert" className="text-xs text-danger mt-1">{errors[f]}</p> : null;
+    errors[f] ? <p id={id(`${f}-err`)} role="alert" className={`mt-1 ${errorClass}`}>{errors[f]}</p> : null;
   const aria = (f: ProfileField) => ({ 'aria-invalid': errors[f] ? true : undefined, 'aria-describedby': errors[f] ? id(`${f}-err`) : undefined });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -76,14 +77,14 @@ function ProfileForm({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="space-y-4">
+    <form onSubmit={handleSubmit} noValidate className="space-y-5">
       <div>
         <label htmlFor={id('med')} className={labelCls}>Primary medication</label>
         <select id={id('med')} value={form.medication} onChange={(e) => set('medication', e.target.value as Medication)} className={inputCls} {...aria('medication')}>
           {MEDICATION_OPTIONS.map((m) => <option key={m} value={m}>{m}</option>)}
         </select>
         {err('medication')}
-        <p className="mt-2 text-xs text-muted">Weekly injection models only. For oral semaglutide, including Wegovy tablets or Rybelsus, select Other. Verify your exact product and prescription with your pharmacist.</p>
+        <p className={`mt-1.5 ${helpClass}`}>Weekly injection models only. For oral semaglutide, including Wegovy tablets or Rybelsus, select Other. Verify your exact product and prescription with your pharmacist.</p>
         <OtherMedicationNote medication={form.medication || undefined} className="mt-2" />
       </div>
 
@@ -92,12 +93,12 @@ function ProfileForm({ onClose }: { onClose: () => void }) {
         <div className="flex gap-2">
           {(['lbs', 'kg'] as WeightUnit[]).map((u) => (
             <button key={u} type="button" aria-pressed={form.unit === u} onClick={() => switchUnit(u)}
-              className={`min-h-11 px-4 py-2 rounded-[14px] text-sm font-semibold border ${form.unit === u ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-ink-2 border-line hover:bg-canvas'}`}>
+              className={choiceClass(form.unit === u, 'min-w-16')}>
               {u}
             </button>
           ))}
         </div>
-        <p className="text-[11px] text-subtle mt-1">Your logged weights are kept as they are and shown in this unit.</p>
+        <p className={`mt-1.5 ${helpClass}`}>Your logged weights are kept as they are and shown in this unit.</p>
       </fieldset>
 
       <div className="grid grid-cols-2 gap-3">
@@ -131,12 +132,7 @@ function ProfileForm({ onClose }: { onClose: () => void }) {
       </div>
 
       }
-      <div className="pt-2 flex gap-3">
-        <button type="button" onClick={onClose} className="flex-1 py-3 px-4 rounded-[16px] border border-line text-ink-2 font-semibold text-sm hover:bg-canvas transition-colors">Cancel</button>
-        <button type="submit" className="flex-1 py-3 px-4 rounded-[16px] bg-slate-900 text-white font-semibold text-sm hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
-          <Check className="w-4 h-4" aria-hidden="true" /> Save Profile
-        </button>
-      </div>
+      <FormActions onCancel={onClose} submitLabel="Save Profile" submitIcon={<Check className="h-4 w-4" aria-hidden="true" />} />
     </form>
   );
 }
@@ -146,9 +142,8 @@ export function EditProfileModal({ isOpen, onClose }: Props) {
     <Modal
       open={isOpen}
       onClose={onClose}
-      title="Edit Profile Details"
-      subtitle="Update medication and body goals"
-      icon={<div className="w-10 h-10 rounded-[16px] bg-sunken flex items-center justify-center text-ink-2"><User className="w-5 h-5" aria-hidden="true" /></div>}
+      title="Edit profile details"
+      subtitle="Medication, units, starting and goal weight, height"
     >
       <ProfileForm onClose={onClose} />
     </Modal>

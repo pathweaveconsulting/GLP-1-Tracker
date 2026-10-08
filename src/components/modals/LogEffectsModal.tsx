@@ -1,8 +1,9 @@
 import React, { useId, useState } from 'react';
-import { Smile, Check, Plus } from 'lucide-react';
+import { Check, Plus } from 'lucide-react';
 import { useStore } from '../../store/useStore';
-import { EffectEntry, Severity } from '../../types';
+import type { EffectEntry, Severity } from '../../types';
 import { Modal } from '../ui/Modal';
+import { choiceClass, Field, FormActions, helpClass, inputClass, labelClass, noteClass } from '../ds';
 import { COLLECTED_FIELDS, OPTIONAL_FIELDS, SEVERITIES, severityLabel } from '../../lib/symptoms';
 import { dateOnlyToIso, isoToLocalDateString, parseDateOnly, todayLocalDateString } from '../../lib/dates';
 
@@ -13,18 +14,14 @@ interface Props {
   onSuccess?: () => void;
 }
 
-const ACTIVE: Record<Severity, string> = {
-  none: 'bg-line border-slate-400 text-ink',
-  mild: 'bg-amber-100 border-amber-400 text-amber-900',
-  moderate: 'bg-orange-100 border-orange-400 text-orange-900',
-  severe: 'bg-rose-100 border-rose-500 text-rose-900',
-};
-
 function SeveritySelector({ label, value, onChange }: { label: string; value: Severity | undefined; onChange: (v: Severity | undefined) => void }) {
   const id = useId();
   return (
-    <div className="space-y-1" role="group" aria-labelledby={id}>
-      <span id={id} className="block text-xs font-semibold text-ink-2">{label}</span>
+    <div className="space-y-1.5" role="group" aria-labelledby={id}>
+      <div className="flex items-baseline justify-between gap-2">
+        <span id={id} className={labelClass}>{label}</span>
+        <button type="button" onClick={() => onChange(undefined)} className="min-h-9 px-1 text-[13px] text-muted underline underline-offset-2 hover:text-ink">Not recorded</button>
+      </div>
       <div className="grid grid-cols-4 gap-1.5">
         {SEVERITIES.map((s) => (
           <button
@@ -32,13 +29,12 @@ function SeveritySelector({ label, value, onChange }: { label: string; value: Se
             type="button"
             aria-pressed={value === s}
             onClick={() => onChange(s)}
-            className={`py-1.5 text-xs font-semibold rounded-lg border transition-all ${value === s ? ACTIVE[s] : 'border-line text-muted hover:bg-canvas'}`}
+            className={choiceClass(value === s, 'px-1')}
           >
             {severityLabel(s)}
           </button>
         ))}
       </div>
-      <button type="button" onClick={() => onChange(undefined)} className="text-xs text-muted underline">Not recorded</button>
     </div>
   );
 }
@@ -93,22 +89,12 @@ function EffectsForm({ onClose, onSuccess, effect }: Omit<Props, 'isOpen'>) {
   const anySevere = Object.values(severities).includes('severe') || customEffects.some((c) => c.level === 'severe');
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="space-y-4">
-      <div>
-        <label htmlFor={`${uid}-date`} className="block text-xs font-semibold text-muted mb-1.5">Date</label>
-        <input
-          id={`${uid}-date`}
-          type="date"
-          max={today}
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          aria-invalid={dateError ? true : undefined}
-          className="w-full px-3.5 py-2.5 rounded-[16px] border border-line bg-canvas text-ink text-sm font-medium focus:ring-2 focus:ring-amber-700 focus:outline-none"
-        />
-        {dateError && <p role="alert" className="text-xs text-danger mt-1">{dateError}</p>}
-      </div>
+    <form onSubmit={handleSubmit} noValidate className="space-y-5">
+      <Field label="Date" htmlFor={`${uid}-date`} error={dateError}>
+        <input id={`${uid}-date`} type="date" max={today} value={date} onChange={(e) => setDate(e.target.value)} aria-invalid={dateError ? true : undefined} className={inputClass()} />
+      </Field>
 
-      <p className="text-xs text-muted">Choose ratings for the symptoms you want to record. Unanswered symptoms stay not recorded; select None only when you mean none.</p>
+      <p className={helpClass}>Choose ratings for the symptoms you want to record. Unanswered symptoms stay not recorded; select None only when you mean none.</p>
       {fields.map((s) => (
         <SeveritySelector key={s.key} label={s.key === 'hunger' ? 'Hunger level' : s.label} value={sev(s.key)} onChange={(v) => setSeverities((p) => ({ ...p, [s.key]: v }))} />
       ))}
@@ -118,36 +104,31 @@ function EffectsForm({ onClose, onSuccess, effect }: Omit<Props, 'isOpen'>) {
       ))}
 
       {!isAddingCustom ? (
-        <button type="button" onClick={() => setIsAddingCustom(true)} className="w-full py-2 border border-dashed border-amber-300 bg-amber-50/50 hover:bg-amber-100/50 rounded-[16px] text-xs font-semibold text-amber-800 flex items-center justify-center gap-1.5 transition-colors">
+        <button type="button" onClick={() => setIsAddingCustom(true)} className="flex min-h-11 w-full items-center justify-center gap-1.5 rounded-[var(--radius-control)] border border-dashed border-line-strong text-sm font-semibold text-brand hover:bg-brand-soft">
           <Plus className="w-4 h-4" aria-hidden="true" /> Log another symptom (e.g. headache, dry mouth)
         </button>
       ) : (
-        <div className="p-3 bg-amber-50/80 rounded-[16px] border border-amber-200 space-y-2">
-          <label htmlFor={`${uid}-custom`} className="block text-xs font-semibold text-amber-900">Symptom name</label>
+        <div className="space-y-1.5 rounded-[var(--radius-control)] border border-line bg-canvas p-3">
+          <label htmlFor={`${uid}-custom`} className={labelClass}>Symptom name</label>
           <div className="flex gap-2">
-            <input id={`${uid}-custom`} type="text" placeholder="e.g. Headache, dry mouth" value={newEffectName} onChange={(e) => setNewEffectName(e.target.value)} className="flex-1 px-3 py-2 text-xs rounded-[16px] border border-amber-300 bg-white" />
-            <button type="button" onClick={handleAddCustomEffect} className="px-4 py-2 bg-amber-700 text-white font-semibold rounded-[16px] text-xs">Add</button>
+            <input id={`${uid}-custom`} type="text" placeholder="e.g. Headache, dry mouth" value={newEffectName} onChange={(e) => setNewEffectName(e.target.value)} className={inputClass('flex-1')} />
+            <button type="button" onClick={handleAddCustomEffect} className="min-h-11 rounded-[var(--radius-control)] bg-brand px-4 text-sm font-semibold text-white hover:bg-brand-strong">Add</button>
           </div>
         </div>
       )}
 
       {anySevere && (
-        <p role="status" className="text-xs bg-rose-50 border border-rose-200 text-rose-900 rounded-[14px] px-3 py-2">
+        <p role="status" className={noteClass('danger')}>
           You marked something as severe. If it’s intense, getting worse or not easing, please contact your care team or urgent care.
         </p>
       )}
 
       <div>
-        <label htmlFor={`${uid}-notes`} className="block text-xs font-semibold text-muted mb-1.5">Notes & reflections</label>
-        <textarea id={`${uid}-notes`} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Energy, meals, water intake…" className="w-full px-3.5 py-2 rounded-[16px] border border-line bg-canvas text-ink text-sm focus:ring-2 focus:ring-amber-700 focus:outline-none" />
+        <label htmlFor={`${uid}-notes`} className={`${labelClass} mb-1.5`}>Notes & reflections</label>
+        <textarea id={`${uid}-notes`} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Energy, meals, water intake…" className={inputClass()} />
       </div>
 
-      <div className="pt-2 flex gap-3">
-        <button type="button" onClick={onClose} className="flex-1 py-3 px-4 rounded-[16px] border border-line text-ink-2 font-semibold text-sm hover:bg-canvas transition-colors">Cancel</button>
-        <button type="submit" className="flex-1 py-3 px-4 rounded-[16px] bg-amber-700 text-white font-semibold text-sm hover:bg-amber-800 transition-colors shadow-md shadow-amber-200 flex items-center justify-center gap-2">
-          <Check className="w-4 h-4" aria-hidden="true" /> Save Log
-        </button>
-      </div>
+      <FormActions onCancel={onClose} submitLabel="Save Log" submitIcon={<Check className="h-4 w-4" aria-hidden="true" />} />
     </form>
   );
 }
@@ -157,9 +138,8 @@ export function LogEffectsModal({ isOpen, onClose, onSuccess, effect }: Props) {
     <Modal
       open={isOpen}
       onClose={onClose}
-      title={effect ? "Edit symptom log" : "Log How You Feel"}
+      title={effect ? "Edit symptom log" : "Log how you feel"}
       subtitle="Appetite, side effects and anything else you notice"
-      icon={<div className="w-10 h-10 rounded-[16px] bg-amber-50 flex items-center justify-center text-caution"><Smile className="w-5 h-5" aria-hidden="true" /></div>}
     >
       <EffectsForm key={effect?.id ?? "new"} onClose={onClose} onSuccess={onSuccess} effect={effect} />
     </Modal>
