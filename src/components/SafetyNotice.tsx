@@ -44,7 +44,7 @@ export function SafetyNotice({ variant = 'full', medication, className = '', sho
   }
 
   return (
-    <section id="safety" aria-labelledby="safety-heading" className={`rounded-[20px] border border-amber-200 bg-amber-50 p-5 text-amber-950 ${className}`} data-testid="safety-full">
+    <section id="safety" aria-labelledby="safety-heading" className={`rounded-[var(--radius-panel)] border border-caution/40 bg-caution-soft p-5 text-ink ${className}`} data-testid="safety-full">
       <h2 id="safety-heading" className="flex items-center gap-2 text-sm font-semibold">
         <AlertTriangle className="w-4 h-4" aria-hidden="true" /> When to get help
       </h2>
@@ -66,7 +66,7 @@ export function SafetyNotice({ variant = 'full', medication, className = '', sho
       )}
 
       {investigational && (
-        <div className="mt-4 rounded-[14px] bg-white/70 border border-amber-300 p-3 text-xs leading-relaxed flex gap-2">
+        <div className="mt-4 rounded-[var(--radius-control)] bg-white/70 border border-caution/40 p-3 text-xs leading-relaxed flex gap-2">
           <FlaskConical className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
           <p><strong>Retatrutide is investigational.</strong> It is not an approved medicine, there are no approved doses, and this app can’t tell you what is safe. Use it only as directed by a study team or prescriber.</p>
         </div>

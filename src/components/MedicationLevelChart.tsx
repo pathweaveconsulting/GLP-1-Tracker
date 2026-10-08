@@ -30,7 +30,7 @@ export function MedicationLevelChart({ className = '', onOpenSources }: Props) {
   const activeMeds = pkData.medicationsList;
 
   return (
-    <div className={`bg-white rounded-[24px] p-6 shadow-xs border border-line ${className}`}>
+    <div className={`bg-white rounded-[var(--radius-panel)] p-6 border border-line ${className}`}>
       {/* HEADER WITH TITLE, SUBHEAD, LEGEND */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
@@ -59,7 +59,7 @@ export function MedicationLevelChart({ className = '', onOpenSources }: Props) {
             )}
           </p>
           {pkData.mixedMedications && (
-            <p className="text-[11px] text-amber-800 mt-1">You’ve logged more than one medication. Each is drawn separately and never added together; the number above is for {pkData.medicationName}, your most recent.</p>
+            <p className="text-[11px] text-caution mt-1">You’ve logged more than one medication. Each is drawn separately and never added together; the number above is for {pkData.medicationName}, your most recent.</p>
           )}
           {doses.length > 0 && <p className="text-[11px] text-subtle mt-0.5">Simplified model, not a blood test. The right-hand side shows how the estimate would fall if no further doses were taken.</p>}
         </div>
@@ -144,7 +144,7 @@ export function MedicationLevelChart({ className = '', onOpenSources }: Props) {
 
       {/* TIMEFRAME SELECTOR TABS AT BOTTOM */}
       <div className="mt-6 flex justify-center sm:justify-end">
-        <div className="flex bg-canvas p-1 rounded-[14px] border border-line text-xs font-medium gap-1">
+        <div className="flex bg-canvas p-1 rounded-[var(--radius-control)] border border-line text-xs font-medium gap-1">
           {(['2 weeks', '1 month', '3 months', 'All time'] as const).map((t) => (
             <button
               key={t}
@@ -152,7 +152,7 @@ export function MedicationLevelChart({ className = '', onOpenSources }: Props) {
               onClick={() => setPkTimeline(t)}
               className={`px-3.5 py-1.5 rounded-[10px] transition-all cursor-pointer ${
                 pkTimeline === t
-                  ? 'bg-white text-ink shadow-xs font-semibold'
+                  ? 'bg-white text-ink  font-semibold'
                   : 'text-muted hover:text-ink'
               }`}
             >

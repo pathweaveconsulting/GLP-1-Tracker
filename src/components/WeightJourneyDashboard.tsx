@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, Calendar, CheckCircle2, TrendingDown, TrendingUp, Award, Flag, Zap, Compass, Star, Minus } from 'lucide-react';
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar, AreaChart, Area, ReferenceLine } from 'recharts';
+import { CheckCircle2, Circle, TrendingDown, TrendingUp, Minus } from 'lucide-react';
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar, ReferenceLine } from 'recharts';
 import { format, subDays, subMonths } from 'date-fns';
 import { useStore } from '../store/useStore';
 import { formatWeight, formatWeightChange, getWeightUnit, lbsToDisplay } from '../lib/units';
@@ -10,16 +10,17 @@ import {
   sortByDate, weeklyChanges, weeklyRate, weightMilestones,
 } from '../lib/insights';
 import { isoToLocalDateString } from '../lib/dates';
+import { EmptyState, Panel, Segmented, Stat } from './ds';
 
 interface Props {
   className?: string;
 }
 
 type Timeframe = '2w' | '1m' | '3m' | '6m' | 'all';
-const TF_LABEL: Record<Timeframe, string> = { '2w': '2 Weeks', '1m': '1 Month', '3m': '3 Months', '6m': '6 Months', all: 'All Time' };
+const TF_LABEL: Record<Timeframe, string> = { '2w': '2 weeks', '1m': '1 month', '3m': '3 months', '6m': '6 months', all: 'All time' };
 
-const card = 'bg-white p-6 rounded-[24px] border border-line shadow-xs';
-const kpi = 'bg-white p-5 rounded-[20px] border border-line shadow-xs flex flex-col justify-between';
+const GRID = '#e3e8ef';
+const TICK = { fontSize: 12, fill: '#4f5d70' };
 
 export function WeightJourneyDashboard({ className = '' }: Props) {
   const { weights, doses, settings } = useStore();
@@ -97,279 +98,230 @@ export function WeightJourneyDashboard({ className = '' }: Props) {
 
   if (!last) {
     return (
-      <div className={`space-y-6 ${className}`}>
-        <div className={card}>
-          <h2 className="text-2xl font-semibold text-ink tracking-tight">Weight Journey</h2>
-          <p className="text-sm text-muted mt-2">
-            Your story starts with your first weigh-in. <Link to="/weight" className="text-brand font-semibold hover:underline">Record a weight</Link> and this page will show your trend, milestones and plateaus, using only what you log.
-          </p>
-        </div>
+      <div className={className}>
+        <Panel title="Weight journey">
+          <EmptyState title="No weigh-ins yet">
+            Your story starts with your first weigh-in. <Link to="/weight" className="font-semibold text-brand underline-offset-2 hover:underline">Record a weight</Link> and this page will show your trend, milestones and plateaus, using only what you log.
+          </EmptyState>
+        </Panel>
       </div>
     );
   }
 
   return (
-    <div className={`space-y-6 ${className}`}>
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-[24px] border border-line shadow-xs">
-        <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-2xl sm:text-3xl font-semibold text-ink tracking-tight">Weight Journey</h2>
-            <Sparkles className="w-5 h-5 text-brand" aria-hidden="true" />
-          </div>
-          <p className="text-sm font-normal text-muted mt-1">Your own weigh-ins, in your own words.</p>
-        </div>
-        <div className="flex items-center gap-2 bg-canvas px-3.5 py-2.5 rounded-[14px] border border-line text-xs font-medium text-ink">
-          <Calendar className="w-4 h-4 text-muted" aria-hidden="true" />
-          <span>{dateRange}</span>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-        <div className={kpi}>
-          <div className="flex items-center gap-2 text-muted text-xs font-semibold"><Compass className="w-4 h-4 text-brand" aria-hidden="true" /><span>Current Weight</span></div>
-          <div className="my-3">
-            <div className="text-3xl font-semibold text-ink tracking-tight">{formatWeight(latestLbs, unit, { unit: false })} <span className="text-sm font-normal text-muted">{unit}</span></div>
-            <div className="text-xs font-semibold text-slate-600 mt-0.5">
+    <div className={`space-y-5 ${className}`}>
+      <Panel title="At a glance" description={`Weigh-ins from ${dateRange}`}>
+        <dl className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 xl:grid-cols-6">
+          <Stat
+            label="Current weight"
+            value={formatWeight(latestLbs, unit, { unit: false })}
+            unit={unit}
+            note={<>
               {changeLbs == null ? '–' : `${formatWeightChange(changeLbs, unit)}${changePct != null ? ` (${changePct > 0 ? '+' : ''}${changePct.toFixed(1)}%)` : ''}`}
-            </div>
-          </div>
-          <p className="text-xs font-normal text-subtle">{startLbs != null ? `Started at ${formatWeight(startLbs, unit)}` : 'Starting weight not set'}</p>
-        </div>
-
-        <div className={kpi}>
-          <div className="flex items-center gap-2 text-muted text-xs font-semibold"><Award className="w-4 h-4 text-positive" aria-hidden="true" /><span>Goal Progress</span></div>
-          <div className="my-3">
-            <div className="text-3xl font-semibold text-ink tracking-tight">{progressPercent == null ? '–' : `${progressPercent}%`}</div>
+              <br />{startLbs != null ? `Started at ${formatWeight(startLbs, unit)}` : 'Starting weight not set'}
+            </>}
+          />
+          <div className="min-w-0">
+            <Stat label="Goal progress" value={progressPercent == null ? '–' : `${progressPercent}%`} note={remainingLbs != null ? `${formatWeight(remainingLbs, unit)} to go` : 'No goal set'} />
             {progressPercent != null && (
-              <div className="w-full bg-sunken h-2 rounded-full overflow-hidden mt-2"><div className="bg-[#15803d] h-full rounded-full" style={{ width: `${progressPercent}%` }} /></div>
+              <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-sunken" aria-hidden="true"><div className="h-full rounded-full bg-brand" style={{ width: `${progressPercent}%` }} /></div>
             )}
           </div>
-          <div className="text-xs font-normal text-subtle flex justify-between">
-            <span>{remainingLbs != null ? `${formatWeight(remainingLbs, unit)} to go` : 'No goal set'}</span>
-          </div>
-        </div>
+          <Stat
+            label="Recent pace"
+            value={rate ? formatWeightChange(rate.lbsPerWeek, unit, { unit: false }) : '–'}
+            unit={`${unit}/wk`}
+            note={rate ? `Trend of ${rate.points} weigh-ins over ${rate.spanDays} days` : NEEDS_MORE_WEIGHT_DATA}
+          />
+          <Stat
+            label="Biggest month"
+            value={best ? format(new Date(best.year, best.month, 1), 'MMM yyyy') : '–'}
+            note={best ? `${formatWeight(best.lossLbs, unit)} lower, first to last weigh-in that month` : 'Needs a month with 2+ weigh-ins and a drop'}
+          />
+          <Stat
+            label="Current trend"
+            value={<span className="inline-flex items-center gap-1.5"><TrendIcon className="h-5 w-5" aria-hidden="true" />{trendWord ?? '–'}</span>}
+            note={rate ? 'Last 8 weeks' : NEEDS_MORE_WEIGHT_DATA}
+          />
+          <Stat
+            label="Goal Date"
+            value={projection.status === 'projected' ? format(projection.date, 'MMM d, yyyy') : projection.status === 'reached' ? 'Reached' : '–'}
+            note={projection.status === 'projected' ? 'If your recent pace continues' : projection.status === 'reached' ? 'You are at or past your goal weight' : projection.reason}
+          />
+        </dl>
+      </Panel>
 
-        <div className={kpi}>
-          <div className="flex items-center gap-2 text-muted text-xs font-semibold"><Zap className="w-4 h-4 text-brand" aria-hidden="true" /><span>Recent Pace</span></div>
-          <div className="my-3">
-            <div className="text-3xl font-semibold text-ink tracking-tight">{rate ? formatWeightChange(rate.lbsPerWeek, unit, { unit: false }) : '–'} <span className="text-sm font-normal text-muted">{unit}/wk</span></div>
-          </div>
-          <p className="text-xs font-normal text-subtle">{rate ? `Trend of ${rate.points} weigh-ins over ${rate.spanDays} days` : NEEDS_MORE_WEIGHT_DATA}</p>
-        </div>
-
-        <div className={kpi}>
-          <div className="flex items-center gap-2 text-muted text-xs font-semibold"><Star className="w-4 h-4 text-caution" aria-hidden="true" /><span>Biggest Month</span></div>
-          <div className="my-3">
-            <div className="text-xl font-semibold text-ink tracking-tight">{best ? format(new Date(best.year, best.month, 1), 'MMM yyyy') : '–'}</div>
-            {best && <div className="text-xs font-semibold text-amber-700 mt-0.5">{formatWeight(best.lossLbs, unit)} lower</div>}
-          </div>
-          <p className="text-xs font-normal text-subtle">{best ? 'First to last weigh-in that month' : 'Needs a month with 2+ weigh-ins and a drop'}</p>
-        </div>
-
-        <div className={kpi}>
-          <div className="flex items-center gap-2 text-muted text-xs font-semibold"><TrendIcon className="w-4 h-4 text-positive" aria-hidden="true" /><span>Current Trend</span></div>
-          <div className="my-3"><div className="text-xl font-semibold text-ink tracking-tight">{trendWord ?? '–'}</div></div>
-          <p className="text-xs font-normal text-subtle">{rate ? 'Last 8 weeks' : NEEDS_MORE_WEIGHT_DATA}</p>
-        </div>
-
-        <div className={kpi}>
-          <div className="flex items-center gap-2 text-muted text-xs font-semibold"><Flag className="w-4 h-4 text-danger" aria-hidden="true" /><span>Goal Date</span></div>
-          <div className="my-3">
-            <div className="text-lg font-semibold text-ink tracking-tight">
-              {projection.status === 'projected' ? format(projection.date, 'MMM d, yyyy') : projection.status === 'reached' ? 'Reached' : '–'}
-            </div>
-          </div>
-          <p className="text-xs font-normal text-subtle">
-            {projection.status === 'projected' ? 'If your recent pace continues' : projection.status === 'reached' ? 'You are at or past your goal weight' : projection.reason}
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <section aria-labelledby="timeline-heading" className={`lg:col-span-2 ${card}`}>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-            <div>
-              <h3 id="timeline-heading" className="text-base font-semibold text-ink tracking-tight">Weight Journey Timeline</h3>
-              <p className="text-xs font-normal text-muted mt-0.5">Hover a point to see the day, weight and any dose logged that day</p>
-            </div>
-            <div className="flex bg-canvas p-1 rounded-[12px] border border-line text-xs font-medium text-muted" role="group" aria-label="Timeframe">
-              {(Object.keys(TF_LABEL) as Timeframe[]).map((tf) => (
-                <button key={tf} type="button" aria-pressed={timeframe === tf} onClick={() => setTimeframe(tf)}
-                  className={`px-2.5 py-1 rounded-[8px] transition-all cursor-pointer ${timeframe === tf ? 'bg-white text-ink shadow-xs font-semibold' : 'hover:text-ink'}`}>
-                  {TF_LABEL[tf]}
-                </button>
-              ))}
-            </div>
-          </div>
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+        <Panel
+          className="lg:col-span-2"
+          title="Weight over time"
+          description="Select or hover a point to see the day, weight and any dose logged that day."
+        >
+          <Segmented
+            label="Timeframe"
+            value={timeframe}
+            onChange={setTimeframe}
+            options={(Object.keys(TF_LABEL) as Timeframe[]).map((tf) => ({ value: tf, label: TF_LABEL[tf] }))}
+            className="mb-4"
+          />
           <div className="h-[280px] w-full" role="img" aria-label={`Weight over time in ${unit}, ${timeline.length} weigh-ins`}>
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={timeline} margin={{ top: 20, right: 30, left: -10, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="journeyGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#1d5aa6" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#1d5aa6" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#475569' }} dy={10} minTickGap={24} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#475569' }} domain={['auto', 'auto']} unit={` ${unit}`} width={64} />
+              <LineChart data={timeline} margin={{ top: 12, right: 16, left: -10, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={GRID} />
+                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={TICK} dy={10} minTickGap={24} />
+                <YAxis axisLine={false} tickLine={false} tick={TICK} domain={['auto', 'auto']} unit={` ${unit}`} width={64} />
                 <Tooltip
                   content={({ active, payload }) => {
                     if (!active || !payload?.length) return null;
                     const d = payload[0].payload as (typeof timeline)[number];
                     return (
-                      <div className="bg-slate-900 text-white p-3 rounded-[16px] shadow-xl text-xs space-y-1 border border-slate-700">
-                        <div className="font-semibold text-[#9fbbe0]">{d.fullDate}</div>
-                        <div>Weight: <span className="font-semibold">{d.weight} {unit}</span></div>
-                        {d.dose && <div>Dose that day: <span className="font-semibold text-emerald-400">{d.dose}</span></div>}
+                      <div className="space-y-0.5 rounded-[var(--radius-control)] border border-line-strong bg-surface p-3 text-[13px] text-ink">
+                        <div className="font-semibold">{d.fullDate}</div>
+                        <div>Weight: <span className="font-semibold tabular-nums">{d.weight} {unit}</span></div>
+                        {d.dose && <div>Dose that day: <span className="font-semibold">{d.dose}</span></div>}
                       </div>
                     );
                   }}
                 />
-                <Area type="monotone" dataKey="weight" stroke="#1d5aa6" strokeWidth={3} fillOpacity={1} fill="url(#journeyGradient)" dot={{ r: 4, fill: '#1d5aa6', stroke: '#fff', strokeWidth: 2 }} />
-              </AreaChart>
+                <Line type="monotone" dataKey="weight" name={`Weight (${unit})`} stroke="#1d5aa6" strokeWidth={2.5} dot={{ r: 3.5, fill: '#1d5aa6', stroke: '#fff', strokeWidth: 1.5 }} />
+              </LineChart>
             </ResponsiveContainer>
           </div>
-        </section>
+        </Panel>
 
-        <section aria-labelledby="story-heading" className="bg-gradient-to-br from-brand-soft via-white to-brand-soft/60 p-6 rounded-[24px] border border-brand-soft shadow-xs">
-          <h3 id="story-heading" className="text-base font-semibold text-ink mb-4">Your story so far</h3>
-          <ul className="space-y-3 text-xs font-normal text-muted">
-            <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-positive shrink-0 mt-0.5" aria-hidden="true" />
-              <span>{changeLbs == null ? 'Add a starting weight to see your total change.' : changeLbs === 0 ? 'Your weight is the same as your starting weight.' : <>Your weight is <strong>{formatWeight(Math.abs(changeLbs), unit)} {changeLbs < 0 ? 'lower' : 'higher'}</strong> than when you started{changePct != null ? ` (${Math.abs(changePct).toFixed(1)}%)` : ''}.</>}</span></li>
-            <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-positive shrink-0 mt-0.5" aria-hidden="true" />
-              <span>{rate ? <>Your recent trend is <strong>{formatWeightChange(rate.lbsPerWeek, unit)} per week</strong>, from {rate.points} weigh-ins.</> : `We can't show a pace yet. ${NEEDS_MORE_WEIGHT_DATA}.`}</span></li>
-            <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-positive shrink-0 mt-0.5" aria-hidden="true" />
-              <span>{plateaus.length > 0 ? <>You have had <strong>{plateaus.length} {plateaus.length === 1 ? 'plateau' : 'plateaus'}</strong> (2+ weeks within about 1 lb).</> : 'No plateaus (2+ weeks within about 1 lb) in your logs so far.'}</span></li>
-            <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-positive shrink-0 mt-0.5" aria-hidden="true" />
-              <span>{doses.length > 0 ? <>You have logged <strong>{doses.length} {doses.length === 1 ? 'dose' : 'doses'}</strong> of {settings.medication}.</> : 'No doses logged yet.'}</span></li>
-            <li className="flex items-start gap-2"><CheckCircle2 className="w-4 h-4 text-positive shrink-0 mt-0.5" aria-hidden="true" />
-              <span>{projection.status === 'projected' ? <>If your recent pace continues, you'd reach your goal around <strong>{format(projection.date, 'MMM yyyy')}</strong>. Treat that as a rough guide only.</> : projection.status === 'reached' ? 'You are at or past your goal weight.' : `No goal date yet: ${projection.reason.charAt(0).toLowerCase()}${projection.reason.slice(1)}.`}</span></li>
+        <Panel title="Your story so far">
+          <ul className="space-y-3 text-sm leading-6 text-ink-2">
+            <li className="flex items-start gap-2.5"><Dot />
+              <span>{changeLbs == null ? 'Add a starting weight to see your total change.' : changeLbs === 0 ? 'Your weight is the same as your starting weight.' : <>Your weight is <strong className="text-ink">{formatWeight(Math.abs(changeLbs), unit)} {changeLbs < 0 ? 'lower' : 'higher'}</strong> than when you started{changePct != null ? ` (${Math.abs(changePct).toFixed(1)}%)` : ''}.</>}</span></li>
+            <li className="flex items-start gap-2.5"><Dot />
+              <span>{rate ? <>Your recent trend is <strong className="text-ink">{formatWeightChange(rate.lbsPerWeek, unit)} per week</strong>, from {rate.points} weigh-ins.</> : `We can't show a pace yet. ${NEEDS_MORE_WEIGHT_DATA}.`}</span></li>
+            <li className="flex items-start gap-2.5"><Dot />
+              <span>{plateaus.length > 0 ? <>You have had <strong className="text-ink">{plateaus.length} {plateaus.length === 1 ? 'plateau' : 'plateaus'}</strong> (2+ weeks within about 1 lb).</> : 'No plateaus (2+ weeks within about 1 lb) in your logs so far.'}</span></li>
+            <li className="flex items-start gap-2.5"><Dot />
+              <span>{doses.length > 0 ? <>You have logged <strong className="text-ink">{doses.length} {doses.length === 1 ? 'dose' : 'doses'}</strong> of {settings.medication}.</> : 'No doses logged yet.'}</span></li>
+            <li className="flex items-start gap-2.5"><Dot />
+              <span>{projection.status === 'projected' ? <>If your recent pace continues, you'd reach your goal around <strong className="text-ink">{format(projection.date, 'MMM yyyy')}</strong>. Treat that as a rough guide only.</> : projection.status === 'reached' ? 'You are at or past your goal weight.' : `No goal date yet: ${projection.reason.charAt(0).toLowerCase()}${projection.reason.slice(1)}.`}</span></li>
           </ul>
-        </section>
+        </Panel>
       </div>
 
-      <section aria-labelledby="chapters-heading" className={`${card} space-y-4`}>
-        <h3 id="chapters-heading" className="text-base font-semibold text-ink tracking-tight">Month by month</h3>
-        <ul className="flex gap-3 overflow-x-auto pb-2">
+      <Panel title="Month by month" description="Change from the first to the last weigh-in in each month.">
+        <ul className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-1">
           {chapters.map((c) => {
             const delta = c.end - c.start;
             return (
-              <li key={c.name} className="w-48 shrink-0 p-4 rounded-[16px] border border-line bg-canvas">
+              <li key={c.name} className="w-44 shrink-0 rounded-[var(--radius-control)] border border-line bg-canvas p-3.5">
                 <div className="text-sm font-semibold text-ink">{c.name}</div>
-                <div className="text-[11px] text-muted mt-0.5">{c.n} {c.n === 1 ? 'weigh-in' : 'weigh-ins'}</div>
-                <div className="text-base font-semibold text-ink mt-3">{c.n > 1 ? formatWeightChange(delta, unit) : '–'}</div>
-                <p className="text-[11px] text-muted">{c.n > 1 ? 'first to last weigh-in' : 'needs 2+ weigh-ins'}</p>
+                <div className="text-[13px] text-muted">{c.n} {c.n === 1 ? 'weigh-in' : 'weigh-ins'}</div>
+                <div className="mt-2 text-lg font-semibold tabular-nums text-ink">{c.n > 1 ? formatWeightChange(delta, unit) : '–'}</div>
+                <p className="text-[13px] text-muted">{c.n > 1 ? 'first to last weigh-in' : 'needs 2+ weigh-ins'}</p>
               </li>
             );
           })}
         </ul>
-      </section>
+      </Panel>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <section aria-labelledby="forecast-heading" className={card}>
-          <h3 id="forecast-heading" className="text-sm font-semibold text-ink-2 mb-1">Where your recent pace points</h3>
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <Panel title="Where your recent pace points" description={forecast.length > 0 ? 'Solid line: your logged weights. Dashed line: your recent trend continued to your goal. Real progress is rarely this smooth.' : undefined}>
           {forecast.length === 0 ? (
-            <p className="text-xs text-muted mt-3">{projection.status === 'reached' ? 'You are already at your goal weight.' : `${projection.status === 'unknown' ? projection.reason : ''}. We would rather show nothing than guess.`}</p>
+            <p className="text-sm text-muted">{projection.status === 'reached' ? 'You are already at your goal weight.' : `${projection.status === 'unknown' ? projection.reason : ''}. We would rather show nothing than guess.`}</p>
           ) : (
-            <>
-              <p className="text-[11px] text-subtle mb-2">Dashed line: your recent trend continued to your goal. Real progress is rarely this smooth.</p>
-              <div className="h-[200px] w-full" role="img" aria-label="Recent weights and a dashed line projecting to your goal weight">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={forecast} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="t" type="number" scale="time" domain={['dataMin', 'dataMax']} tickFormatter={(t) => format(new Date(t), "MMM ''yy")} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#475569' }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#475569' }} domain={['auto', 'auto']} width={44} />
-                    <Tooltip labelFormatter={(t) => format(new Date(t as number), 'MMM d, yyyy')} />
-                    <Line type="monotone" dataKey="actual" name="Logged" stroke="#1d5aa6" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
-                    <Line type="linear" dataKey="projected" name="If pace continues" stroke="#475569" strokeWidth={2} strokeDasharray="5 5" dot={false} connectNulls />
-                    {targetLbs != null && <ReferenceLine y={toDisplay(targetLbs)} stroke="#15803d" strokeDasharray="2 4" />}
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </>
+            <div className="h-[200px] w-full" role="img" aria-label="Recent weights and a dashed line projecting to your goal weight">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={forecast} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={GRID} />
+                  <XAxis dataKey="t" type="number" scale="time" domain={['dataMin', 'dataMax']} tickFormatter={(t) => format(new Date(t), "MMM ''yy")} axisLine={false} tickLine={false} tick={TICK} />
+                  <YAxis axisLine={false} tickLine={false} tick={TICK} domain={['auto', 'auto']} width={44} />
+                  <Tooltip labelFormatter={(t) => format(new Date(t as number), 'MMM d, yyyy')} />
+                  <Line type="monotone" dataKey="actual" name="Logged" stroke="#1d5aa6" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
+                  <Line type="linear" dataKey="projected" name="If pace continues" stroke="#475569" strokeWidth={2} strokeDasharray="5 5" dot={false} connectNulls />
+                  {targetLbs != null && <ReferenceLine y={toDisplay(targetLbs)} stroke="#1c6f4c" strokeDasharray="2 4" label={{ value: 'Goal', position: 'insideTopRight', fontSize: 12, fill: '#1c6f4c' }} />}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           )}
-        </section>
+        </Panel>
 
-        <section aria-labelledby="velocity-heading" className={card}>
-          <h3 id="velocity-heading" className="text-sm font-semibold text-ink-2">Week-over-week change <span className="text-[11px] font-normal text-subtle">({unit})</span></h3>
+        <Panel title={`Week-over-week change (${unit})`} description={velocity.length > 0 ? 'Change in average weight from one week to the next. Bars below the line are decreases.' : undefined}>
           {velocity.length === 0 ? (
-            <p className="text-xs text-muted mt-3">Needs weigh-ins in two consecutive weeks.</p>
+            <p className="text-sm text-muted">Needs weigh-ins in two consecutive weeks.</p>
           ) : (
-            <div className="h-[200px] w-full mt-2" role="img" aria-label="Change in average weight from one week to the next">
+            <div className="h-[200px] w-full" role="img" aria-label="Change in average weight from one week to the next">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={velocity} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#475569' }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#475569' }} />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={GRID} />
+                  <XAxis dataKey="week" axisLine={false} tickLine={false} tick={TICK} />
+                  <YAxis axisLine={false} tickLine={false} tick={TICK} />
+                  <ReferenceLine y={0} stroke="#7b8a9c" />
                   <Tooltip />
-                  <Bar dataKey="change" name={`Change (${unit})`} fill="#15803d" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="change" name={`Change (${unit})`} fill="#1d5aa6" radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           )}
-        </section>
+        </Panel>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <section aria-labelledby="dose-heading" className={card}>
-          <h3 id="dose-heading" className="text-sm font-semibold text-ink-2">Your weight at each dose level</h3>
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <Panel title="Your weight at each dose level">
           {doseRows.length < 2 ? (
-            <p className="text-xs text-muted mt-3">Needs at least two dose levels, each with 2+ weigh-ins over 7+ days.</p>
+            <p className="text-sm text-muted">Needs at least two dose levels, each with 2+ weigh-ins over 7+ days.</p>
           ) : (
             <>
-              <table className="w-full text-xs mt-3">
-                <thead><tr className="text-left text-subtle"><th className="py-1 font-medium">Dose</th><th className="py-1 font-medium">Weigh-ins</th><th className="py-1 font-medium text-right">Change / week</th></tr></thead>
+              <table className="w-full text-sm">
+                <thead><tr className="text-left text-[13px] text-muted"><th scope="col" className="py-1 font-medium">Dose</th><th scope="col" className="py-1 font-medium">Weigh-ins</th><th scope="col" className="py-1 text-right font-medium">Change / week</th></tr></thead>
                 <tbody>
                   {doseRows.map((r) => (
-                    <tr key={`${r.medication}-${r.amountMg}`} className="border-t border-sunken">
-                      <td className="py-2 font-medium text-ink">{r.amountMg} mg <span className="text-subtle font-normal">{r.medication}</span></td>
+                    <tr key={`${r.medication}-${r.amountMg}`} className="border-t border-line">
+                      <td className="py-2 font-medium text-ink">{r.amountMg} mg <span className="font-normal text-muted">{r.medication}</span></td>
                       <td className="py-2 text-muted">{r.weighIns} over {r.days} d</td>
-                      <td className="py-2 text-right font-semibold text-ink">{formatWeightChange(r.lbsPerWeek, unit)}</td>
+                      <td className="py-2 text-right font-semibold tabular-nums text-ink">{formatWeightChange(r.lbsPerWeek, unit)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              <p className="text-[11px] text-subtle mt-3">A description of your own history only. Time on treatment, food, activity and other factors differ between periods, so this does not show which dose works better.</p>
+              <p className="mt-3 text-[13px] text-muted">A description of your own history only. Time on treatment, food, activity and other factors differ between periods, so this does not show which dose works better.</p>
             </>
           )}
-        </section>
+        </Panel>
 
-        <section aria-labelledby="plateau-heading" className={card}>
-          <h3 id="plateau-heading" className="text-sm font-semibold text-ink-2">Plateaus</h3>
+        <Panel title="Plateaus">
           {plateaus.length === 0 ? (
-            <p className="text-xs text-muted mt-3">None detected. We look for 3+ weigh-ins over 2+ weeks within about 1 lb.</p>
+            <p className="text-sm text-muted">None detected. We look for 3+ weigh-ins over 2+ weeks within about 1 lb.</p>
           ) : (
-            <ul className="mt-3 space-y-2 text-xs">
+            <ul className="-my-1 divide-y divide-line text-sm">
               {plateaus.map((p) => (
-                <li key={p.start} className="p-3 rounded-[14px] bg-canvas border border-line">
+                <li key={p.start} className="py-2">
                   <div className="font-semibold text-ink">{p.days} days</div>
-                  <div className="text-[11px] text-muted">{format(new Date(p.start), 'MMM d')} – {format(new Date(p.end), 'MMM d, yyyy')} · {p.weighIns} weigh-ins</div>
+                  <div className="text-[13px] text-muted">{format(new Date(p.start), 'MMM d')} – {format(new Date(p.end), 'MMM d, yyyy')} · {p.weighIns} weigh-ins</div>
                 </li>
               ))}
             </ul>
           )}
-        </section>
+        </Panel>
 
-        <section aria-labelledby="milestone-heading" className={card}>
-          <h3 id="milestone-heading" className="text-sm font-semibold text-ink-2 mb-3">Milestones</h3>
+        <Panel title="Milestones">
           {milestones.length === 0 ? (
-            <p className="text-xs text-muted">Set a goal weight below your starting weight to track milestones.</p>
+            <p className="text-sm text-muted">Set a goal weight below your starting weight to track milestones.</p>
           ) : (
-            <ul className="space-y-2 text-xs font-medium">
+            <ul className="-my-1 divide-y divide-line text-sm">
               {milestones.map((m) => (
-                <li key={m.id} className={`flex items-center justify-between p-2.5 rounded-[12px] ${m.reached ? 'bg-canvas' : 'bg-canvas/60 text-subtle'}`}>
-                  <span className="flex items-center gap-2 text-ink">
-                    {m.reached ? <CheckCircle2 className="w-4 h-4 text-positive" aria-hidden="true" /> : <span className="w-4 h-4 rounded-full border border-line-strong inline-block" aria-hidden="true" />}
-                    <span className={m.reached ? '' : 'text-muted'}>{m.label}</span>
+                <li key={m.id} className="flex items-center justify-between gap-2 py-2">
+                  <span className="flex items-center gap-2">
+                    {m.reached ? <CheckCircle2 className="h-4 w-4 text-positive" aria-hidden="true" /> : <Circle className="h-4 w-4 text-muted" aria-hidden="true" />}
+                    <span className={m.reached ? 'text-ink' : 'text-muted'}>{m.label}</span>
                   </span>
-                  <span className="text-[11px] text-muted font-normal">{m.date ? format(new Date(m.date), 'MMM d, yyyy') : 'Upcoming'}</span>
+                  <span className="text-[13px] text-muted">{m.date ? format(new Date(m.date), 'MMM d, yyyy') : 'Upcoming'}</span>
                 </li>
               ))}
             </ul>
           )}
-        </section>
+        </Panel>
       </div>
     </div>
   );
+}
+
+function Dot() {
+  return <span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-ink-2" aria-hidden="true" />;
 }

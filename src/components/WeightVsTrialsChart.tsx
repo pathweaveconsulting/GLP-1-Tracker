@@ -120,7 +120,7 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
   const drugConfig = TRIAL_CURVES[selectedDrug];
 
   return (
-    <div className={`bg-white rounded-[24px] p-6 shadow-xs border border-line ${className}`}>
+    <div className={`bg-white rounded-[var(--radius-panel)] p-6 border border-line ${className}`}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
         <div>
@@ -145,7 +145,7 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
               }`}
             >
               <div
-                className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${
+                className={`bg-white w-4 h-4 rounded-full transform transition-transform ${
                   isPercentMode ? 'translate-x-5' : 'translate-x-0'
                 }`}
               />
@@ -158,7 +158,7 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
             aria-label="Reference trial"
             value={selectedDrug}
             onChange={(e) => setSelectedDrug(e.target.value as DrugOption)}
-            className="bg-sunken hover:bg-line/80 border border-line text-ink text-xs font-semibold py-1.5 px-3 rounded-[16px] cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand transition-all"
+            className="bg-sunken hover:bg-line/80 border border-line text-ink text-xs font-semibold py-1.5 px-3 rounded-[var(--radius-control)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand transition-all"
           >
             <option value="Retatrutide">Retatrutide</option>
             <option value="Tirzepatide">Tirzepatide</option>
@@ -260,16 +260,16 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
 
       {/* TIMEFRAME SELECTOR TABS AT BOTTOM (2 weeks, 1 month, 3 months, 6 months, 1 year, All time) */}
       <div className="mt-6 flex justify-center overflow-x-auto pb-1">
-        <div className="flex bg-sunken/90 p-1.5 rounded-[16px] border border-line/80 text-xs font-semibold gap-1">
+        <div className="flex bg-sunken/90 p-1.5 rounded-[var(--radius-control)] border border-line/80 text-xs font-semibold gap-1">
           {(['2 weeks', '1 month', '3 months', '6 months', '1 year', 'All time'] as const).map((t) => (
             <button
               key={t}
               type="button"
               aria-pressed={timeframe === t}
               onClick={() => setTimeframe(t)}
-              className={`px-4 py-2 rounded-[16px] transition-all cursor-pointer whitespace-nowrap ${
+              className={`px-4 py-2 rounded-[var(--radius-control)] transition-all cursor-pointer whitespace-nowrap ${
                 timeframe === t
-                  ? 'bg-brand text-white shadow-xs'
+                  ? 'bg-brand text-white '
                   : 'text-muted hover:text-ink hover:bg-line/50'
               }`}
             >
@@ -285,18 +285,18 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
             The curves are drawn between approximate average results reported by these trials. The shape between those points is an interpolation, not trial data, and trial participants received structured support that real life rarely matches. Your own line may sit anywhere around them. Please don't read it as a target or a forecast.
           </p>
           <ul className="text-xs space-y-2 text-ink-2 font-medium">
-            <li className="p-2.5 rounded-[16px] bg-emerald-50 text-emerald-900 border border-emerald-100">
+            <li className="p-2.5 rounded-[var(--radius-control)] bg-positive-soft text-ink border border-positive/40">
               <strong>Retatrutide (phase 2 trial, investigational):</strong> average loss of about 24% at 48 weeks at the highest dose studied.
             </li>
-            <li className="p-2.5 rounded-[16px] bg-sky-50 text-sky-900 border border-sky-100">
+            <li className="p-2.5 rounded-[var(--radius-control)] bg-brand-soft text-ink border border-line">
               <strong>Tirzepatide (SURMOUNT-1):</strong> average loss of about 21% at 72 weeks at the highest dose.
             </li>
-            <li className="p-2.5 rounded-[16px] bg-indigo-50 text-indigo-900 border border-indigo-100">
+            <li className="p-2.5 rounded-[var(--radius-control)] bg-brand-soft text-ink border border-line">
               <strong>Semaglutide (STEP 1):</strong> average loss of about 15% at 68 weeks at 2.4 mg.
             </li>
           </ul>
           <p className="text-[11px] text-subtle">Approximate; verify against the published trial reports. Curves stop changing at the published endpoint; they do not predict later loss. Sources: NEJM doi:10.1056/NEJMoa2301972 (retatrutide), doi:10.1056/NEJMoa2206038 (SURMOUNT-1), doi:10.1056/NEJMoa2032183 (STEP 1).</p>
-          <button type="button" onClick={() => setShowInfoModal(false)} className="w-full py-2.5 rounded-[16px] bg-brand text-white font-semibold text-xs hover:bg-brand-strong transition-all">Close</button>
+          <button type="button" onClick={() => setShowInfoModal(false)} className="w-full py-2.5 rounded-[var(--radius-control)] bg-brand text-white font-semibold text-xs hover:bg-brand-strong transition-all">Close</button>
         </div>
       </Modal>
     </div>

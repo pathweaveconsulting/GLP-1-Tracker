@@ -40,7 +40,7 @@ export function HealthCenter() {
       </header>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <Card className="bg-ink text-white rounded-[20px] border-0 shadow-xs">
+        <Card className="bg-ink text-white rounded-[var(--radius-panel)] border-0 ">
           <CardContent className="p-5 flex flex-col justify-between h-full min-h-[140px]">
             <div className="flex justify-between items-start">
               <Clock className="w-5 h-5 text-slate-400" aria-hidden="true" />
@@ -55,11 +55,11 @@ export function HealthCenter() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-[20px] border-line bg-white shadow-xs">
+        <Card className="rounded-[var(--radius-panel)] border-line bg-white ">
           <CardContent className="p-5 flex flex-col justify-between h-full min-h-[140px]">
             <div className="flex justify-between items-start mb-4">
               <Zap className="w-5 h-5 text-caution" aria-hidden="true" />
-              <span className="px-2.5 py-0.5 bg-amber-50 text-[#B45309] text-[11px] rounded-full font-medium">Estimate</span>
+              <span className="px-2.5 py-0.5 bg-caution-soft text-[#B45309] text-[11px] rounded-full font-medium">Estimate</span>
             </div>
             <div>
               <span className="text-xs font-medium text-muted block mb-1">Medication level{next.medication ? ` (${next.medication})` : ''}</span>
@@ -80,7 +80,7 @@ export function HealthCenter() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-[20px] border-line bg-white shadow-xs">
+        <Card className="rounded-[var(--radius-panel)] border-line bg-white ">
           <CardContent className="p-5 flex flex-col justify-between h-full min-h-[140px]">
             <div className="flex justify-between items-start mb-4">
               <TrendingDown className="w-5 h-5 text-positive" aria-hidden="true" />
@@ -96,7 +96,7 @@ export function HealthCenter() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-[20px] border-line bg-white shadow-xs">
+        <Card className="rounded-[var(--radius-panel)] border-line bg-white ">
           <CardContent className="p-5 flex flex-col justify-between h-full min-h-[140px]">
             <div className="flex justify-between items-start mb-4">
               <Target className="w-5 h-5 text-brand" aria-hidden="true" />
@@ -120,23 +120,23 @@ export function HealthCenter() {
           </CardContent>
         </Card>
 
-        <Card className="col-span-2 md:col-span-2 border-emerald-200/60 bg-emerald-50/50 rounded-[20px] shadow-xs">
+        <Card className="col-span-2 md:col-span-2 border-positive/40 bg-positive-soft rounded-[var(--radius-panel)] ">
           <CardContent className="p-5 flex flex-col justify-between h-full min-h-[140px]">
             <div className="flex justify-between items-start mb-4">
               <Award className="w-5 h-5 text-positive" aria-hidden="true" />
-              <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 text-[11px] rounded-full font-medium">Milestones</span>
+              <span className="px-2.5 py-0.5 bg-positive-soft text-positive text-[11px] rounded-full font-medium">Milestones</span>
             </div>
             <div>
               {lastReached ? (
                 <>
-                  <span className="text-xs font-medium text-emerald-800 block mb-1">Latest reached</span>
-                  <span className="text-xl font-semibold text-emerald-900 tracking-tight">{lastReached.label}</span>
-                  {lastReached.date && <p className="text-[11px] text-emerald-800 mt-1">{format(new Date(lastReached.date), 'MMM d, yyyy')}</p>}
+                  <span className="text-xs font-medium text-positive block mb-1">Latest reached</span>
+                  <span className="text-xl font-semibold text-ink tracking-tight">{lastReached.label}</span>
+                  {lastReached.date && <p className="text-[11px] text-positive mt-1">{format(new Date(lastReached.date), 'MMM d, yyyy')}</p>}
                 </>
               ) : (
                 <>
-                  <span className="text-xs font-medium text-emerald-800 block mb-1">No milestone yet</span>
-                  <span className="text-sm text-emerald-900">
+                  <span className="text-xs font-medium text-positive block mb-1">No milestone yet</span>
+                  <span className="text-sm text-ink">
                     {milestones.length ? `Your first one is ${milestones[0].label.toLowerCase()}.` : latest ? 'Set a goal weight below your starting weight in Settings to track milestones.' : 'Log a weigh-in to start tracking.'}
                   </span>
                 </>
@@ -146,9 +146,9 @@ export function HealthCenter() {
         </Card>
       </div>
 
-      <Card className="rounded-[24px] border-line bg-white shadow-xs">
+      <Card className="rounded-[var(--radius-panel)] border-line bg-white ">
         <CardContent className="p-6 flex gap-4 items-start">
-          <div className="p-3 bg-canvas rounded-[14px]">
+          <div className="p-3 bg-canvas rounded-[var(--radius-control)]">
             <HeartPulse className="w-5 h-5 text-muted" aria-hidden="true" />
           </div>
           <div>

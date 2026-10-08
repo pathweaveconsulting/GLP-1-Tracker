@@ -47,20 +47,20 @@ export function Results() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-[24px] border border-line shadow-xs">
+      <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-[var(--radius-panel)] border border-line ">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-ink">Analytics & Insights</h1>
           <p className="text-muted text-sm font-normal mt-0.5">Explore your weight journey story, side effect trends, and clinical progress</p>
         </div>
 
         {/* 3-Tab Selector */}
-        <div className="flex bg-canvas p-1 rounded-[14px] border border-line shadow-xs overflow-x-auto">
+        <div className="flex bg-canvas p-1 rounded-[var(--radius-control)] border border-line overflow-x-auto">
           <button
             aria-pressed={activeTab === 'journey'}
             onClick={() => handleTabChange('journey')}
             className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-[10px] transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'journey'
-                ? 'bg-white text-ink shadow-xs'
+                ? 'bg-white text-ink '
                 : 'text-muted hover:text-ink'
             }`}
           >
@@ -73,7 +73,7 @@ export function Results() {
             onClick={() => handleTabChange('sideEffects')}
             className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-[10px] transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'sideEffects'
-                ? 'bg-white text-ink shadow-xs'
+                ? 'bg-white text-ink '
                 : 'text-muted hover:text-ink'
             }`}
           >
@@ -86,7 +86,7 @@ export function Results() {
             onClick={() => handleTabChange('progress')}
             className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-[10px] transition-all cursor-pointer whitespace-nowrap ${
               activeTab === 'progress'
-                ? 'bg-white text-ink shadow-xs'
+                ? 'bg-white text-ink '
                 : 'text-muted hover:text-ink'
             }`}
           >
@@ -107,14 +107,14 @@ export function Results() {
       {activeTab === 'progress' && (
         <div className="space-y-6">
           <div className="flex justify-end">
-            <div className="flex bg-sunken p-1 rounded-[16px] text-xs font-semibold text-muted">
+            <div className="flex bg-sunken p-1 rounded-[var(--radius-control)] text-xs font-semibold text-muted">
               {['2w', '1m', '3m', '90d', 'All'].map(filter => (
                 <button
                   key={filter}
                   aria-pressed={timeFilter === filter}
                   onClick={() => setTimeFilter(filter)}
                   className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                    timeFilter === filter ? 'bg-white shadow-xs text-ink font-semibold' : 'hover:text-ink'
+                    timeFilter === filter ? 'bg-white  text-ink font-semibold' : 'hover:text-ink'
                   }`}
                 >
                   {filter}
@@ -124,7 +124,7 @@ export function Results() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card className="rounded-[16px] border-line shadow-xs">
+            <Card className="rounded-[var(--radius-control)] border-line ">
               <CardContent className="p-4 flex flex-col justify-center items-center text-center">
                 <span className="text-xs font-semibold text-muted mb-1">Current BMI</span>
                 <span className="text-3xl font-black text-ink tracking-tight">{bmi == null ? '–' : bmi.toFixed(1)}</span>
@@ -132,14 +132,14 @@ export function Results() {
                 {bmiLabel && <span className="text-[10px] text-subtle mt-1 leading-snug">{BMI_FOOTNOTE}</span>}
               </CardContent>
             </Card>
-            <Card className="rounded-[16px] border-line shadow-xs">
+            <Card className="rounded-[var(--radius-control)] border-line ">
               <CardContent className="p-4 flex flex-col justify-center items-center text-center">
                 <span className="text-xs font-semibold text-muted mb-1">Recent weekly trend</span>
                 <span className="text-3xl font-black text-ink tracking-tight">{rate ? formatWeightChange(rate.lbsPerWeek, unit, { unit: false }) : '–'}<span className="text-xs font-semibold text-muted"> {unit}/wk</span></span>
                 <span className="text-[11px] text-subtle mt-0.5">{rate ? `${rate.points} weigh-ins, ${rate.spanDays} days` : 'Needs 3+ weigh-ins over 2+ weeks'}</span>
               </CardContent>
             </Card>
-            <Card className="col-span-2 rounded-[16px] border-line shadow-xs">
+            <Card className="col-span-2 rounded-[var(--radius-control)] border-line ">
               <CardContent className="p-4 flex flex-col justify-center items-center text-center">
                 <span className="text-xs font-semibold text-muted mb-1">Goal remaining</span>
                 <span className="text-3xl font-black text-ink tracking-tight">{goalRemaining == null ? '–' : formatWeight(goalRemaining, unit, { unit: false })} <span className="text-xs font-semibold text-muted">{unit}</span></span>
@@ -160,7 +160,7 @@ export function Results() {
               <AnalyticsHeatmaps />
             </div>
 
-            <Card className="rounded-[24px] border-line shadow-xs">
+            <Card className="rounded-[var(--radius-panel)] border-line ">
               <CardHeader>
                 <CardTitle className="text-base font-semibold text-ink">Appetite & Food Noise</CardTitle>
               </CardHeader>
@@ -180,7 +180,7 @@ export function Results() {
               </CardContent>
             </Card>
 
-            <Card className="rounded-[24px] border-line shadow-xs">
+            <Card className="rounded-[var(--radius-panel)] border-line ">
               <CardHeader>
                 <CardTitle className="text-base font-semibold text-ink">Nausea & Fatigue</CardTitle>
               </CardHeader>
@@ -200,7 +200,7 @@ export function Results() {
               </CardContent>
             </Card>
 
-            <Card className="rounded-[24px] border-line shadow-xs">
+            <Card className="rounded-[var(--radius-panel)] border-line ">
               <CardHeader>
                 <CardTitle className="text-base font-semibold text-ink">Injection sites used</CardTitle>
               </CardHeader>
@@ -223,7 +223,7 @@ export function Results() {
               </CardContent>
             </Card>
 
-            <Card className="rounded-[24px] border-line shadow-xs">
+            <Card className="rounded-[var(--radius-panel)] border-line ">
               <CardHeader>
                 <CardTitle className="text-base font-semibold text-ink">Dose breakdown</CardTitle>
               </CardHeader>

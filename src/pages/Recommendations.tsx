@@ -14,7 +14,7 @@ function TipCard({ tip }: { tip: Tip }) {
   const panelId = useId();
   const Icon = ICONS[tip.icon];
   return (
-    <Card className="flex flex-col h-full rounded-[24px] border-line bg-white shadow-xs hover:border-[#bcd1ec] transition-all">
+    <Card className="flex flex-col h-full rounded-[var(--radius-panel)] border-line bg-white hover:border-[#bcd1ec] transition-all">
       <CardContent className="p-5 flex flex-col h-full justify-between">
         <div>
           <div className="flex items-center justify-between gap-2 mb-3">
@@ -22,7 +22,7 @@ function TipCard({ tip }: { tip: Tip }) {
               <div className="p-2 bg-brand-soft rounded-[10px]"><Icon className="w-4 h-4 text-brand" aria-hidden="true" /></div>
               <span className="text-xs font-medium text-muted">{tip.category}</span>
             </div>
-            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${tip.source === 'logs' ? 'bg-brand-soft text-brand-strong' : 'bg-slate-100 text-slate-600'}`}>
+            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${tip.source === 'logs' ? 'bg-brand-soft text-brand-strong' : 'bg-sunken text-muted'}`}>
               {tip.source === 'logs' ? 'From your logs' : 'General'}
             </span>
           </div>

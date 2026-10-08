@@ -58,7 +58,7 @@ export function ThisWeekDashboard({ className = '' }: Props) {
 
   return (
     <div className={`space-y-6 ${className}`}>
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-[24px] border border-line shadow-xs">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-[var(--radius-panel)] border border-line ">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl sm:text-3xl font-semibold text-ink tracking-tight">This Week</h1>
@@ -66,13 +66,13 @@ export function ThisWeekDashboard({ className = '' }: Props) {
           </div>
           <p className="text-xs font-normal text-muted mt-1">Where you are in your weekly cycle, and what to expect next.</p>
         </div>
-        <div className="flex items-center gap-2 bg-canvas px-3.5 py-2.5 rounded-[14px] border border-line text-xs font-medium text-ink">
+        <div className="flex items-center gap-2 bg-canvas px-3.5 py-2.5 rounded-[var(--radius-control)] border border-line text-xs font-medium text-ink">
           <Calendar className="w-4 h-4 text-muted" aria-hidden="true" />
           <span>{dateRange}</span>
         </div>
       </div>
 
-      <section aria-labelledby="today-heading" className="bg-white p-6 rounded-[24px] border border-line shadow-xs space-y-6">
+      <section aria-labelledby="today-heading" className="bg-white p-6 rounded-[var(--radius-panel)] border border-line space-y-6">
         <div>
           <div className="text-xs font-medium text-brand mb-1">
             Today • {hasDose ? (unmodelled ? 'No schedule tracked' : overdue ? `${Math.floor(daysSince)} days since your last dose` : `Day ${dayNum} of 7`) : 'No dose logged yet'}
@@ -94,7 +94,7 @@ export function ThisWeekDashboard({ className = '' }: Props) {
             {latest && <span className="text-[11px] text-muted">Logged {format(new Date(latest.date), 'EEE, MMM d')}</span>}
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            <div className="bg-canvas p-4 rounded-[16px] border border-line">
+            <div className="bg-canvas p-4 rounded-[var(--radius-control)] border border-line">
               <div className="flex items-center gap-1.5 text-xs text-muted"><Activity className="w-3.5 h-3.5 text-brand" aria-hidden="true" /> Medication</div>
               {unmodelled ? (
                 <p className="text-xs text-muted mt-2">{NO_ESTIMATE_TEXT}</p>
@@ -109,13 +109,13 @@ export function ThisWeekDashboard({ className = '' }: Props) {
             </div>
             {latest ? (
               checkIn.map((c) => (
-                <div key={c.label} className="bg-canvas p-4 rounded-[16px] border border-line">
+                <div key={c.label} className="bg-canvas p-4 rounded-[var(--radius-control)] border border-line">
                   <div className="flex items-center gap-1.5 text-xs text-muted"><c.icon className={`w-3.5 h-3.5 ${c.color}`} aria-hidden="true" /> {c.label}</div>
                   <div className="text-xl font-semibold text-ink mt-2">{c.value}</div>
                 </div>
               ))
             ) : (
-              <div className="sm:col-span-4 bg-canvas p-4 rounded-[16px] border border-dashed border-line-strong text-xs text-muted flex items-center gap-3">
+              <div className="sm:col-span-4 bg-canvas p-4 rounded-[var(--radius-control)] border border-dashed border-line-strong text-xs text-muted flex items-center gap-3">
                 <Smile className="w-5 h-5 text-subtle shrink-0" aria-hidden="true" />
                 <span>
                   No symptom log in the last 3 days, so there is nothing of yours to show here yet.{' '}
@@ -128,7 +128,7 @@ export function ThisWeekDashboard({ className = '' }: Props) {
       </section>
 
       {!unmodelled && (
-      <section aria-labelledby="rhythm-heading" className="bg-white p-4 sm:p-6 rounded-[24px] border border-line shadow-xs">
+      <section aria-labelledby="rhythm-heading" className="bg-white p-4 sm:p-6 rounded-[var(--radius-panel)] border border-line ">
         <div className="flex items-center gap-2 mb-1">
           <h2 id="rhythm-heading" className="text-base font-semibold text-ink tracking-tight">The typical weekly rhythm</h2>
           <Info className="w-4 h-4 text-subtle" aria-hidden="true" />
@@ -160,13 +160,13 @@ export function ThisWeekDashboard({ className = '' }: Props) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {!unmodelled && (
-        <section aria-labelledby="pattern-heading" className="lg:col-span-2 bg-white p-6 rounded-[24px] border border-line shadow-xs space-y-4">
+        <section aria-labelledby="pattern-heading" className="lg:col-span-2 bg-white p-6 rounded-[var(--radius-panel)] border border-line space-y-4">
           <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
             <div>
               <h2 id="pattern-heading" className="text-base font-semibold text-ink tracking-tight">Typical weekly pattern</h2>
               <p className="text-xs text-muted">Relative shape across a once-weekly cycle. Not your data.</p>
             </div>
-            <span className="text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-1 rounded-full">Illustrative</span>
+            <span className="text-[11px] font-semibold bg-caution-soft text-caution border border-caution/40 px-2.5 py-1 rounded-full">Illustrative</span>
           </div>
           <div className="h-[220px] w-full" role="img" aria-label="Illustrative chart of a typical weekly pattern: medication level, appetite and food noise by phase. Not based on your logs.">
             <ResponsiveContainer width="100%" height="100%">
@@ -181,21 +181,21 @@ export function ThisWeekDashboard({ className = '' }: Props) {
               </LineChart>
             </ResponsiveContainer>
           </div>
-          <div className="bg-brand-soft/70 p-4 rounded-[16px] border border-brand-soft flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div className="bg-brand-soft/70 p-4 rounded-[var(--radius-control)] border border-brand-soft flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
               <div className="text-xs font-semibold text-brand-strong">Why this often happens</div>
               <p className="text-xs font-medium text-brand-strong mt-0.5">
                 As medication levels fall late in the week, many people notice hunger and food noise creeping back. How strongly varies from person to person.
               </p>
             </div>
-            <button type="button" onClick={() => setShowGuide(true)} className="px-4 py-2 bg-brand text-white rounded-[16px] text-xs font-medium shrink-0">
+            <button type="button" onClick={() => setShowGuide(true)} className="px-4 py-2 bg-brand text-white rounded-[var(--radius-control)] text-xs font-medium shrink-0">
               Learn more
             </button>
           </div>
         </section>
         )}
 
-        <section aria-labelledby="logs-heading" className={`${unmodelled ? 'lg:col-span-3 ' : ''}bg-white p-6 rounded-[24px] border border-line shadow-xs space-y-3`}>
+        <section aria-labelledby="logs-heading" className={`${unmodelled ? 'lg:col-span-3 ' : ''}bg-white p-6 rounded-[var(--radius-panel)] border border-line space-y-3`}>
           <h2 id="logs-heading" className="text-base font-semibold text-ink tracking-tight">From your logs, last 7 days</h2>
           {summary.daysLogged === 0 ? (
             <p className="text-xs text-muted leading-relaxed">
@@ -208,7 +208,7 @@ export function ThisWeekDashboard({ className = '' }: Props) {
               <p className="text-[11px] text-subtle">{summary.daysLogged} {summary.daysLogged === 1 ? 'day' : 'days'} logged</p>
               <ul className="space-y-2 text-xs">
                 {summary.items.slice(0, 5).map((i) => (
-                  <li key={i.key} className="flex justify-between items-center p-2.5 rounded-[14px] bg-canvas">
+                  <li key={i.key} className="flex justify-between items-center p-2.5 rounded-[var(--radius-control)] bg-canvas">
                     <span className="text-ink-2 font-medium">{i.label}</span>
                     <span className="text-muted">{severityLabel(i.peak)} at worst · {i.daysPresent} {i.daysPresent === 1 ? 'day' : 'days'}</span>
                   </li>
@@ -222,7 +222,7 @@ export function ThisWeekDashboard({ className = '' }: Props) {
         </section>
       </div>
 
-      <section aria-labelledby="plan-heading" className="bg-white p-6 rounded-[24px] border border-line shadow-xs space-y-4">
+      <section aria-labelledby="plan-heading" className="bg-white p-6 rounded-[var(--radius-panel)] border border-line space-y-4">
         <div className="flex items-baseline justify-between gap-2 flex-wrap">
           <h2 id="plan-heading" className="text-base font-semibold text-ink tracking-tight">General ideas for today</h2>
           <span className="text-[11px] text-subtle">General suggestions, not personalised advice. Follow your care team's guidance.</span>
@@ -234,8 +234,8 @@ export function ThisWeekDashboard({ className = '' }: Props) {
             { icon: Activity, title: 'Gentle movement', text: 'A walk or light activity, as feels right for you.' },
             { icon: Moon, title: 'Rest', text: 'Fatigue is easier to manage when you are rested.' },
           ].map((c) => (
-            <li key={c.title} className="bg-canvas p-4 rounded-[16px] border border-line space-y-2">
-              <div className="w-8 h-8 rounded-[12px] bg-brand text-white flex items-center justify-center"><c.icon className="w-4 h-4" aria-hidden="true" /></div>
+            <li key={c.title} className="bg-canvas p-4 rounded-[var(--radius-control)] border border-line space-y-2">
+              <div className="w-8 h-8 rounded-[var(--radius-control)] bg-brand text-white flex items-center justify-center"><c.icon className="w-4 h-4" aria-hidden="true" /></div>
               <div className="text-xs font-semibold text-ink">{c.title}</div>
               <p className="text-[11px] text-muted">{c.text}</p>
             </li>
@@ -246,7 +246,7 @@ export function ThisWeekDashboard({ className = '' }: Props) {
       <Modal open={showGuide} onClose={() => setShowGuide(false)} title="About the weekly rhythm" widthClass="max-w-lg">
         <div className="space-y-3 text-xs text-muted leading-relaxed">
           <p>Once-weekly GLP-1 medicines build up after an injection and then slowly fall until the next one. This app uses a simplified model of that curve to describe the typical shape of a week.</p>
-          <ul className="bg-canvas p-4 rounded-[16px] space-y-2 text-ink font-medium">
+          <ul className="bg-canvas p-4 rounded-[var(--radius-control)] space-y-2 text-ink font-medium">
             <li>• Early in the week levels are usually rising toward their peak.</li>
             <li>• Mid-week many people feel the steadiest appetite control.</li>
             <li>• Late in the week levels fall, and hunger or food noise often returns a little.</li>

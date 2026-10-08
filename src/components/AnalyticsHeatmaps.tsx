@@ -197,14 +197,14 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
   return (
     <div className={`space-y-8 ${className}`}>
       {/* 1. WEIGHT CHANGE HEATMAP */}
-      <div className="bg-white rounded-[24px] p-6 shadow-xs border border-line">
+      <div className="bg-white rounded-[var(--radius-panel)] p-6 border border-line">
         <div className="mb-4">
           <h2 id={weightHeadId} className="text-xl font-semibold text-ink tracking-tight">Weight change</h2>
           <p className="text-xs font-semibold text-muted mt-0.5">Each weigh-in vs. the previous recorded weigh-in</p>
           <p id={weightSumId} className="text-xs text-muted mt-1">{weightSummary}</p>
         </div>
 
-        <div role="group" aria-labelledby={weightHeadId} aria-describedby={weightSumId} className="bg-canvas/60 rounded-[16px] p-6 border border-line/70 overflow-x-auto">
+        <div role="group" aria-labelledby={weightHeadId} aria-describedby={weightSumId} className="bg-canvas/60 rounded-[var(--radius-control)] p-6 border border-line/70 overflow-x-auto">
           {/* Calendar Grid Container */}
           <div className="min-w-[650px]">
             {/* Top Month Header Row */}
@@ -280,14 +280,14 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
       </div>
 
       {/* 2. LOGGING ACTIVITY HEATMAP */}
-      <div className="bg-white rounded-[24px] p-6 shadow-xs border border-line">
+      <div className="bg-white rounded-[var(--radius-panel)] p-6 border border-line">
         <div className="mb-4">
           <h2 id={actHeadId} className="text-xl font-semibold text-ink tracking-tight">Logging activity</h2>
           <p className="text-xs font-semibold text-muted mt-0.5">Each cell is one day. The number is how many entries were recorded that day.</p>
           <p id={actSumId} className="text-xs text-muted mt-1">{activitySummary}</p>
         </div>
 
-        <div role="group" aria-labelledby={actHeadId} aria-describedby={actSumId} className="bg-canvas/60 rounded-[16px] p-6 border border-line/70 overflow-x-auto">
+        <div role="group" aria-labelledby={actHeadId} aria-describedby={actSumId} className="bg-canvas/60 rounded-[var(--radius-control)] p-6 border border-line/70 overflow-x-auto">
           {/* Calendar Grid Container */}
           <div className="min-w-[650px]">
             {/* Top Month Header Row */}

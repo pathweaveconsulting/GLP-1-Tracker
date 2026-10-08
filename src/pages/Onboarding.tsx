@@ -9,7 +9,7 @@ import type { Medication } from '../types';
 import { convertTyped, displayToLbs, lbsToDisplay, lbsToInput, type WeightUnit } from '../lib/units';
 
 const inputCls =
-  'w-full px-3.5 py-2.5 rounded-[16px] border border-line bg-canvas text-ink text-sm font-medium focus:ring-2 focus:ring-brand focus:outline-none';
+  'w-full px-3.5 py-2.5 rounded-[var(--radius-control)] border border-line bg-canvas text-ink text-sm font-medium focus:ring-2 focus:ring-brand focus:outline-none';
 const labelCls = 'block text-xs font-semibold text-muted mb-1.5';
 
 function FieldError({ id, message }: { id: string; message?: string }) {
@@ -104,7 +104,7 @@ export function Onboarding() {
 
   return (
     <div className="min-h-screen bg-canvas text-ink font-sans antialiased flex items-start md:items-center justify-center p-4">
-      <main className="w-full max-w-xl bg-white rounded-[24px] border border-line shadow-xs p-6 md:p-8 my-6">
+      <main className="w-full max-w-xl bg-white rounded-[var(--radius-panel)] border border-line p-6 md:p-8 my-6">
         <h1 className="text-2xl font-semibold tracking-tight">{welcomeBack ? 'Welcome back. Let’s confirm your details.' : 'Welcome. Let’s set up your journey.'}</h1>
         <p className="text-sm text-muted mt-1.5 leading-relaxed">
           {welcomeBack
@@ -144,7 +144,7 @@ export function Onboarding() {
                   type="button"
                   aria-pressed={form.unit === u}
                   onClick={() => setUnit(u)}
-                  className={`px-4 py-2 rounded-[14px] text-sm font-semibold border transition-colors ${form.unit === u ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-ink-2 border-line hover:bg-canvas'}`}
+                  className={`px-4 py-2 rounded-[var(--radius-control)] text-sm font-semibold border transition-colors ${form.unit === u ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-ink-2 border-line hover:bg-canvas'}`}
                 >
                   {u}
                 </button>
@@ -265,7 +265,7 @@ export function Onboarding() {
           {step > 0 && <button type="button" className="w-full min-h-11 rounded-xl border p-3 text-sm font-semibold focus-visible:ring-2 focus-visible:ring-brand" onClick={() => { setStep(step - 1); setErrors({}); }}>Back</button>}
           <button
             type="submit"
-            className="w-full py-3 px-4 rounded-[16px] bg-slate-900 text-white font-semibold text-sm hover:bg-slate-800 transition-colors focus-visible:ring-2 focus-visible:ring-brand"
+            className="w-full py-3 px-4 rounded-[var(--radius-control)] bg-slate-900 text-white font-semibold text-sm hover:bg-slate-800 transition-colors focus-visible:ring-2 focus-visible:ring-brand"
           >
             {step === 2 ? 'Start my journey' : 'Continue'}
           </button>

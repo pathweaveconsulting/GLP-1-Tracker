@@ -40,7 +40,7 @@ export function WeightInjectionsChart() {
         <div role="group" aria-label="Chart range" className="flex rounded-[var(--radius-control)] bg-sunken p-0.5 text-[13px]">
           {(Object.keys(RANGES) as Range[]).map((r) => (
             <button key={r} type="button" aria-pressed={range === r} onClick={() => setRange(r)}
-              className={`min-h-8 rounded-[8px] px-2.5 font-medium ${range === r ? 'bg-surface text-ink shadow-sm' : 'text-muted hover:text-ink'}`}>
+              className={`min-h-8 rounded-[8px] px-2.5 font-medium ${range === r ? 'bg-surface text-ink ' : 'text-muted hover:text-ink'}`}>
               {r}
             </button>
           ))}

@@ -12,7 +12,7 @@ import { doctorReportEnabled } from '../lib/features';
 import { useDailyLogs } from '../store/dailyLogs';
 import { isoToLocalDateString } from '../lib/dates';
 
-const card = 'bg-white p-6 rounded-[24px] border border-line shadow-xs print:shadow-none';
+const card = 'bg-white p-6 rounded-[var(--radius-panel)] border border-line  print:shadow-none';
 
 function periodLabel(range: PeriodRange): string {
   return range.kind === 'monthly'
@@ -49,15 +49,15 @@ export function Reports() {
           <p className="text-sm text-muted mt-0.5">A plain summary of what you logged in a week or a month.</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap print:hidden">
-          <div className="flex bg-canvas p-1 rounded-[14px] border border-line" role="group" aria-label="Report length">
+          <div className="flex bg-canvas p-1 rounded-[var(--radius-control)] border border-line" role="group" aria-label="Report length">
             {(['weekly', 'monthly'] as ReportKind[]).map((k) => (
               <button key={k} type="button" aria-pressed={kind === k} onClick={() => changeKind(k)}
-                className={`px-4 py-1.5 text-xs font-semibold rounded-[10px] capitalize transition-all ${kind === k ? 'bg-white text-ink shadow-xs' : 'text-muted hover:text-ink'}`}>
+                className={`px-4 py-1.5 text-xs font-semibold rounded-[10px] capitalize transition-all ${kind === k ? 'bg-white text-ink ' : 'text-muted hover:text-ink'}`}>
                 {k}
               </button>
             ))}
           </div>
-          <button type="button" onClick={() => window.print()} className="inline-flex items-center gap-2 px-4 py-2 rounded-[14px] border border-line bg-white text-xs font-semibold text-ink hover:bg-canvas">
+          <button type="button" onClick={() => window.print()} className="inline-flex items-center gap-2 px-4 py-2 rounded-[var(--radius-control)] border border-line bg-white text-xs font-semibold text-ink hover:bg-canvas">
             <Printer className="w-4 h-4 text-muted" aria-hidden="true" /> Print / save PDF
           </button>
         </div>
@@ -125,7 +125,7 @@ export function Reports() {
               <>
                 <ul className="space-y-2 text-sm">
                   {report.doses.entries.map((d) => (
-                    <li key={d.id} className="flex justify-between p-3 rounded-[14px] bg-canvas border border-line">
+                    <li key={d.id} className="flex justify-between p-3 rounded-[var(--radius-control)] bg-canvas border border-line">
                       <span className="font-medium text-ink">{d.amountMg} mg {d.medication}</span>
                       <span className="text-xs text-muted">{format(new Date(d.date), 'EEE, MMM d · h:mm a')} · {d.site}</span>
                     </li>
@@ -151,7 +151,7 @@ export function Reports() {
                 <p className="text-[11px] text-subtle mb-2">{report.symptoms.daysLogged} {report.symptoms.daysLogged === 1 ? 'day' : 'days'} logged</p>
                 <ul className="space-y-2 text-sm">
                   {report.symptoms.items.map((i) => (
-                    <li key={i.key} className="flex justify-between p-3 rounded-[14px] bg-canvas border border-line">
+                    <li key={i.key} className="flex justify-between p-3 rounded-[var(--radius-control)] bg-canvas border border-line">
                       <span className="font-medium text-ink">{i.label}</span>
                       <span className="text-xs text-muted">{severityLabel(i.peak)} at worst · {i.daysPresent} {i.daysPresent === 1 ? 'day' : 'days'}</span>
                     </li>

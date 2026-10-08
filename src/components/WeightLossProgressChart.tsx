@@ -143,7 +143,7 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
           fill={badgeInfo.dotColor}
           stroke="#ffffff"
           strokeWidth={2}
-          className="shadow-xs"
+          className=""
         />
 
         {/* Pill Badge floating above the dot */}
@@ -156,7 +156,7 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
             rx={6}
             ry={6}
             fill={badgeInfo.bg}
-            className="shadow-md"
+            className=""
           />
           <text
             x={rectWidth / 2}
@@ -175,7 +175,7 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
   };
 
   return (
-    <div className={`bg-white rounded-[24px] p-6 shadow-xs border border-line ${className}`}>
+    <div className={`bg-white rounded-[var(--radius-panel)] p-6 border border-line ${className}`}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
@@ -209,7 +209,7 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
           <button
             aria-pressed={showShots}
             onClick={() => setShowShots(!showShots)}
-            className={`px-4 py-1.5 rounded-[16px] text-xs font-semibold transition-all cursor-pointer shadow-xs flex items-center gap-1.5 ${
+            className={`px-4 py-1.5 rounded-[var(--radius-control)] text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
               showShots
                 ? 'bg-brand text-white hover:bg-brand-strong'
                 : 'bg-sunken text-ink-2 hover:bg-line border border-line'
@@ -303,15 +303,15 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
 
       {/* TIMEFRAME SELECTOR TABS AT BOTTOM (2 weeks, 1 month, 3 months, 6 months, 1 year, All time) */}
       <div className="mt-6 flex justify-center overflow-x-auto pb-1">
-        <div className="flex bg-sunken/90 p-1.5 rounded-[16px] border border-line/80 text-xs font-semibold gap-1">
+        <div className="flex bg-sunken/90 p-1.5 rounded-[var(--radius-control)] border border-line/80 text-xs font-semibold gap-1">
           {(['2 weeks', '1 month', '3 months', '6 months', '1 year', 'All time'] as const).map((t) => (
             <button
               key={t}
               aria-pressed={timeframe === t}
               onClick={() => setTimeframe(t)}
-              className={`px-4 py-2 rounded-[16px] transition-all cursor-pointer whitespace-nowrap ${
+              className={`px-4 py-2 rounded-[var(--radius-control)] transition-all cursor-pointer whitespace-nowrap ${
                 timeframe === t
-                  ? 'bg-brand text-white shadow-xs'
+                  ? 'bg-brand text-white '
                   : 'text-muted hover:text-ink hover:bg-line/50'
               }`}
             >

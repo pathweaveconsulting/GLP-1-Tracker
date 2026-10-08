@@ -32,7 +32,7 @@ export function CalendarView() {
           <h1 className="text-3xl font-semibold tracking-tight text-ink">Calendar Log</h1>
           <p className="text-muted text-sm mt-0.5">View your doses, weight logs, and symptoms on a monthly grid</p>
         </div>
-        <div className="flex items-center gap-3 bg-white p-1.5 rounded-[14px] border border-line shadow-xs">
+        <div className="flex items-center gap-3 bg-white p-1.5 rounded-[var(--radius-control)] border border-line ">
           <Button variant="outline" size="icon" onClick={prevMonth} aria-label="Previous month" className="rounded-[10px] border-0 h-8 w-8">
             <ChevronLeft className="w-4 h-4 text-muted" />
           </Button>
@@ -45,7 +45,7 @@ export function CalendarView() {
         </div>
       </header>
 
-      <Card className="rounded-[24px] border-line bg-white shadow-xs">
+      <Card className="rounded-[var(--radius-panel)] border-line bg-white ">
         <CardContent className="p-6">
           <div className="grid grid-cols-7 gap-px mb-3">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
@@ -70,7 +70,7 @@ export function CalendarView() {
               return (
                 <div 
                   key={day.toISOString()} 
-                  className={`min-h-[85px] p-2.5 border rounded-[16px] flex flex-col gap-1 transition-all hover:bg-canvas cursor-pointer ${isToday ? 'border-brand bg-brand-soft/30' : 'border-line bg-white'}`}
+                  className={`min-h-[85px] p-2.5 border rounded-[var(--radius-control)] flex flex-col gap-1 transition-all hover:bg-canvas cursor-pointer ${isToday ? 'border-brand bg-brand-soft/30' : 'border-line bg-white'}`}
                 >
                   <span className={`text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full ${isToday ? 'bg-brand text-white' : 'text-muted'}`}>
                     {format(day, dateFormat)}
@@ -84,13 +84,13 @@ export function CalendarView() {
                       </div>
                     )}
                     {dayWeight && (
-                      <div className="flex items-center gap-1 text-[10px] bg-emerald-50 text-positive px-2 py-0.5 rounded-[6px] font-semibold truncate">
+                      <div className="flex items-center gap-1 text-[10px] bg-positive-soft text-positive px-2 py-0.5 rounded-[6px] font-semibold truncate">
                         <Scale className="w-3 h-3 shrink-0" />
                         <span className="truncate">{formatWeight(dayWeight.weightLbs, unit)}</span>
                       </div>
                     )}
                     {dayEffect && dayEffect.nausea !== 'none' && (
-                      <div className="flex items-center gap-1 text-[10px] bg-amber-50 text-amber-700 px-2 py-0.5 rounded-[6px] font-semibold truncate">
+                      <div className="flex items-center gap-1 text-[10px] bg-caution-soft text-caution px-2 py-0.5 rounded-[6px] font-semibold truncate">
                         <Activity className="w-3 h-3 shrink-0" />
                         <span className="truncate">Symptom</span>
                       </div>

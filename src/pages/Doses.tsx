@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useStore } from '../store/useStore';
-import { Card, CardContent } from '../components/ui/card';
 import { format } from 'date-fns';
-import { Syringe, Plus, Filter, Trash2, Clock } from 'lucide-react';
+import { Syringe, Plus, ArrowDownUp, Trash2 } from 'lucide-react';
+import { buttonClass, EmptyState, PageHeader, Panel, Stat } from '../components/ds';
 import { Button } from '../components/ui/button';
 import { LogDoseModal } from '../components/modals/LogDoseModal';
 import { ConfirmDialog } from '../components/ui/ConfirmDialog';
@@ -26,93 +26,79 @@ export function Doses() {
     return sortOrder === 'desc' ? tB - tA : tA - tB;
   });
 
+  const siteCounts = ['Abdomen', 'Thigh', 'Arm', 'Flank'].map((siteCategory) => ({
+    siteCategory,
+    count: doses.filter(d => d.site.toLowerCase().includes(siteCategory.toLowerCase())).length,
+  }));
+
   return (
-    <div className="space-y-6">
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-ink">Medication</h1>
-          <p className="text-sm text-muted mt-0.5">Track injections with exact timestamps, sites, and dosages</p>
-        </div>
-        <Button onClick={() => setIsLogDoseOpen(true)} className="gap-2 bg-brand hover:bg-brand-strong text-white rounded-[14px] shadow-xs px-4 py-2.5 text-xs font-semibold">
-          <Plus className="w-4 h-4" />
-          Record Injection
-        </Button>
-      </header>
+    <div className="space-y-5">
+      <PageHeader
+        title="Medication"
+        description="Every injection with its time, amount and site."
+        actions={<button type="button" onClick={() => setIsLogDoseOpen(true)} className={buttonClass('primary')}><Plus className="h-4 w-4" aria-hidden="true" />Record injection</button>}
+      />
 
       {/* Estimated medication level (moved here from the home screen in the redesign) */}
       <MedicationLevelChart onOpenSources={() => setShowLevelInfo(true)} />
       <PkInfoModal open={showLevelInfo} onClose={() => setShowLevelInfo(false)} />
 
-      {/* Shot Site Summary */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {['Abdomen', 'Thigh', 'Arm', 'Flank'].map((siteCategory) => {
-          const count = doses.filter(d => d.site.toLowerCase().includes(siteCategory.toLowerCase())).length;
-          return (
-            <Card key={siteCategory} className="rounded-[20px] border-line bg-white shadow-xs">
-              <CardContent className="p-4 flex flex-col justify-center items-center text-center gap-1">
-                <span className="text-xs font-normal text-muted">{siteCategory}</span>
-                <span className="text-2xl font-semibold tracking-tight text-ink">{count} <span className="text-xs font-normal text-subtle">injections</span></span>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+      <Panel title="Injection sites" description="How many recorded injections used each body area. Rotating sites can reduce irritation.">
+        <dl className="grid grid-cols-2 gap-x-4 gap-y-4 md:grid-cols-4">
+          {siteCounts.map(({ siteCategory, count }) => (
+            <Stat key={siteCategory} label={siteCategory} value={count} unit={count === 1 ? 'injection' : 'injections'} />
+          ))}
+        </dl>
+      </Panel>
 
-      <div className="flex items-center justify-between border-b border-sunken pb-4">
-        <h2 className="font-semibold text-ink text-base">Injections ({doses.length})</h2>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
-          className="gap-2 rounded-[14px] border-line text-xs font-semibold text-ink"
-        >
-          <Filter className="w-3.5 h-3.5" />
-          {sortOrder === 'desc' ? 'Newest First' : 'Oldest First'}
-        </Button>
-      </div>
-
-      <div className="grid gap-3">
-        {sortedDoses.map((dose, i) => (
-          <Card key={dose.id} className="overflow-hidden rounded-[20px] border-line bg-white shadow-xs hover:border-[#bcd1ec] transition-all">
-            <CardContent className="p-4 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-11 h-11 rounded-[16px] bg-brand-soft flex items-center justify-center shrink-0 text-brand">
-                  <Syringe className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-ink text-base">{dose.amountMg} mg {dose.medication}</h3>
-                  <p className="text-xs text-muted font-normal flex items-center gap-1">
-                    <span>{format(new Date(dose.date), 'EEEE, MMMM do, yyyy')}</span>
-                    <span className="text-subtle">@</span>
-                    <span className="text-ink font-semibold flex items-center gap-0.5">
-                      <Clock className="w-3 h-3 text-brand inline" />
-                      {format(new Date(dose.date), 'h:mm a')}
-                    </span>
-                    <span>•</span>
-                    <span className="text-brand font-medium">{dose.site}</span>
+      <Panel
+        title={`Injections (${doses.length})`}
+        action={doses.length > 1 ? (
+          <button type="button" onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')} className={buttonClass('secondary', 'sm')}>
+            <ArrowDownUp className="h-4 w-4" aria-hidden="true" />
+            {sortOrder === 'desc' ? 'Newest First' : 'Oldest First'}
+          </button>
+        ) : undefined}
+      >
+        {sortedDoses.length === 0 ? (
+          <EmptyState title="No injections recorded yet">
+            Use Record injection to add one. Your injections, sites and estimated level will appear here.
+          </EmptyState>
+        ) : (
+        <ul className="-my-1 divide-y divide-line">
+          {sortedDoses.map((dose, i) => (
+            <li key={dose.id} className="flex items-start justify-between gap-3 py-3">
+              <div className="flex min-w-0 items-start gap-3">
+                <Syringe className="mt-0.5 h-5 w-5 shrink-0 text-brand" aria-hidden="true" />
+                <div className="min-w-0">
+                  <h3 className="text-[15px] font-semibold text-ink">{dose.amountMg} mg {dose.medication}</h3>
+                  <p className="text-sm text-muted">
+                    {format(new Date(dose.date), 'EEE d MMM yyyy')} at {format(new Date(dose.date), 'h:mm a')} · {dose.site}
                   </p>
-                  {dose.notes && <p className="text-xs text-subtle mt-0.5 italic">"{dose.notes}"</p>}
+                  {dose.notes && <p className="mt-1 text-sm text-ink-2">Note: {dose.notes}</p>}
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-semibold text-muted bg-canvas px-2.5 py-1 rounded-lg border border-line">
-                  Injection #{sortedDoses.length - i}
+              <div className="flex shrink-0 items-center gap-1">
+                <span className="hidden text-[13px] text-muted sm:inline">
+                  Injection #{sortOrder === 'desc' ? sortedDoses.length - i : i + 1}
                 </span>
                 <button
+                  type="button"
                   onClick={() => setDeleting(dose)}
-                  className="p-2 rounded-[16px] text-subtle hover:text-danger hover:bg-red-50 transition-colors cursor-pointer"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-control)] text-muted hover:bg-danger-soft hover:text-danger"
                   aria-label={`Delete ${dose.amountMg} mg injection from ${format(new Date(dose.date), 'MMM d, yyyy')}`}
                 >
-                  <Trash2 className="w-4 h-4" aria-hidden="true" />
+                  <Trash2 className="h-4 w-4" aria-hidden="true" />
                 </button>
               </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            </li>
+          ))}
+        </ul>
+        )}
+      </Panel>
 
-      {deleted && <div role="status" className="text-sm text-muted">Injection log removed. <Button onClick={() => { if (restoreDose(deleted.entry,deleted.index)) setDeleted(undefined); else show('Could not undo: a record with this ID already exists. It was kept unchanged.'); }}>Undo last deletion</Button></div>}
+      {deleted && <div role="status" className="flex flex-wrap items-center gap-3 text-sm text-muted">Injection log removed. <Button onClick={() => { if (restoreDose(deleted.entry,deleted.index)) setDeleted(undefined); else show('Could not undo: a record with this ID already exists. It was kept unchanged.'); }}>Undo last deletion</Button></div>}
       <ConfirmDialog open={!!deleting} title="Delete injection log?" description={deleting && <>Remove the recorded {deleting.amountMg} mg {deleting.medication} injection from {format(new Date(deleting.date),'MMM d, yyyy h:mm a')}? You can undo the last deletion while this page remains open.</>} confirmLabel="Delete injection log" destructive onCancel={() => setDeleting(undefined)} onConfirm={() => {
         if (deleting) {
           const index = useStore.getState().doses.findIndex(d => d.id === deleting.id);

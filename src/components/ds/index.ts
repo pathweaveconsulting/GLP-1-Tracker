@@ -7,3 +7,4 @@ export { StatusLabel } from './StatusLabel';
 export type { Status } from './StatusLabel';
 export { EmptyState } from './EmptyState';
 export { Field, FormActions, inputClass, labelClass, helpClass, errorClass, choiceClass, noteClass } from './Field';
+export { Segmented } from './Segmented';

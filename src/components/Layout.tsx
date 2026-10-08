@@ -35,7 +35,7 @@ export function Layout() {
 
   return (
     <>
-      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[80] focus:rounded-[var(--radius-control)] focus:bg-surface focus:px-4 focus:py-2 focus:text-ink focus:shadow-lg">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[80] focus:rounded-[var(--radius-control)] focus:bg-surface focus:px-4 focus:py-2 focus:text-ink ">
         Skip to main content
       </a>
       <div className="flex h-[calc(100dvh-var(--vault-toolbar-height,0px))] bg-canvas text-ink antialiased print:h-auto">
