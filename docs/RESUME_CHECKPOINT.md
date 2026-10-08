@@ -147,3 +147,16 @@ Owner asked to proceed with weight and dose editing. Branch `claude/record-editi
 ## Duplicate warnings — 2026-10-08
 
 Owner approved the order: duplicate warnings, then the live schema V2 bridge. Branch `claude/duplicate-warnings`, stacked on `claude/record-editing` (PR #16). Details are in docs/BACKLOG_IMPLEMENTATION.md, "Duplicate warnings draft". Next: live schema V2 bridge.
+
+## Live schema V2 bridge — 2026-10-08
+
+Branch `claude/live-schema-bridge`, stacked on `claude/duplicate-warnings` (PR #17).
+
+**Design:**
+- One codec reads both formats.
+- The flag only offers the upgrade.
+- The upgrade is explicit, with an atomic recovery point.
+- Upgraded data stays upgraded.
+- Daily totals stay in their own slot.
+
+Details are in docs/DATA_MODEL_V2.md. The production flag stays off pending owner approval.

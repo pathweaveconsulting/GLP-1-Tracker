@@ -1,6 +1,8 @@
 import type { PersistStorage, StorageValue } from 'zustand/middleware';
-import { CORRUPT_KEY } from './keys';
-import { supportedStoreVersion } from './migrate';
+import { CORRUPT_KEY, STORAGE_KEY } from './keys';
+import { decodeV2, encodeMain, learnFromRead, LIVE_SCHEMA_VERSION } from './mainSlot';
+import type { PersistedData } from '../types';
+import { STORE_VERSION, supportedStoreVersion } from './migrate';
 import { isObj } from '../lib/rowValidation';
 import { sanitizePersistedState } from './sanitize';
 import { hasVault, isVaultUnlocked, readVaultSlot, writeVaultSlot } from '../lib/vault';
@@ -18,7 +20,19 @@ async function readEncrypted<S>(name: string): Promise<StorageValue<S> | null> {
     if (raw === null) return null;
     let parsed: unknown;
     try { parsed = JSON.parse(raw); } catch { parsed = null; }
+    if (name === STORAGE_KEY && isObj(parsed) && parsed.version === LIVE_SCHEMA_VERSION) {
+      // Upgraded (schema 2) records are validated exactly, never sanitized: anything unexpected keeps the original
+      // bytes and pauses writes, the same protection as an unsupported version.
+      try {
+        const { state, model } = decodeV2(parsed);
+        learnFromRead(2, model);
+        return { state, version: STORE_VERSION } as unknown as StorageValue<S>;
+      } catch {
+        writesPaused = true; storageReport.readFailed = true; storageReport.unsupportedVersion = true; return null;
+      }
+    }
     if (isObj(parsed) && !supportedStoreVersion(parsed.version)) { writesPaused = true; storageReport.readFailed = true; storageReport.unsupportedVersion = true; return null; }
+    if (name === STORAGE_KEY) learnFromRead(1);
     if (!isObj(parsed) || !isObj(parsed.state)) {
       storageReport.unreadable = true;
       try { await writeVaultSlot(CORRUPT_KEY, raw); } catch { storageReport.rescueKept = false; }
@@ -139,7 +153,9 @@ export function createSafeStorage<S>(): PersistStorage<S> {
       try {
         if (hasVault()) {
           if (!isVaultUnlocked()) return; // Clearing decrypted memory on lock never writes records.
-          return writeVaultSlot(name, JSON.stringify(value)).then(() => storageEvents.onWriteOk?.(), () => storageEvents.onWriteError?.());
+          // The main slot is written in the format it was read in (see mainSlot.ts).
+          const raw = name === STORAGE_KEY ? encodeMain((value as unknown as { state: PersistedData }).state) : JSON.stringify(value);
+          return writeVaultSlot(name, raw).then(() => storageEvents.onWriteOk?.(), () => storageEvents.onWriteError?.());
         }
         localStorage.setItem(name, JSON.stringify(value));
         storageEvents.onWriteOk?.();

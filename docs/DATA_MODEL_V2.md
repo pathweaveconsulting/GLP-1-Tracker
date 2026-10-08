@@ -37,3 +37,45 @@ Encrypted exports contain the recovery slot, but the existing backup importer re
 ## Atomic backup import draft
 
 The Settings confirmation captures the current encrypted slot view. Restore validates the parsed incoming data and current version-1 store, refuses stale previews and unsupported current fields, and commits imported main/daily records plus exact pre-import recovery in one envelope. The old recovery point is replaced, with confirmation explaining this. Existing rescue/reminder slots stay current and their prior bytes also appear in recovery. No source-file recovery history is imported. Old backups without a daily domain remove that slot in the same transaction; its prior bytes remain recoverable. The store view hydrates only after commit, so quota failure leaves both the visible records and saved ciphertext unchanged. A busy modal and synchronous in-progress guard prevent repeated confirmation. A failure after a successful commit is reported as a refresh problem, not as an unchanged-data claim. Live schema V2 remains off. The legacy plaintext branch retains its existing restore behavior; the encrypted production candidate always runs behind VaultGate.
+
+## Live schema bridge draft
+
+The app can now store its main records in the schema-2 format and keep using them, behind an explicit, recoverable upgrade.
+
+**Storage format** (`src/store/mainSlot.ts`):
+- The main encrypted slot is either the original `{ state, version: 1 }` or `{ version: 2, state: { hasOnboarded, model } }`, where `model` is a validated DataModelV2.
+- The in-memory store keeps its version-1 shape; conversion happens only at the storage boundary.
+- Reading schema 2 is always on. Upgraded data is validated exactly, never sanitized. Anything unexpected keeps the original bytes and pauses writes, the same protection used for unsupported versions:
+  - unknown fields;
+  - provenance that does not match its records;
+  - an integration source;
+  - a nonempty reserved domain.
+
+**One canonical copy:**
+- Data is always written back in the format it was read in, so an upgraded vault never silently drops back to version 1 and loses provenance.
+- Daily protein/water totals stay canonical in their own encrypted slot. The live model's checkIns domain is empty and marked absent, so there is never a second copy that could diverge.
+
+**The upgrade** (`upgradeVaultToSchemaV2`):
+- It is offered in Settings only when `VITE_ENABLE_LIVE_SCHEMA_V2=true`, and only after a confirmation. The confirmation says that older app versions cannot open upgraded records, and that the current records become the recovery point, replacing any previous one.
+- The upgraded main slot and an exact recovery point of every original slot commit in one encrypted envelope, or nothing changes. This is covered by tests for:
+  - storage-full failure;
+  - a stale preview;
+  - a second upgrade.
+- Existing records are marked `legacy`, with no invented creation time.
+- Restoring the recovery point returns the original bytes and the original format. The format is re-learned immediately, so even a save before the view reloads uses the original format.
+
+**Provenance after the upgrade:**
+
+| Record | Source | Timestamps |
+|---|---|---|
+| New record | `manual` | `createdAt` set |
+| Edited record | unchanged | `updatedAt` set; `createdAt` unchanged (stays empty for legacy records) |
+| CSV import | `csv_import` | one shared `importBatchId` per import |
+| Backup restored into an upgraded vault | `backup_restore` | `createdAt` set; the vault stays upgraded |
+
+**Compatibility:**
+- Encrypted downloads of upgraded records restore in this build.
+- Regular JSON backups are unchanged (versions 1 and 2), so they stay readable by older builds; they do not yet carry provenance.
+- Builds older than this one see version 2 as unsupported and leave the bytes untouched.
+
+**Release gate:** the flag stays off in production until the owner approves a concrete release. Real-device upgrade and rollback, old-tab/new-build interaction, and screen-reader checks are not verified. No medical value changes.
