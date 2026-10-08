@@ -7,6 +7,7 @@ import { subDays, subMonths, subYears, differenceInDays } from 'date-fns';
 import { useStore } from '../store/useStore';
 import { getWeightUnit, lbsToDisplay } from '../lib/units';
 import { Modal } from './ui/Modal';
+import { buttonClass, inputClass, Panel, Segmented } from './ds';
 import { TRIAL_CURVES, type DrugOption } from '../lib/trialCurves';
 
 export type TimeframeOption = '2 weeks' | '1 month' | '3 months' | '6 months' | '1 year' | 'All time';
@@ -120,110 +121,91 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
   const drugConfig = TRIAL_CURVES[selectedDrug];
 
   return (
-    <div className={`bg-white rounded-[var(--radius-panel)] p-6 border border-line ${className}`}>
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-        <div>
-          <h3 className="text-xl font-semibold text-ink tracking-tight">Weight vs trials</h3>
-          <p className="text-xs text-muted mt-1 max-w-xl">
-            Illustrative reference curves shaped around published average results, not a forecast for you. Trial participants, doses and support differ from real life, so your own line may sit anywhere around them.
-          </p>
-        </div>
-
-        {/* TOP CONTROLS: % Toggle, Drug Dropdown & Info Icon */}
-        <div className="flex items-center gap-3">
-          {/* Percentage / Absolute Mode Switch */}
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              role="switch"
-              aria-checked={isPercentMode}
-              aria-label="Show percent change"
-              onClick={() => setIsPercentMode(!isPercentMode)}
-              className={`w-11 h-6 flex items-center rounded-full p-1 cursor-pointer transition-colors ${
-                isPercentMode ? 'bg-brand' : 'bg-slate-300'
-              }`}
-            >
-              <div
-                className={`bg-white w-4 h-4 rounded-full transform transition-transform ${
-                  isPercentMode ? 'translate-x-5' : 'translate-x-0'
-                }`}
-              />
-            </button>
-            <span className="text-sm font-semibold text-ink-2">%</span>
-          </div>
-
-          {/* Drug Selection Dropdown */}
-          <select
-            aria-label="Reference trial"
-            value={selectedDrug}
-            onChange={(e) => setSelectedDrug(e.target.value as DrugOption)}
-            className="bg-sunken hover:bg-line/80 border border-line text-ink text-xs font-semibold py-1.5 px-3 rounded-[var(--radius-control)] cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand transition-all"
-          >
-            <option value="Retatrutide">Retatrutide</option>
-            <option value="Tirzepatide">Tirzepatide</option>
-            <option value="Semaglutide">Semaglutide</option>
-          </select>
-
-          {/* Info Button */}
-          <button
-            type="button"
-            onClick={() => {
-              if (onOpenInfo) onOpenInfo();
-              else setShowInfoModal(true);
-            }}
-            className="text-subtle hover:text-brand transition-colors p-1.5 rounded-full hover:bg-sunken cursor-pointer"
-            aria-label="About the trial reference curves"
-          >
-            <Info className="w-4 h-4" aria-hidden="true" />
-          </button>
-        </div>
+    <Panel
+      className={className}
+      title="Weight vs trials"
+      description="Illustrative reference curves shaped around published average results, not a forecast for you. Trial participants, doses and support differ from real life, so your own line may sit anywhere around them."
+      action={
+        <button
+          type="button"
+          onClick={() => {
+            if (onOpenInfo) onOpenInfo();
+            else setShowInfoModal(true);
+          }}
+          className="inline-flex h-11 w-11 items-center justify-center rounded-[var(--radius-control)] text-muted hover:bg-sunken hover:text-ink"
+          aria-label="About the trial reference curves"
+        >
+          <Info className="h-4 w-4" aria-hidden="true" />
+        </button>
+      }
+    >
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <select
+          aria-label="Reference trial"
+          value={selectedDrug}
+          onChange={(e) => setSelectedDrug(e.target.value as DrugOption)}
+          className={inputClass('w-auto text-sm')}
+        >
+          <option value="Retatrutide">Retatrutide</option>
+          <option value="Tirzepatide">Tirzepatide</option>
+          <option value="Semaglutide">Semaglutide</option>
+        </select>
+        <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 text-sm font-medium text-ink-2">
+          <input
+            type="checkbox"
+            role="switch"
+            aria-checked={isPercentMode}
+            checked={isPercentMode}
+            onChange={() => setIsPercentMode(!isPercentMode)}
+            className="h-5 w-5 accent-brand"
+          />
+          Show percent change
+        </label>
       </div>
 
-      {/* LEGEND SECTION */}
-      <div className="flex justify-end items-center gap-4 text-xs font-semibold text-muted mb-2">
+      <div className="mb-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-[13px] text-ink-2">
         <div className="flex items-center gap-1.5">
           <span
-            className="w-4 h-0 border-t-[3px] border-dashed inline-block" style={{ borderColor: drugConfig.color }}
+            className="inline-block h-0 w-5 border-t-[3px] border-dashed" style={{ borderColor: drugConfig.color }}
             data-testid="reference-swatch"
           />
           <span>Illustrative reference interpolation ({selectedDrug})</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3.5 h-0.5 bg-slate-800 inline-block" />
+          <span className="inline-block h-0.5 w-5 bg-ink" />
           <span>Your weight</span>
         </div>
       </div>
 
       {/* CHART CANVAS */}
       <div className="h-[300px] w-full relative">
-        <div className="absolute top-2 right-4 text-subtle font-medium text-xs pointer-events-none select-none opacity-60">
+        <div className="pointer-events-none absolute right-4 top-2 select-none text-xs text-muted">
           days
         </div>
 
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={chartData} margin={{ top: 15, right: 20, left: -10, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e3e8ef" />
             <XAxis
               dataKey="daysLabel"
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 11, fill: '#475569', fontWeight: 500 }}
+              tick={{ fontSize: 12, fill: '#4f5d70' }}
               dy={10}
             />
             <YAxis
               domain={yDomain}
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 11, fill: '#475569', fontWeight: 500 }}
+              tick={{ fontSize: 12, fill: '#4f5d70' }}
               tickFormatter={(val) => isPercentMode ? `${val}%` : `${val} ${chartData[0]?.unitLabel || ''}`}
             />
             <Tooltip
               contentStyle={{
-                borderRadius: '16px',
-                border: '1px solid #e2e8f0',
-                boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
-                padding: '12px 16px'
+                borderRadius: '10px',
+                border: '1px solid #7b8a9c',
+                boxShadow: 'none',
+                padding: '10px 12px'
               }}
               formatter={(val, name) => [
                 isPercentMode ? `${val}%` : `${val} ${chartData[0]?.unitLabel || ''}`,
@@ -249,56 +231,43 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
               type="monotone"
               dataKey="userWeight"
               name="userWeight"
-              stroke="#1e293b"
+              stroke="#0f1f33"
               strokeWidth={2.5}
               dot={false}
-              activeDot={{ r: 5, fill: '#1e293b', stroke: '#ffffff', strokeWidth: 2 }}
+              activeDot={{ r: 5, fill: '#0f1f33', stroke: '#ffffff', strokeWidth: 2 }}
             />
           </ComposedChart>
         </ResponsiveContainer>
       </div>
 
-      {/* TIMEFRAME SELECTOR TABS AT BOTTOM (2 weeks, 1 month, 3 months, 6 months, 1 year, All time) */}
-      <div className="mt-6 flex justify-center overflow-x-auto pb-1">
-        <div className="flex bg-sunken/90 p-1.5 rounded-[var(--radius-control)] border border-line/80 text-xs font-semibold gap-1">
-          {(['2 weeks', '1 month', '3 months', '6 months', '1 year', 'All time'] as const).map((t) => (
-            <button
-              key={t}
-              type="button"
-              aria-pressed={timeframe === t}
-              onClick={() => setTimeframe(t)}
-              className={`px-4 py-2 rounded-[var(--radius-control)] transition-all cursor-pointer whitespace-nowrap ${
-                timeframe === t
-                  ? 'bg-brand text-white '
-                  : 'text-muted hover:text-ink hover:bg-line/50'
-              }`}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
-      </div>
+      <Segmented
+        label="Timeframe"
+        value={timeframe}
+        onChange={setTimeframe}
+        options={(['2 weeks', '1 month', '3 months', '6 months', '1 year', 'All time'] as const).map((t) => ({ value: t, label: t }))}
+        className="mt-4"
+      />
 
       <Modal open={showInfoModal} onClose={() => setShowInfoModal(false)} title="About the reference curves" widthClass="max-w-lg">
         <div className="space-y-3">
-          <p className="text-xs text-muted leading-relaxed">
+          <p className="text-sm leading-6 text-muted">
             The curves are drawn between approximate average results reported by these trials. The shape between those points is an interpolation, not trial data, and trial participants received structured support that real life rarely matches. Your own line may sit anywhere around them. Please don't read it as a target or a forecast.
           </p>
-          <ul className="text-xs space-y-2 text-ink-2 font-medium">
-            <li className="p-2.5 rounded-[var(--radius-control)] bg-positive-soft text-ink border border-positive/40">
+          <ul className="text-sm text-ink-2">
+            <li className="border-b border-line py-2">
               <strong>Retatrutide (phase 2 trial, investigational):</strong> average loss of about 24% at 48 weeks at the highest dose studied.
             </li>
-            <li className="p-2.5 rounded-[var(--radius-control)] bg-brand-soft text-ink border border-line">
+            <li className="border-b border-line py-2">
               <strong>Tirzepatide (SURMOUNT-1):</strong> average loss of about 21% at 72 weeks at the highest dose.
             </li>
-            <li className="p-2.5 rounded-[var(--radius-control)] bg-brand-soft text-ink border border-line">
+            <li className="border-b border-line py-2">
               <strong>Semaglutide (STEP 1):</strong> average loss of about 15% at 68 weeks at 2.4 mg.
             </li>
           </ul>
-          <p className="text-[11px] text-subtle">Approximate; verify against the published trial reports. Curves stop changing at the published endpoint; they do not predict later loss. Sources: NEJM doi:10.1056/NEJMoa2301972 (retatrutide), doi:10.1056/NEJMoa2206038 (SURMOUNT-1), doi:10.1056/NEJMoa2032183 (STEP 1).</p>
-          <button type="button" onClick={() => setShowInfoModal(false)} className="w-full py-2.5 rounded-[var(--radius-control)] bg-brand text-white font-semibold text-xs hover:bg-brand-strong transition-all">Close</button>
+          <p className="text-[13px] text-muted">Approximate; verify against the published trial reports. Curves stop changing at the published endpoint; they do not predict later loss. Sources: NEJM doi:10.1056/NEJMoa2301972 (retatrutide), doi:10.1056/NEJMoa2206038 (SURMOUNT-1), doi:10.1056/NEJMoa2032183 (STEP 1).</p>
+          <button type="button" onClick={() => setShowInfoModal(false)} className={buttonClass('secondary', 'md', 'w-full sm:w-auto')}>Close</button>
         </div>
       </Modal>
-    </div>
+    </Panel>
   );
 }

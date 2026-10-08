@@ -195,16 +195,16 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
   const dayLabels = ['', 'Mon', '', 'Wed', '', 'Fri', ''];
 
   return (
-    <div className={`space-y-8 ${className}`}>
+    <div className={`space-y-5 ${className}`}>
       {/* 1. WEIGHT CHANGE HEATMAP */}
-      <div className="bg-white rounded-[var(--radius-panel)] p-6 border border-line">
+      <div className="rounded-[var(--radius-panel)] border border-line bg-surface p-4 sm:p-5">
         <div className="mb-4">
-          <h2 id={weightHeadId} className="text-xl font-semibold text-ink tracking-tight">Weight change</h2>
-          <p className="text-xs font-semibold text-muted mt-0.5">Each weigh-in vs. the previous recorded weigh-in</p>
-          <p id={weightSumId} className="text-xs text-muted mt-1">{weightSummary}</p>
+          <h2 id={weightHeadId} className="text-[15px] font-semibold leading-6 text-ink">Weight change</h2>
+          <p className="mt-0.5 text-[13px] text-muted">Each weigh-in vs. the previous recorded weigh-in</p>
+          <p id={weightSumId} className="mt-1 text-[13px] text-ink-2">{weightSummary}</p>
         </div>
 
-        <div role="group" aria-labelledby={weightHeadId} aria-describedby={weightSumId} className="bg-canvas/60 rounded-[var(--radius-control)] p-6 border border-line/70 overflow-x-auto">
+        <div role="group" aria-labelledby={weightHeadId} aria-describedby={weightSumId} className="overflow-x-auto rounded-[var(--radius-control)] border border-line bg-canvas p-4">
           {/* Calendar Grid Container */}
           <div className="min-w-[650px]">
             {/* Top Month Header Row */}
@@ -252,7 +252,7 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
             </div>
 
             {/* Legend Footer (Loss green squares -> neutral grey -> Gain RED square) */}
-            <div className="mt-6 flex items-center gap-3 text-xs font-semibold text-muted select-none">
+            <div className="mt-4 flex select-none flex-wrap items-center gap-3 text-[13px] text-ink-2">
               <span>Lower</span>
               <div className="flex items-center gap-1.5">
                 <span aria-hidden="true" className={`${swatch} bg-emerald-900`} title="Lower by more than 0.6 lb">▼</span>
@@ -265,8 +265,8 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
           </div>
         </div>
 
-        <details className="mt-4 text-xs text-muted">
-          <summary className="cursor-pointer font-semibold text-ink-2">Show weight change as a table</summary>
+        <details className="mt-3 text-sm text-ink-2">
+          <summary className="min-h-11 cursor-pointer py-2 font-semibold text-brand">Show weight change as a table</summary>
           <table className="mt-2 w-full text-left">
             <caption className="sr-only">Weight change per recorded weigh-in</caption>
             <thead><tr><th scope="col" className="py-1 pr-4">Date</th><th scope="col" className="py-1">Change</th></tr></thead>
@@ -280,14 +280,14 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
       </div>
 
       {/* 2. LOGGING ACTIVITY HEATMAP */}
-      <div className="bg-white rounded-[var(--radius-panel)] p-6 border border-line">
+      <div className="rounded-[var(--radius-panel)] border border-line bg-surface p-4 sm:p-5">
         <div className="mb-4">
-          <h2 id={actHeadId} className="text-xl font-semibold text-ink tracking-tight">Logging activity</h2>
-          <p className="text-xs font-semibold text-muted mt-0.5">Each cell is one day. The number is how many entries were recorded that day.</p>
-          <p id={actSumId} className="text-xs text-muted mt-1">{activitySummary}</p>
+          <h2 id={actHeadId} className="text-[15px] font-semibold leading-6 text-ink">Logging activity</h2>
+          <p className="mt-0.5 text-[13px] text-muted">Each cell is one day. The number is how many entries were recorded that day.</p>
+          <p id={actSumId} className="mt-1 text-[13px] text-ink-2">{activitySummary}</p>
         </div>
 
-        <div role="group" aria-labelledby={actHeadId} aria-describedby={actSumId} className="bg-canvas/60 rounded-[var(--radius-control)] p-6 border border-line/70 overflow-x-auto">
+        <div role="group" aria-labelledby={actHeadId} aria-describedby={actSumId} className="overflow-x-auto rounded-[var(--radius-control)] border border-line bg-canvas p-4">
           {/* Calendar Grid Container */}
           <div className="min-w-[650px]">
             {/* Top Month Header Row */}
@@ -335,7 +335,7 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
             </div>
 
             {/* Legend Footer (Less -> 5 green shade squares -> More) */}
-            <div className="mt-6 flex items-center gap-3 text-xs font-semibold text-muted select-none">
+            <div className="mt-4 flex select-none flex-wrap items-center gap-3 text-[13px] text-ink-2">
               <span>Less</span>
               <div className="flex items-center gap-1.5">
                 <span aria-hidden="true" className="w-4 h-4 rounded-sm bg-sunken border border-line inline-block" title="0 entries" />
@@ -349,8 +349,8 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
           </div>
         </div>
 
-        <details className="mt-4 text-xs text-muted">
-          <summary className="cursor-pointer font-semibold text-ink-2">Show logging activity as a table</summary>
+        <details className="mt-3 text-sm text-ink-2">
+          <summary className="min-h-11 cursor-pointer py-2 font-semibold text-brand">Show logging activity as a table</summary>
           <table className="mt-2 w-full text-left">
             <caption className="sr-only">Logging activity per day</caption>
             <thead><tr><th scope="col" className="py-1 pr-4">Date</th><th scope="col" className="py-1">Entries</th></tr></thead>
