@@ -44,25 +44,25 @@ export function SafetyNotice({ variant = 'full', medication, className = '', sho
   }
 
   return (
-    <section id="safety" aria-labelledby="safety-heading" className={`rounded-[var(--radius-panel)] border border-caution/40 bg-caution-soft p-5 text-ink ${className}`} data-testid="safety-full">
-      <h2 id="safety-heading" className="flex items-center gap-2 text-sm font-semibold">
+    <section id="safety" aria-labelledby="safety-heading" className={`rounded-[var(--radius-panel)] border border-caution/40 border-l-4 border-l-caution bg-caution-soft p-4 text-ink sm:p-5 ${className}`} data-testid="safety-full">
+      <h2 id="safety-heading" className="flex items-center gap-2 text-[15px] font-semibold">
         <AlertTriangle className="w-4 h-4" aria-hidden="true" /> When to get help
       </h2>
-      <p className="text-xs mt-2 leading-relaxed">
+      <p className="mt-2 text-sm leading-6">
         Contact your prescriber or get urgent medical care (call your local emergency number if it is severe) if you notice any of these:
       </p>
-      <ul className="text-xs mt-2 space-y-1 list-disc pl-5 leading-relaxed">
+      <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6">
         {RED_FLAGS.map((f) => <li key={f}>{f}</li>)}
       </ul>
-      <p className="text-xs mt-2 font-medium leading-relaxed">{EXAMPLES_NOT_EXHAUSTIVE}</p>
+      <p className="mt-2 text-sm font-medium leading-6">{EXAMPLES_NOT_EXHAUSTIVE}</p>
 
-      <h3 className="text-xs font-semibold mt-4">If you miss a dose</h3>
-      <p className="text-xs mt-1 leading-relaxed">
+      <h3 className="mt-4 text-sm font-semibold">If you miss a dose</h3>
+      <p className="mt-1 text-sm leading-6">
         Check the instructions for your medication or ask your prescriber or pharmacist. Never take a double dose to catch up.
         {' '}{MEDICATION_INFO[med]?.missedDoseNote}
       </p>
       {!MEDICATION_INFO[med]?.missedDoseNote.includes(LEAFLET_LINE) && (
-        <p className="text-xs mt-1 leading-relaxed"><strong>{LEAFLET_LINE}</strong></p>
+        <p className="mt-1 text-sm leading-6"><strong>{LEAFLET_LINE}</strong></p>
       )}
 
       {investigational && (
@@ -72,7 +72,7 @@ export function SafetyNotice({ variant = 'full', medication, className = '', sho
         </div>
       )}
 
-      <p className="text-[11px] mt-4 opacity-80">This app is a personal log and a simplified explainer. It is not medical advice and does not replace your care team.</p>
+      <p className="mt-4 text-[13px] text-ink-2">This app is a personal log and a simplified explainer. It is not medical advice and does not replace your care team.</p>
     </section>
   );
 }
