@@ -3,7 +3,9 @@ import { Check } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { Modal } from '../ui/Modal';
 import { Field, FormActions, inputClass, noteClass } from '../ds';
-import { WEIGHT_BOUNDS, displayToLbs, getWeightUnit, lbsToDisplay } from '../../lib/units';
+import { WEIGHT_BOUNDS, displayToLbs, formatWeight, getWeightUnit, lbsToDisplay } from '../../lib/units';
+import { similarWeight } from '../../lib/duplicates';
+import { format } from 'date-fns';
 import { dateOnlyToIso, isoToLocalDateString, parseDateOnly, todayLocalDateString } from '../../lib/dates';
 import type { WeightEntry } from '../../types';
 import { latestWeight } from '../../lib/insights';
@@ -30,6 +32,10 @@ function WeightForm({ entry, onClose, onSuccess, onEdited }: Omit<Props, 'isOpen
   const [error, setError] = useState<string>();
   const [dateError, setDateError] = useState<string>();
   const [staleError, setStaleError] = useState<string>();
+  // A possible duplicate is a warning, never a block: the second press of Save, unchanged, saves anyway.
+  const [duplicate, setDuplicate] = useState<{ match: WeightEntry; key: string }>();
+  const formKey = `${value.trim()}|${date}`;
+  const warnDuplicate = duplicate?.key === formKey ? duplicate.match : undefined;
   const uid = useId();
   const today = todayLocalDateString();
 
@@ -48,7 +54,10 @@ function WeightForm({ entry, onClose, onSuccess, onEdited }: Omit<Props, 'isOpen
     if (!ok) return;
     // Canonical storage is pounds; the date is anchored at local noon so it stays on the chosen day.
     if (!entry) {
-      addWeight({ weightLbs: displayToLbs(n, unit), date: dateOnlyToIso(date) });
+      const candidate = { weightLbs: displayToLbs(n, unit), date: dateOnlyToIso(date) };
+      const match = similarWeight(weights, candidate);
+      if (match && !warnDuplicate) { setDuplicate({ match, key: formKey }); return; }
+      addWeight(candidate);
       onSuccess?.();
       onClose();
       return;
@@ -62,6 +71,8 @@ function WeightForm({ entry, onClose, onSuccess, onEdited }: Omit<Props, 'isOpen
     };
     if (next.weightLbs === entry.weightLbs && next.date === entry.date) { onClose(); return; }
     const { id: _id, ...fields } = next;
+    const match = similarWeight(weights, fields, entry.id);
+    if (match && !warnDuplicate) { setDuplicate({ match, key: formKey }); return; }
     if (!editWeight(entry, fields)) {
       setStaleError('This weigh-in changed or was removed after you opened it. Nothing was saved. Close this window and review it again.');
       return;
@@ -105,8 +116,13 @@ function WeightForm({ entry, onClose, onSuccess, onEdited }: Omit<Props, 'isOpen
         />
       </Field>
 
+      {warnDuplicate && (
+        <p role="alert" className={noteClass('caution')}>
+          You already have {formatWeight(warnDuplicate.weightLbs, unit)} recorded on {format(new Date(warnDuplicate.date), 'EEE d MMM')}. If this is a separate weigh-in, select Save anyway; otherwise cancel.
+        </p>
+      )}
       {staleError && <p role="alert" className={noteClass('danger')}>{staleError}</p>}
-      <FormActions onCancel={onClose} submitLabel={entry ? 'Save changes' : 'Save Weight'} submitIcon={<Check className="h-4 w-4" aria-hidden="true" />} />
+      <FormActions onCancel={onClose} submitLabel={warnDuplicate ? 'Save anyway' : entry ? 'Save changes' : 'Save Weight'} submitIcon={<Check className="h-4 w-4" aria-hidden="true" />} />
     </form>
   );
 }

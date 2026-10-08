@@ -6,6 +6,8 @@ import { INJECTION_SITES_ABDOMEN, INJECTION_SITES_OTHER, getRecommendedNextSite 
 import { APPROXIMATE_NOTE, MEDICATION_OPTIONS, defaultDoseAmount, doseWarning, medicationInfo } from '../../lib/medications';
 import { dstGapAdjustment, isoToLocalDateString, isoToLocalTimeString, localDateTimeToIso, nowLocalTimeString, parseDateOnly, todayLocalDateString } from '../../lib/dates';
 import { lastDoseOf } from '../../lib/insights';
+import { similarDose } from '../../lib/duplicates';
+import { format } from 'date-fns';
 import { Modal } from '../ui/Modal';
 import { OtherMedicationNote } from '../OtherMedicationNote';
 import { choiceClass, errorClass, FormActions, helpClass, inputClass, labelClass, noteClass } from '../ds';
@@ -71,6 +73,8 @@ function DoseForm({ entry, onClose, onSuccess, onEdited }: Omit<Props, 'isOpen'>
   const [painLevel, setPainLevel] = useState<number | null>(entry ? entry.painLevel : null); // null = not recorded
   const [notes, setNotes] = useState<string>(entry?.notes ?? '');
   const [staleError, setStaleError] = useState<string>();
+  // A possible duplicate is a warning, never a block: the second press of Save, unchanged, saves anyway.
+  const [duplicate, setDuplicate] = useState<{ match: DoseEvent; key: string }>();
   const [confirmed, setConfirmed] = useState(false);
   const [customOpen, setCustomOpen] = useState(false);
   const [customSite, setCustomSite] = useState('');
@@ -91,6 +95,8 @@ function DoseForm({ entry, onClose, onSuccess, onEdited }: Omit<Props, 'isOpen'>
     setConfirmed(false);
   };
   const amountUnchanged = !!entry && medication === entry.medication && amount.trim() === initial!.amount;
+  const formKey = `${medication}|${amount.trim()}|${dateStr}|${timeStr}`;
+  const warnDuplicate = duplicate?.key === formKey ? duplicate.match : undefined;
   const whenUnchanged = !!entry && dateStr === initial!.date && timeStr === initial!.time;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -107,7 +113,10 @@ function DoseForm({ entry, onClose, onSuccess, onEdited }: Omit<Props, 'isOpen'>
     if (Object.keys(next).length) return;
 
     if (!entry) {
-      addDose({ medication, amountMg: amountNum, date: localDateTimeToIso(dateStr, timeStr), site, painLevel, notes });
+      const candidate = { medication, amountMg: amountNum, date: localDateTimeToIso(dateStr, timeStr), site, painLevel, notes };
+      const match = similarDose(doses, candidate);
+      if (match && !warnDuplicate) { setDuplicate({ match, key: formKey }); return; }
+      addDose(candidate);
       onSuccess?.();
       onClose();
       return;
@@ -122,6 +131,9 @@ function DoseForm({ entry, onClose, onSuccess, onEdited }: Omit<Props, 'isOpen'>
     };
     const { id: _id, ...before } = entry;
     if (JSON.stringify({ ...before, ...fields }) === JSON.stringify(before)) { onClose(); return; }
+    // Only a change to what, how much or when can create a new duplicate; a notes or site correction cannot.
+    const match = amountUnchanged && whenUnchanged ? undefined : similarDose(doses, { ...before, ...fields }, entry.id);
+    if (match && !warnDuplicate) { setDuplicate({ match, key: formKey }); return; }
     if (!editDose(entry, { ...before, ...fields })) {
       setStaleError('This injection changed or was removed after you opened it. Nothing was saved. Close this window and review it again.');
       return;
@@ -250,8 +262,13 @@ function DoseForm({ entry, onClose, onSuccess, onEdited }: Omit<Props, 'isOpen'>
         <textarea id={`${uid}-notes`} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="How did the injection feel?" className={field} />
       </div>
 
+      {warnDuplicate && (
+        <p role="alert" className={noteClass('caution')}>
+          You already recorded {warnDuplicate.amountMg} mg {warnDuplicate.medication} on {format(new Date(warnDuplicate.date), 'EEE d MMM')} at {format(new Date(warnDuplicate.date), 'h:mm a')}. If this is a separate injection, select Save anyway; otherwise cancel.
+        </p>
+      )}
       {staleError && <p role="alert" className={noteClass('danger')}>{staleError}</p>}
-      <FormActions onCancel={onClose} submitLabel={entry ? 'Save changes' : 'Save Dose'} submitIcon={<Check className="h-4 w-4" aria-hidden="true" />} />
+      <FormActions onCancel={onClose} submitLabel={warnDuplicate ? 'Save anyway' : entry ? 'Save changes' : 'Save Dose'} submitIcon={<Check className="h-4 w-4" aria-hidden="true" />} />
     </form>
   );
 }

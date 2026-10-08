@@ -51,3 +51,28 @@ Injections and weigh-ins can be edited from Medication, Progress (weigh-in table
 Tests: `src/test/recordEditing.test.tsx` (11), passing in UTC, New York, Los Angeles, Kolkata and Auckland. Mutation-checked: removing the stale check, always converting weight, or always re-timing doses each fails tests.
 
 Still outstanding in Pack 3: duplicate warnings (3.4), provenance (3.5), durable per-record history. Real-browser editing in the vault-gated app is unverified.
+
+## Duplicate warnings draft (Pack 3.4)
+
+Logging or editing an injection or weigh-in now warns when it looks like a record already saved. It never blocks.
+
+**What counts as a possible duplicate** (`src/lib/duplicates.ts`):
+- **Injection:** same medication and exactly the same amount, within 12 hours.
+- **Weigh-in:** same local day, within 0.5 lb (about 0.2 kg).
+
+The record being edited is never compared with itself. The thresholds are narrow on purpose: they catch a double tap or a record logged twice, not every nearby entry. A once-daily medication logged a day apart does not trigger the warning.
+
+**What the user sees:**
+- The warning names the existing record, for example "You already recorded 5 mg Tirzepatide on Tue 7 Oct at 12:00 PM".
+- Nothing is saved yet, and the Save button becomes "Save anyway".
+- Pressing "Save anyway" with the same values saves the record.
+- Changing what, how much or when clears the warning, and the record is checked again on save.
+- Editing only notes, site or discomfort never warns.
+
+**CSV import** already skips rows matching an existing weigh-in (same day, within 0.1 lb) and reports the count in its confirmation. That is unchanged.
+
+**Tests:**
+- `src/test/duplicates.test.tsx`: 5 tests, mutation-checked.
+- One existing test in `rv.pain.test.tsx` logs the same dose twice a minute apart. It now confirms with "Save anyway" before its unchanged assertion.
+
+**Still outstanding in Pack 3:** provenance (3.5) and durable per-record history.
