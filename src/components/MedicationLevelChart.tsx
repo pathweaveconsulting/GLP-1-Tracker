@@ -6,6 +6,7 @@ import {
 import { useStore } from '../store/useStore';
 import { generatePKCurve } from '../lib/glp1Utils';
 import { NO_ESTIMATE_TEXT } from '../lib/medications';
+import { Segmented } from './ds';
 
 interface Props {
   className?: string;
@@ -30,42 +31,43 @@ export function MedicationLevelChart({ className = '', onOpenSources }: Props) {
   const activeMeds = pkData.medicationsList;
 
   return (
-    <div className={`bg-white rounded-[var(--radius-panel)] p-6 border border-line ${className}`}>
+    <section aria-label="Medication level" className={`rounded-[var(--radius-panel)] border border-line bg-surface p-4 sm:p-5 ${className}`}>
       {/* HEADER WITH TITLE, SUBHEAD, LEGEND */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+      <div className="mb-4 flex flex-col items-start justify-between gap-3 md:flex-row">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-ink text-base">Medication level</h3>
+            <h2 className="text-[15px] font-semibold text-ink">Medication level</h2>
             {onOpenSources && (
               <button
+                type="button"
                 onClick={onOpenSources}
                 aria-label="About the estimated level"
-                className="cursor-pointer text-subtle hover:text-brand transition-colors p-1 rounded-full hover:bg-sunken"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-[var(--radius-control)] text-muted hover:bg-sunken hover:text-ink"
               >
                 <Info className="w-4 h-4" aria-hidden="true" />
               </button>
             )}
           </div>
-          <p className="text-xs text-muted mt-0.5">
+          <p className="mt-0.5 text-sm text-ink-2">
             {doses.length === 0 ? (
               'Log a dose to see an estimate.'
             ) : pkData.modelled ? (
               <>
                 Estimated {pkData.medicationName} level now: <strong className="text-ink font-semibold">{pkData.currentLevel} mg</strong>{' '}
-                <span className="text-subtle">({pkData.percentOfPeak}% of your modelled peak)</span>
+                <span className="text-muted">({pkData.percentOfPeak}% of your modelled peak)</span>
               </>
             ) : (
               NO_ESTIMATE_TEXT
             )}
           </p>
           {pkData.mixedMedications && (
-            <p className="text-[11px] text-caution mt-1">You’ve logged more than one medication. Each is drawn separately and never added together; the number above is for {pkData.medicationName}, your most recent.</p>
+            <p className="mt-1 text-[13px] text-caution">You’ve logged more than one medication. Each is drawn separately and never added together; the number above is for {pkData.medicationName}, your most recent.</p>
           )}
-          {doses.length > 0 && <p className="text-[11px] text-subtle mt-0.5">Simplified model, not a blood test. The right-hand side shows how the estimate would fall if no further doses were taken.</p>}
+          {doses.length > 0 && <p className="mt-0.5 text-[13px] text-muted">Simplified model, not a blood test. The right-hand side shows how the estimate would fall if no further doses were taken.</p>}
         </div>
 
         {/* LEGEND */}
-        <div className="flex items-center gap-4 text-xs font-medium text-muted">
+        <div className="flex flex-wrap items-center gap-4 text-[13px] text-ink-2">
           {activeMeds.map((med) => {
             const colorObj = medColors[med.toLowerCase()] || { stroke: '#1d5aa6', fill: '#1d5aa6' };
             return (
@@ -142,25 +144,13 @@ export function MedicationLevelChart({ className = '', onOpenSources }: Props) {
         </ResponsiveContainer>
       </div>
 
-      {/* TIMEFRAME SELECTOR TABS AT BOTTOM */}
-      <div className="mt-6 flex justify-center sm:justify-end">
-        <div className="flex bg-canvas p-1 rounded-[var(--radius-control)] border border-line text-xs font-medium gap-1">
-          {(['2 weeks', '1 month', '3 months', 'All time'] as const).map((t) => (
-            <button
-              key={t}
-              aria-pressed={pkTimeline === t}
-              onClick={() => setPkTimeline(t)}
-              className={`px-3.5 py-1.5 rounded-[10px] transition-all cursor-pointer ${
-                pkTimeline === t
-                  ? 'bg-white text-ink  font-semibold'
-                  : 'text-muted hover:text-ink'
-              }`}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
+      <Segmented
+        label="Level chart range"
+        value={pkTimeline}
+        onChange={setPkTimeline}
+        options={(['2 weeks', '1 month', '3 months', 'All time'] as const).map((t) => ({ value: t, label: t }))}
+        className="mt-4"
+      />
+    </section>
   );
 }

@@ -6,16 +6,17 @@ import { todayLocalDateString } from '../lib/dates';
 import { OtherMedicationNote } from '../components/OtherMedicationNote';
 import { SafetyNotice } from '../components/SafetyNotice';
 import type { Medication } from '../types';
+import { BrandMark } from '../components/BrandMark';
+import { buttonClass, choiceClass, errorClass, helpClass, inputClass, labelClass } from '../components/ds';
 import { convertTyped, displayToLbs, lbsToDisplay, lbsToInput, type WeightUnit } from '../lib/units';
 
-const inputCls =
-  'w-full px-3.5 py-2.5 rounded-[var(--radius-control)] border border-line bg-canvas text-ink text-sm font-medium focus:ring-2 focus:ring-brand focus:outline-none';
-const labelCls = 'block text-xs font-semibold text-muted mb-1.5';
+const inputCls = inputClass();
+const labelCls = `${labelClass} mb-1.5`;
 
 function FieldError({ id, message }: { id: string; message?: string }) {
   if (!message) return null;
   return (
-    <p id={id} role="alert" className="text-xs text-danger mt-1">
+    <p id={id} role="alert" className={`mt-1 ${errorClass}`}>
       {message}
     </p>
   );
@@ -103,20 +104,24 @@ export function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-canvas text-ink font-sans antialiased flex items-start md:items-center justify-center p-4">
-      <main className="w-full max-w-xl bg-white rounded-[var(--radius-panel)] border border-line p-6 md:p-8 my-6">
-        <h1 className="text-2xl font-semibold tracking-tight">{welcomeBack ? 'Welcome back. Let’s confirm your details.' : 'Welcome. Let’s set up your journey.'}</h1>
-        <p className="text-sm text-muted mt-1.5 leading-relaxed">
+    <div className="flex min-h-screen items-start justify-center bg-canvas p-4 font-sans text-ink antialiased md:items-center">
+      <main className="my-6 w-full max-w-xl rounded-[var(--radius-panel)] border border-line bg-surface p-5 sm:p-8">
+        <div className="mb-6 flex items-center gap-2.5"><BrandMark /><span className="text-sm font-semibold text-ink">GLP-1 Companion</span></div>
+        <h1 className="text-2xl font-semibold tracking-[-0.01em]">{welcomeBack ? 'Welcome back. Let’s confirm your details.' : 'Welcome. Let’s set up your journey.'}</h1>
+        <p className="mt-1.5 text-sm leading-6 text-muted">
           {welcomeBack
             ? `We kept your ${keptCount} ${keptCount === 1 ? 'entry' : 'entries'}. This version needs your goal and height again so every number is based on you. We pre-filled what we could from your earliest entries; please check it.`
             : 'A few details so every number you see is based on you. Everything stays on this device. Nothing is uploaded.'}
         </p>
 
-        <ol aria-label="Setup progress" className="flex gap-3 text-xs text-muted mt-4">
-          {['Medication and weight', 'Height and start date', 'Review and safety'].map((name, index) => <li key={name} aria-current={step === index ? 'step' : undefined} className={step === index ? 'font-semibold text-ink' : ''}>{index + 1}. {name}</li>)}
+        <ol aria-label="Setup progress" className="mt-5 grid grid-cols-3 gap-2 text-[13px] text-muted">
+          {['Medication and weight', 'Height and start date', 'Review and safety'].map((name, index) => <li key={name} aria-current={step === index ? 'step' : undefined} className={step === index ? 'font-semibold text-ink' : ''}>
+            <span aria-hidden="true" className={`mb-1.5 block h-1 rounded-full ${index <= step ? 'bg-brand' : 'bg-line'}`} />
+            {index + 1}. {name}
+          </li>)}
         </ol>
-        <h2 ref={headingRef} tabIndex={-1} className="mt-4 text-lg font-semibold focus:outline-none">Step {step + 1} of 3: {['Your medication and weight', 'Your height and start date', 'Review before starting'][step]}</h2>
-        <form ref={formRef} onSubmit={submit} noValidate className="mt-6 space-y-4">
+        <h2 ref={headingRef} tabIndex={-1} className="mt-6 text-lg font-semibold focus:outline-none">Step {step + 1} of 3: {['Your medication and weight', 'Your height and start date', 'Review before starting'][step]}</h2>
+        <form ref={formRef} onSubmit={submit} noValidate className="mt-4 space-y-5">
           {step === 0 && <>
           <div>
             <label htmlFor={id('medication')} className={labelCls}>Medication</label>
@@ -131,7 +136,7 @@ export function Onboarding() {
               {MEDICATION_OPTIONS.map((m) => <option key={m} value={m}>{m}</option>)}
             </select>
             <FieldError id={id('medication-err')} message={errors.medication} />
-            <p className="mt-2 text-xs text-muted">Weekly injection models only. For oral semaglutide, including Wegovy tablets or Rybelsus, select Other. Verify your exact product and prescription with your pharmacist.</p>
+            <p className={`mt-1.5 ${helpClass}`}>Weekly injection models only. For oral semaglutide, including Wegovy tablets or Rybelsus, select Other. Verify your exact product and prescription with your pharmacist.</p>
         <OtherMedicationNote medication={form.medication || undefined} className="mt-2" />
           </div>
 
@@ -144,7 +149,7 @@ export function Onboarding() {
                   type="button"
                   aria-pressed={form.unit === u}
                   onClick={() => setUnit(u)}
-                  className={`px-4 py-2 rounded-[var(--radius-control)] text-sm font-semibold border transition-colors ${form.unit === u ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-ink-2 border-line hover:bg-canvas'}`}
+                  className={choiceClass(form.unit === u, 'min-w-16')}
                 >
                   {u}
                 </button>
@@ -235,25 +240,25 @@ export function Onboarding() {
 
           </>}
           {step === 2 && <>
-          <dl className="grid grid-cols-2 gap-3 text-sm">
-            <div><dt className="text-muted">Medication</dt><dd>{form.medication}</dd></div>
-            <div><dt className="text-muted">Treatment start date</dt><dd>{form.startDate}</dd></div>
-            <div><dt className="text-muted">Starting weight</dt><dd>{form.startingWeight} {form.unit}</dd></div>
-            <div><dt className="text-muted">Goal weight</dt><dd>{form.goalWeight} {form.unit}</dd></div>
-            <div><dt className="text-muted">Height</dt><dd>{form.unit === 'kg' ? `${form.heightCm} cm` : `${form.heightFt} ft ${form.heightIn || '0'} in`}</dd></div>
+          <dl className="grid grid-cols-2 gap-x-6 gap-y-3 rounded-[var(--radius-control)] border border-line bg-canvas p-4 text-sm">
+            <div><dt className="text-[13px] text-muted">Medication</dt><dd>{form.medication}</dd></div>
+            <div><dt className="text-[13px] text-muted">Treatment start date</dt><dd>{form.startDate}</dd></div>
+            <div><dt className="text-[13px] text-muted">Starting weight</dt><dd>{form.startingWeight} {form.unit}</dd></div>
+            <div><dt className="text-[13px] text-muted">Goal weight</dt><dd>{form.goalWeight} {form.unit}</dd></div>
+            <div><dt className="text-[13px] text-muted">Height</dt><dd>{form.unit === 'kg' ? `${form.heightCm} cm` : `${form.heightFt} ft ${form.heightIn || '0'} in`}</dd></div>
           </dl>
-          <p className="text-xs text-muted">Check these values against your own records and prescription. This review does not recommend a medication, dose or weight goal.</p>
+          <p className={helpClass}>Check these values against your own records and prescription. This review does not recommend a medication, dose or weight goal.</p>
           <SafetyNotice variant="full" medication={form.medication || undefined} />
 
           <div>
-            <label className="flex items-start gap-2.5 text-sm text-ink-2">
+            <label className="flex items-start gap-2.5 text-sm text-ink">
               <input
                 type="checkbox"
                 checked={acknowledged}
                 aria-invalid={ackError ? true : undefined}
                 onChange={(e) => setAcknowledged(e.target.checked)}
                 aria-describedby={ackError ? id('ack-err') : undefined}
-                className="mt-0.5 h-5 w-5 rounded border-line-strong focus-visible:ring-2 focus-visible:ring-brand"
+                className="mt-0.5 h-5 w-5 shrink-0 rounded border-line-strong accent-brand"
               />
               <span>I understand this app does not give medical advice and I will follow my clinician's instructions.</span>
             </label>
@@ -262,13 +267,12 @@ export function Onboarding() {
 
           </>}
           {step < 2 && <SafetyNotice variant="compact" showHelpLink={false} medication={form.medication || undefined} />}
-          {step > 0 && <button type="button" className="w-full min-h-11 rounded-xl border p-3 text-sm font-semibold focus-visible:ring-2 focus-visible:ring-brand" onClick={() => { setStep(step - 1); setErrors({}); }}>Back</button>}
-          <button
-            type="submit"
-            className="w-full py-3 px-4 rounded-[var(--radius-control)] bg-slate-900 text-white font-semibold text-sm hover:bg-slate-800 transition-colors focus-visible:ring-2 focus-visible:ring-brand"
-          >
-            {step === 2 ? 'Start my journey' : 'Continue'}
-          </button>
+          <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end">
+            {step > 0 && <button type="button" className={buttonClass('secondary', 'md', 'sm:min-w-28')} onClick={() => { setStep(step - 1); setErrors({}); }}>Back</button>}
+            <button type="submit" className={buttonClass('primary', 'md', 'sm:min-w-40')}>
+              {step === 2 ? 'Start my journey' : 'Continue'}
+            </button>
+          </div>
         </form>
       </main>
     </div>

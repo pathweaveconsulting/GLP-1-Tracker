@@ -225,6 +225,15 @@ export function collectNonText(srcDir, tokens) {
       }
     }
   }
+  // The global :focus-visible outline in src/index.css is the app's main focus indicator; it must reach 3:1 too.
+  const cssFile = path.join(srcDir, 'index.css');
+  if (fs.existsSync(cssFile)) {
+    const css = fs.readFileSync(cssFile, 'utf8');
+    for (const m of css.matchAll(/:focus-visible\s*\{[^}]*?outline:[^;}]*?(var\(--color-([a-z0-9-]+)\)|#[0-9a-fA-F]{6})/g)) {
+      const hex = m[2] ? tokens[m[2]] : m[1].toLowerCase();
+      results.push({ file: cssFile, line: lineOf(css, m.index), kind: 'ring', cls: `:focus-visible outline ${m[1]}`, fg: hex ?? null, bg: LIGHT_SURFACES, need: AA_NON_TEXT });
+    }
+  }
   return results.map((u) => {
     if (!u.fg) return { ...u, ratio: 0, pass: false, unresolved: true };
     if (u.onFill) { const ratio = contrast('#ffffff', u.fg); return { ...u, ratio, pass: ratio >= u.need }; }

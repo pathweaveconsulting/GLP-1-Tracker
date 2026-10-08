@@ -66,7 +66,7 @@ export function SafetyNotice({ variant = 'full', medication, className = '', sho
       )}
 
       {investigational && (
-        <div className="mt-4 rounded-[var(--radius-control)] bg-white/70 border border-caution/40 p-3 text-xs leading-relaxed flex gap-2">
+        <div className="mt-4 flex gap-2 rounded-[var(--radius-control)] border border-caution/40 bg-surface p-3 text-sm leading-6">
           <FlaskConical className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
           <p><strong>Retatrutide is investigational.</strong> It is not an approved medicine, there are no approved doses, and this app can’t tell you what is safe. Use it only as directed by a study team or prescriber.</p>
         </div>
