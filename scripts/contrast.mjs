@@ -169,7 +169,7 @@ export function blend(fg, bg, alpha) {
 }
 
 /** Fills a heatmap may use without a contrast check: the card surfaces and the empty "no data" cell. */
-const HEATMAP_EXEMPT_FILLS = new Set(['white', '[#F8F9FC]', '[#f8f9fc]', '[#F1F5F9]', '[#f1f5f9]']);
+const HEATMAP_EXEMPT_FILLS = new Set(['white', '[#F8F9FC]', '[#f8f9fc]', '[#F1F5F9]', '[#f1f5f9]', 'surface', 'canvas', 'sunken']);
 
 const FOCUS_RING = /^(?:focus|focus-visible|focus-within):ring-(?!offset|inset|0$|1$|2$|4$|8$)(.+)$/;
 

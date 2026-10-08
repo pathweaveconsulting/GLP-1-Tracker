@@ -25,7 +25,7 @@ export function Modal({ open, onClose, title, subtitle, icon, children, widthCla
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/45 sm:items-center sm:p-4"
       {...backdrop}
     >
       <div
@@ -35,22 +35,22 @@ export function Modal({ open, onClose, title, subtitle, icon, children, widthCla
         aria-labelledby={titleId}
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
-        className={`w-full ${widthClass} rounded-[24px] p-6 shadow-2xl border relative max-h-[90vh] overflow-y-auto ${dark ? 'bg-slate-900 text-white border-slate-800' : 'bg-white border-[#E5E7EB]'}`}
+        className={`relative max-h-[92dvh] w-full overflow-y-auto rounded-t-[18px] border p-5 shadow-2xl sm:max-h-[88vh] sm:rounded-[var(--radius-panel)] sm:p-6 ${widthClass} ${dark ? 'border-slate-800 bg-slate-900 text-white' : 'border-line bg-surface'}`}
       >
         <button
           type="button"
           onClick={onClose}
           aria-label="Close dialog"
           data-dialog-close
-          className={`absolute top-5 right-5 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${dark ? 'bg-slate-800 hover:bg-slate-700 text-subtle' : 'bg-[#F1F5F9] hover:bg-[#E5E7EB] text-muted'}`}
+          className={`absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-[var(--radius-control)] transition-colors ${dark ? 'text-slate-300 hover:bg-slate-800' : 'text-muted hover:bg-sunken hover:text-ink'}`}
         >
-          <X className="w-4 h-4" aria-hidden="true" />
+          <X className="h-5 w-5" aria-hidden="true" />
         </button>
-        <div className="flex items-center gap-3 mb-5 pr-10">
+        <div className="mb-5 flex items-center gap-3 pr-12">
           {icon}
           <div>
-            <h2 id={titleId} className={`text-xl font-semibold ${dark ? 'text-white' : 'text-[#111827]'}`}>{title}</h2>
-            {subtitle && <p className={`text-xs ${dark ? 'text-subtle' : 'text-muted'}`}>{subtitle}</p>}
+            <h2 id={titleId} className={`text-lg font-semibold leading-7 ${dark ? 'text-white' : 'text-ink'}`}>{title}</h2>
+            {subtitle && <p className={`text-[13px] leading-5 ${dark ? 'text-slate-300' : 'text-muted'}`}>{subtitle}</p>}
           </div>
         </div>
         {children}

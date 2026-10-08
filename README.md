@@ -27,6 +27,8 @@ The product constitution is in [`AGENTS.md`](./AGENTS.md). The rules that shape 
 
 Run the tests under another timezone with e.g. `TZ=Pacific/Auckland npm test`.
 
+Design preview (development only): `npm run dev`, then open `/design-preview/?route=/&data=populated` (or `data=empty`, `unit=lbs`). It renders the real layout and pages with synthetic records and an in-memory storage stand-in; it is not part of `npm run build` and never touches real browser storage. See docs/REDESIGN.md.
+
 ## File map
 
 ```

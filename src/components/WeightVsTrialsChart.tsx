@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Info } from 'lucide-react';
-import { 
-  ResponsiveContainer, ComposedChart, Line, XAxis, YAxis, Tooltip, CartesianGrid 
+import {
+  ResponsiveContainer, ComposedChart, Line, XAxis, YAxis, Tooltip, CartesianGrid
 } from 'recharts';
 import { subDays, subMonths, subYears, differenceInDays } from 'date-fns';
 import { useStore } from '../store/useStore';
@@ -120,11 +120,11 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
   const drugConfig = TRIAL_CURVES[selectedDrug];
 
   return (
-    <div className={`bg-white rounded-[24px] p-6 shadow-xs border border-[#E5E7EB] ${className}`}>
+    <div className={`bg-white rounded-[24px] p-6 shadow-xs border border-line ${className}`}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
         <div>
-          <h3 className="text-xl font-semibold text-[#111827] tracking-tight">Weight vs trials</h3>
+          <h3 className="text-xl font-semibold text-ink tracking-tight">Weight vs trials</h3>
           <p className="text-xs text-muted mt-1 max-w-xl">
             Illustrative reference curves shaped around published average results, not a forecast for you. Trial participants, doses and support differ from real life, so your own line may sit anywhere around them.
           </p>
@@ -141,7 +141,7 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
               aria-label="Show percent change"
               onClick={() => setIsPercentMode(!isPercentMode)}
               className={`w-11 h-6 flex items-center rounded-full p-1 cursor-pointer transition-colors ${
-                isPercentMode ? 'bg-[#582967]' : 'bg-slate-300'
+                isPercentMode ? 'bg-brand' : 'bg-slate-300'
               }`}
             >
               <div
@@ -150,7 +150,7 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
                 }`}
               />
             </button>
-            <span className="text-sm font-semibold text-[#344054]">%</span>
+            <span className="text-sm font-semibold text-ink-2">%</span>
           </div>
 
           {/* Drug Selection Dropdown */}
@@ -158,7 +158,7 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
             aria-label="Reference trial"
             value={selectedDrug}
             onChange={(e) => setSelectedDrug(e.target.value as DrugOption)}
-            className="bg-[#F1F5F9] hover:bg-[#E5E7EB]/80 border border-[#E5E7EB] text-[#111827] text-xs font-semibold py-1.5 px-3 rounded-[16px] cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+            className="bg-sunken hover:bg-line/80 border border-line text-ink text-xs font-semibold py-1.5 px-3 rounded-[16px] cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand transition-all"
           >
             <option value="Retatrutide">Retatrutide</option>
             <option value="Tirzepatide">Tirzepatide</option>
@@ -172,7 +172,7 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
               if (onOpenInfo) onOpenInfo();
               else setShowInfoModal(true);
             }}
-            className="text-subtle hover:text-[#6D4AFF] transition-colors p-1.5 rounded-full hover:bg-[#F1F5F9] cursor-pointer"
+            className="text-subtle hover:text-brand transition-colors p-1.5 rounded-full hover:bg-sunken cursor-pointer"
             aria-label="About the trial reference curves"
           >
             <Info className="w-4 h-4" aria-hidden="true" />
@@ -183,7 +183,7 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
       {/* LEGEND SECTION */}
       <div className="flex justify-end items-center gap-4 text-xs font-semibold text-muted mb-2">
         <div className="flex items-center gap-1.5">
-          <span 
+          <span
             className="w-4 h-0 border-t-[3px] border-dashed inline-block" style={{ borderColor: drugConfig.color }}
             data-testid="reference-swatch"
           />
@@ -204,17 +204,17 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={chartData} margin={{ top: 15, right: 20, left: -10, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-            <XAxis 
-              dataKey="daysLabel" 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{ fontSize: 11, fill: '#475569', fontWeight: 500 }} 
+            <XAxis
+              dataKey="daysLabel"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 11, fill: '#475569', fontWeight: 500 }}
               dy={10}
             />
-            <YAxis 
+            <YAxis
               domain={yDomain}
-              axisLine={false} 
-              tickLine={false} 
+              axisLine={false}
+              tickLine={false}
               tick={{ fontSize: 11, fill: '#475569', fontWeight: 500 }}
               tickFormatter={(val) => isPercentMode ? `${val}%` : `${val} ${chartData[0]?.unitLabel || ''}`}
             />
@@ -260,7 +260,7 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
 
       {/* TIMEFRAME SELECTOR TABS AT BOTTOM (2 weeks, 1 month, 3 months, 6 months, 1 year, All time) */}
       <div className="mt-6 flex justify-center overflow-x-auto pb-1">
-        <div className="flex bg-[#F1F5F9]/90 p-1.5 rounded-[16px] border border-[#E5E7EB]/80 text-xs font-semibold gap-1">
+        <div className="flex bg-sunken/90 p-1.5 rounded-[16px] border border-line/80 text-xs font-semibold gap-1">
           {(['2 weeks', '1 month', '3 months', '6 months', '1 year', 'All time'] as const).map((t) => (
             <button
               key={t}
@@ -268,9 +268,9 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
               aria-pressed={timeframe === t}
               onClick={() => setTimeframe(t)}
               className={`px-4 py-2 rounded-[16px] transition-all cursor-pointer whitespace-nowrap ${
-                timeframe === t 
-                  ? 'bg-[#582967] text-white shadow-xs' 
-                  : 'text-muted hover:text-[#111827] hover:bg-[#E5E7EB]/50'
+                timeframe === t
+                  ? 'bg-brand text-white shadow-xs'
+                  : 'text-muted hover:text-ink hover:bg-line/50'
               }`}
             >
               {t}
@@ -284,7 +284,7 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
           <p className="text-xs text-muted leading-relaxed">
             The curves are drawn between approximate average results reported by these trials. The shape between those points is an interpolation, not trial data, and trial participants received structured support that real life rarely matches. Your own line may sit anywhere around them. Please don't read it as a target or a forecast.
           </p>
-          <ul className="text-xs space-y-2 text-[#344054] font-medium">
+          <ul className="text-xs space-y-2 text-ink-2 font-medium">
             <li className="p-2.5 rounded-[16px] bg-emerald-50 text-emerald-900 border border-emerald-100">
               <strong>Retatrutide (phase 2 trial, investigational):</strong> average loss of about 24% at 48 weeks at the highest dose studied.
             </li>
@@ -296,7 +296,7 @@ export function WeightVsTrialsChart({ className = '', onOpenInfo }: Props) {
             </li>
           </ul>
           <p className="text-[11px] text-subtle">Approximate; verify against the published trial reports. Curves stop changing at the published endpoint; they do not predict later loss. Sources: NEJM doi:10.1056/NEJMoa2301972 (retatrutide), doi:10.1056/NEJMoa2206038 (SURMOUNT-1), doi:10.1056/NEJMoa2032183 (STEP 1).</p>
-          <button type="button" onClick={() => setShowInfoModal(false)} className="w-full py-2.5 rounded-[16px] bg-[#582967] text-white font-semibold text-xs hover:bg-[#4a2257] transition-all">Close</button>
+          <button type="button" onClick={() => setShowInfoModal(false)} className="w-full py-2.5 rounded-[16px] bg-brand text-white font-semibold text-xs hover:bg-brand-strong transition-all">Close</button>
         </div>
       </Modal>
     </div>

@@ -20,7 +20,7 @@ export function DailyLogs() {
   return <div className="space-y-6">
     <header><h1 className="text-3xl font-semibold">Daily protein & water</h1><p className="text-sm text-muted mt-2">Keep a record to discuss alongside your symptoms. Enter your daily totals; saving the same date replaces that day’s totals. Blank means not recorded, and zero means you explicitly recorded zero. The app does not set an intake target.</p></header>
     {error && <p role="alert" className="text-danger">{error} Your original encrypted bytes are kept. Download an encrypted backup from Settings before attempting recovery. New daily saves are paused.</p>}
-    {enabled && !error && <form noValidate className="bg-white p-6 rounded-[24px] border border-[#E5E7EB] space-y-4" onSubmit={async event => {
+    {enabled && !error && <form noValidate className="bg-white p-6 rounded-[24px] border border-line space-y-4" onSubmit={async event => {
       event.preventDefault();setFailure('');setMessage('');
       try { const row = dailyForm(date,protein,water,notes);setSaving(true);await saveDailyLog(row);setMessage('Daily totals saved in your encrypted vault.'); }
       catch(error) {setFailure((error instanceof Error ? error.message : 'Daily save failed.')+' If saving failed, keep this tab open and download an encrypted backup from Settings.');}
@@ -33,11 +33,11 @@ export function DailyLogs() {
       <label className="block text-sm">Notes<textarea aria-label="Daily notes" maxLength={10000} value={notes} disabled={saving} onChange={event=>setNotes(event.target.value)} className="block w-full border rounded-xl p-3 mt-1" /></label>
       {failure && <p role="alert" className="text-danger">{failure}</p>}
       {message && <p role="status">{message}</p>}
-      <button disabled={saving} type="submit" className="min-h-11 px-4 py-3 rounded-xl bg-slate-900 text-white font-semibold focus-visible:ring-2 focus-visible:ring-[#6D4AFF]">{saving ? 'Saving…' : rows.some(e=>e.date===date) ? 'Update daily totals' : 'Save daily totals'}</button>
+      <button disabled={saving} type="submit" className="min-h-11 px-4 py-3 rounded-xl bg-slate-900 text-white font-semibold focus-visible:ring-2 focus-visible:ring-brand">{saving ? 'Saving…' : rows.some(e=>e.date===date) ? 'Update daily totals' : 'Save daily totals'}</button>
     </form>}
     {!enabled && <p className="text-sm text-muted">Daily entry is not enabled in this release. Previously recorded totals remain available below and in exports.</p>}
     <section aria-labelledby="daily-history"><h2 id="daily-history" className="text-lg font-semibold mb-3">Recorded daily totals</h2>
-      {!rows.length ? <p>No daily totals recorded. Unlogged days are not zero.</p> : <ul className="space-y-3">{[...rows].reverse().map(row=><li key={row.date} className="bg-white p-4 rounded-xl border border-[#E5E7EB] space-y-1"><h3 className="font-semibold">{row.date}</h3><p>Protein: {row.proteinGrams===undefined?'Not recorded':`${row.proteinGrams} g`} · Water: {row.waterMl===undefined?'Not recorded':`${row.waterMl} mL`}</p>{row.notes && <p className="whitespace-pre-wrap break-words">{row.notes}</p>}{enabled && !error && <button type="button" disabled={saving} aria-label={`Edit daily totals for ${row.date}`} onClick={()=>load(row.date)} className="min-h-11 px-3 py-2 rounded-xl border">Edit daily totals</button>}</li>)}</ul>}
+      {!rows.length ? <p>No daily totals recorded. Unlogged days are not zero.</p> : <ul className="space-y-3">{[...rows].reverse().map(row=><li key={row.date} className="bg-white p-4 rounded-xl border border-line space-y-1"><h3 className="font-semibold">{row.date}</h3><p>Protein: {row.proteinGrams===undefined?'Not recorded':`${row.proteinGrams} g`} · Water: {row.waterMl===undefined?'Not recorded':`${row.waterMl} mL`}</p>{row.notes && <p className="whitespace-pre-wrap break-words">{row.notes}</p>}{enabled && !error && <button type="button" disabled={saving} aria-label={`Edit daily totals for ${row.date}`} onClick={()=>load(row.date)} className="min-h-11 px-3 py-2 rounded-xl border">Edit daily totals</button>}</li>)}</ul>}
     </section>
   </div>;
 }

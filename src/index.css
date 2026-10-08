@@ -1,17 +1,44 @@
 @import "tailwindcss";
 
 /*
- * Text colour design tokens. Each is checked by scripts/contrast.mjs (and src/test/contrast.test.ts) to reach
- * WCAG AA (4.5:1) on the app's light surfaces and tinted backgrounds. Prefer these over raw hex values.
+ * Design tokens: the single source of colour, type and shape for the app.
+ * Palette: deep navy ink on light, cool surfaces with a restrained blue primary and a quiet green for "positive".
+ * Every text token is checked by scripts/contrast.mjs (and src/test/contrast.test.ts) to reach WCAG AA 4.5:1 on the
+ * app's light surfaces; control borders reach 3:1. To adopt brand colours, change the values here only.
  */
 @theme {
-  --color-muted: #667085;    /* secondary text            4.97:1 on white */
-  --color-subtle: #5d6a80;   /* tertiary text, captions   5.47:1 on white (was #98a2b3, 2.58:1) */
-  --color-positive: #15803d; /* good / decreasing         5.02:1 on white (was #22c55e, 2.28:1) */
-  --color-caution: #b45309;  /* warnings, amber text      5.02:1 on white (was #f59e0b, 2.15:1) */
-  --color-danger: #b42318;   /* errors, severe            6.57:1 on white (was rose-500, 3.35:1) */
-  --color-accent: #5b3fe0;   /* brand text on tinted bg   6.50:1 on white */
-  --color-info: #1d4ed8;     /* informational blue        6.70:1 on white (was blue-500, 3.36:1) */
+  /* Typography: the platform's own UI font (fast, no download, nothing fetched from another site). */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  /* Surfaces */
+  --color-canvas: #f6f8fa;   /* page background */
+  --color-surface: #ffffff;  /* panels, dialogs */
+  --color-sunken: #eef2f6;   /* inset areas, segmented controls, table headers */
+  --color-line: #dbe2ea;     /* dividers and panel outlines (decorative) */
+  --color-line-strong: #7b8a9c; /* form-control borders: 3.3:1 on the canvas */
+
+  /* Text */
+  --color-ink: #0f1f33;      /* primary text        16.6:1 on white */
+  --color-ink-2: #2e3e54;    /* secondary headings  10.9:1 on white */
+  --color-muted: #4f5d70;    /* secondary text       6.7:1 on white */
+  --color-subtle: #5a6779;   /* captions, metadata   5.8:1 on white */
+
+  /* Brand and status (each ≥ 5.4:1 on every light surface, including the tinted ones below) */
+  --color-brand: #1d5aa6;        /* primary actions, links, focus  6.9:1 on white */
+  --color-brand-strong: #164a8a; /* pressed / hover                8.8:1 on white */
+  --color-brand-soft: #e9f1fb;   /* selected navigation, quiet emphasis */
+  --color-positive: #1c6f4c;     /* recorded, decreasing trend     6.1:1 on white */
+  --color-positive-soft: #e8f5ee;
+  --color-caution: #8a5300;      /* attention needed               6.3:1 on white */
+  --color-caution-soft: #fdf3e1;
+  --color-danger: #b42318;       /* errors, destructive            6.6:1 on white */
+  --color-danger-soft: #fdeceb;
+  --color-accent: #1d5aa6;       /* legacy name for brand text; kept so older screens follow the new palette */
+  --color-info: #1d5aa6;         /* informational text */
+
+  /* Shape */
+  --radius-panel: 14px;
+  --radius-control: 10px;
 }
 
 /*
@@ -19,6 +46,19 @@
  * Use the muted text token instead: 4.5:1 or better on white, #f8f9fc and #f1f5f9 (checked by scripts/contrast.mjs).
  */
 @layer base {
+  html { background: var(--color-canvas); }
+  body {
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  /* One visible focus style for every interactive element reached by keyboard. */
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
   input::placeholder,
   textarea::placeholder {
     color: var(--color-muted);

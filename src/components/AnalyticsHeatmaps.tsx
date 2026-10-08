@@ -146,12 +146,12 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
         return 'bg-slate-500'; // unchanged
       case 'none':
       default:
-        return hasLog ? 'bg-slate-500' : 'bg-[#F1F5F9]'; // first weigh-in in view / nothing logged
+        return hasLog ? 'bg-slate-500' : 'bg-sunken'; // first weigh-in in view / nothing logged
     }
   };
 
   const getActivityColor = (count: number) => {
-    if (count === 0) return 'bg-[#F1F5F9]';
+    if (count === 0) return 'bg-sunken';
     if (count === 1) return 'bg-emerald-700';
     if (count === 2) return 'bg-emerald-800';
     if (count === 3) return 'bg-emerald-900';
@@ -189,7 +189,7 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
   const weightSumId = useId();
   const actHeadId = useId();
   const actSumId = useId();
-  const cellBase = 'w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold leading-none text-white transition-all hover:ring-2 hover:ring-purple-400 hover:scale-105';
+  const cellBase = 'w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold leading-none text-white transition-all hover:ring-2 hover:ring-[#7fa3d4] hover:scale-105';
   const swatch = 'w-4 h-4 rounded-sm inline-flex items-center justify-center text-[9px] font-bold leading-none text-white';
 
   const dayLabels = ['', 'Mon', '', 'Wed', '', 'Fri', ''];
@@ -197,14 +197,14 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
   return (
     <div className={`space-y-8 ${className}`}>
       {/* 1. WEIGHT CHANGE HEATMAP */}
-      <div className="bg-white rounded-[24px] p-6 shadow-xs border border-[#E5E7EB]">
+      <div className="bg-white rounded-[24px] p-6 shadow-xs border border-line">
         <div className="mb-4">
-          <h2 id={weightHeadId} className="text-xl font-semibold text-[#111827] tracking-tight">Weight change</h2>
+          <h2 id={weightHeadId} className="text-xl font-semibold text-ink tracking-tight">Weight change</h2>
           <p className="text-xs font-semibold text-muted mt-0.5">Each weigh-in vs. the previous recorded weigh-in</p>
           <p id={weightSumId} className="text-xs text-muted mt-1">{weightSummary}</p>
         </div>
 
-        <div role="group" aria-labelledby={weightHeadId} aria-describedby={weightSumId} className="bg-[#F8F9FC]/60 rounded-[16px] p-6 border border-[#E5E7EB]/70 overflow-x-auto">
+        <div role="group" aria-labelledby={weightHeadId} aria-describedby={weightSumId} className="bg-canvas/60 rounded-[16px] p-6 border border-line/70 overflow-x-auto">
           {/* Calendar Grid Container */}
           <div className="min-w-[650px]">
             {/* Top Month Header Row */}
@@ -266,7 +266,7 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
         </div>
 
         <details className="mt-4 text-xs text-muted">
-          <summary className="cursor-pointer font-semibold text-[#344054]">Show weight change as a table</summary>
+          <summary className="cursor-pointer font-semibold text-ink-2">Show weight change as a table</summary>
           <table className="mt-2 w-full text-left">
             <caption className="sr-only">Weight change per recorded weigh-in</caption>
             <thead><tr><th scope="col" className="py-1 pr-4">Date</th><th scope="col" className="py-1">Change</th></tr></thead>
@@ -280,14 +280,14 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
       </div>
 
       {/* 2. LOGGING ACTIVITY HEATMAP */}
-      <div className="bg-white rounded-[24px] p-6 shadow-xs border border-[#E5E7EB]">
+      <div className="bg-white rounded-[24px] p-6 shadow-xs border border-line">
         <div className="mb-4">
-          <h2 id={actHeadId} className="text-xl font-semibold text-[#111827] tracking-tight">Logging activity</h2>
+          <h2 id={actHeadId} className="text-xl font-semibold text-ink tracking-tight">Logging activity</h2>
           <p className="text-xs font-semibold text-muted mt-0.5">Each cell is one day. The number is how many entries were recorded that day.</p>
           <p id={actSumId} className="text-xs text-muted mt-1">{activitySummary}</p>
         </div>
 
-        <div role="group" aria-labelledby={actHeadId} aria-describedby={actSumId} className="bg-[#F8F9FC]/60 rounded-[16px] p-6 border border-[#E5E7EB]/70 overflow-x-auto">
+        <div role="group" aria-labelledby={actHeadId} aria-describedby={actSumId} className="bg-canvas/60 rounded-[16px] p-6 border border-line/70 overflow-x-auto">
           {/* Calendar Grid Container */}
           <div className="min-w-[650px]">
             {/* Top Month Header Row */}
@@ -338,7 +338,7 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
             <div className="mt-6 flex items-center gap-3 text-xs font-semibold text-muted select-none">
               <span>Less</span>
               <div className="flex items-center gap-1.5">
-                <span aria-hidden="true" className="w-4 h-4 rounded-sm bg-[#F1F5F9] border border-[#E5E7EB] inline-block" title="0 entries" />
+                <span aria-hidden="true" className="w-4 h-4 rounded-sm bg-sunken border border-line inline-block" title="0 entries" />
                 <span aria-hidden="true" className={`${swatch} bg-emerald-700`} title="1 entry">1</span>
                 <span aria-hidden="true" className={`${swatch} bg-emerald-800`} title="2 entries">2</span>
                 <span aria-hidden="true" className={`${swatch} bg-emerald-900`} title="3 entries">3</span>
@@ -350,7 +350,7 @@ export function AnalyticsHeatmaps({ className = '' }: Props) {
         </div>
 
         <details className="mt-4 text-xs text-muted">
-          <summary className="cursor-pointer font-semibold text-[#344054]">Show logging activity as a table</summary>
+          <summary className="cursor-pointer font-semibold text-ink-2">Show logging activity as a table</summary>
           <table className="mt-2 w-full text-left">
             <caption className="sr-only">Logging activity per day</caption>
             <thead><tr><th scope="col" className="py-1 pr-4">Date</th><th scope="col" className="py-1">Entries</th></tr></thead>

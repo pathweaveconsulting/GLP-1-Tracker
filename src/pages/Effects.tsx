@@ -11,7 +11,7 @@ import { COLLECTED_FIELDS, OPTIONAL_FIELDS } from '../lib/symptoms';
 import { SideEffectsAnalyticsDashboard } from '../components/SideEffectsAnalyticsDashboard';
 
 const severityColorMap: Record<Severity, string> = {
-  none: 'bg-[#F1F5F9] text-muted',
+  none: 'bg-sunken text-muted',
   mild: 'bg-amber-100 text-amber-800',
   moderate: 'bg-orange-100 text-orange-800',
   severe: 'bg-rose-100 text-rose-800'
@@ -40,23 +40,23 @@ export function Effects() {
     <div className="space-y-6">
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-[#111827]">Side Effects</h1>
+          <h1 className="text-3xl font-semibold tracking-tight text-ink">Side Effects</h1>
           <p className="text-muted text-sm mt-0.5">Track body adaptation, side effect trends, and daily logs</p>
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
           {/* View Tab Selector */}
-          <div className="flex bg-[#F8F9FC] p-1 rounded-[14px] border border-[#E5E7EB] shadow-xs">
+          <div className="flex bg-canvas p-1 rounded-[14px] border border-line shadow-xs">
             <button
               aria-pressed={activeTab === 'analytics'}
               onClick={() => setActiveTab('analytics')}
               className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-[10px] transition-all ${
                 activeTab === 'analytics'
-                  ? 'bg-white text-[#111827] shadow-xs'
-                  : 'text-muted hover:text-[#111827]'
+                  ? 'bg-white text-ink shadow-xs'
+                  : 'text-muted hover:text-ink'
               }`}
             >
-              <Sparkles className="w-3.5 h-3.5 text-[#6D4AFF]" />
+              <Sparkles className="w-3.5 h-3.5 text-brand" />
               <span>Analytics Dashboard</span>
             </button>
             <button
@@ -64,8 +64,8 @@ export function Effects() {
               onClick={() => setActiveTab('log')}
               className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-[10px] transition-all ${
                 activeTab === 'log'
-                  ? 'bg-white text-[#111827] shadow-xs'
-                  : 'text-muted hover:text-[#111827]'
+                  ? 'bg-white text-ink shadow-xs'
+                  : 'text-muted hover:text-ink'
               }`}
             >
               <ListFilter className="w-3.5 h-3.5 text-muted" />
@@ -92,14 +92,14 @@ export function Effects() {
             ) || customList.some(([_, val]) => val != null);
 
             return (
-              <Card key={effect.id} className="overflow-hidden rounded-[20px] border-[#E5E7EB] bg-white shadow-xs hover:border-amber-200 transition-all">
+              <Card key={effect.id} className="overflow-hidden rounded-[20px] border-line bg-white shadow-xs hover:border-amber-200 transition-all">
                 <CardContent className="p-5 flex flex-col gap-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-[16px] bg-amber-50 flex items-center justify-center text-caution">
                         <Smile className="w-4 h-4" />
                       </div>
-                      <h3 className="font-semibold text-[#111827] text-base">{format(new Date(effect.date), 'EEEE, MMM d, yyyy')}</h3>
+                      <h3 className="font-semibold text-ink text-base">{format(new Date(effect.date), 'EEEE, MMM d, yyyy')}</h3>
                     </div>
                   </div>
                   <div className="flex gap-3">
@@ -123,7 +123,7 @@ export function Effects() {
                   )}
                   
                   {effect.notes && (
-                    <p className="text-xs text-muted bg-[#F8F9FC] p-3 rounded-[16px] border border-[#E5E7EB] italic">
+                    <p className="text-xs text-muted bg-canvas p-3 rounded-[16px] border border-line italic">
                       "{effect.notes}"
                     </p>
                   )}

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Info } from 'lucide-react';
-import { 
-  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid 
+import {
+  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
 } from 'recharts';
 import { useStore } from '../store/useStore';
 import { generatePKCurve } from '../lib/glp1Utils';
@@ -24,23 +24,23 @@ export function MedicationLevelChart({ className = '', onOpenSources }: Props) {
   const medColors: Record<string, { stroke: string; fill: string; dot: string }> = {
     tirzepatide: { stroke: '#15803d', fill: '#15803d', dot: '#15803d' },
     retatrutide: { stroke: '#b45309', fill: '#b45309', dot: '#b45309' },
-    semaglutide: { stroke: '#6D4AFF', fill: '#6D4AFF', dot: '#6D4AFF' }
+    semaglutide: { stroke: '#1d5aa6', fill: '#1d5aa6', dot: '#1d5aa6' }
   };
 
   const activeMeds = pkData.medicationsList;
 
   return (
-    <div className={`bg-white rounded-[24px] p-6 shadow-xs border border-[#E5E7EB] ${className}`}>
+    <div className={`bg-white rounded-[24px] p-6 shadow-xs border border-line ${className}`}>
       {/* HEADER WITH TITLE, SUBHEAD, LEGEND */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-[#111827] text-base">Medication level</h3>
+            <h3 className="font-semibold text-ink text-base">Medication level</h3>
             {onOpenSources && (
               <button
                 onClick={onOpenSources}
                 aria-label="About the estimated level"
-                className="cursor-pointer text-subtle hover:text-[#6D4AFF] transition-colors p-1 rounded-full hover:bg-[#F1F5F9]"
+                className="cursor-pointer text-subtle hover:text-brand transition-colors p-1 rounded-full hover:bg-sunken"
               >
                 <Info className="w-4 h-4" aria-hidden="true" />
               </button>
@@ -51,7 +51,7 @@ export function MedicationLevelChart({ className = '', onOpenSources }: Props) {
               'Log a dose to see an estimate.'
             ) : pkData.modelled ? (
               <>
-                Estimated {pkData.medicationName} level now: <strong className="text-[#111827] font-semibold">{pkData.currentLevel} mg</strong>{' '}
+                Estimated {pkData.medicationName} level now: <strong className="text-ink font-semibold">{pkData.currentLevel} mg</strong>{' '}
                 <span className="text-subtle">({pkData.percentOfPeak}% of your modelled peak)</span>
               </>
             ) : (
@@ -67,7 +67,7 @@ export function MedicationLevelChart({ className = '', onOpenSources }: Props) {
         {/* LEGEND */}
         <div className="flex items-center gap-4 text-xs font-medium text-muted">
           {activeMeds.map((med) => {
-            const colorObj = medColors[med.toLowerCase()] || { stroke: '#6D4AFF', fill: '#6D4AFF' };
+            const colorObj = medColors[med.toLowerCase()] || { stroke: '#1d5aa6', fill: '#1d5aa6' };
             return (
               <div key={med} className="flex items-center gap-1.5 capitalize">
                 <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: colorObj.stroke }} />
@@ -92,46 +92,46 @@ export function MedicationLevelChart({ className = '', onOpenSources }: Props) {
                 <stop offset="95%" stopColor="#b45309" stopOpacity={0.02}/>
               </linearGradient>
               <linearGradient id="colorSemaglutide" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#6D4AFF" stopOpacity={0.3}/>
-                <stop offset="95%" stopColor="#6D4AFF" stopOpacity={0.02}/>
+                <stop offset="5%" stopColor="#1d5aa6" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#1d5aa6" stopOpacity={0.02}/>
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-            <XAxis 
-              dataKey="dateStr" 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{ fontSize: 11, fill: '#667085', fontWeight: 400 }} 
+            <XAxis
+              dataKey="dateStr"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 11, fill: '#667085', fontWeight: 400 }}
               dy={10}
             />
-            <YAxis 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{ fontSize: 11, fill: '#667085', fontWeight: 400 }} 
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 11, fill: '#667085', fontWeight: 400 }}
               tickFormatter={(val) => `${val} mg`}
               domain={[0, 'auto']}
             />
-            <Tooltip 
+            <Tooltip
               contentStyle={{ borderRadius: '16px', border: '1px solid #E5E7EB', boxShadow: '0 4px 20px rgba(16,24,40,0.05)' }}
               formatter={(value, name) => [`${value} mg`, String(name)]}
             />
             {activeMeds.map((med) => {
               const medLower = med.toLowerCase();
-              const colorObj = medColors[medLower] || { stroke: '#6D4AFF', fill: '#6D4AFF' };
-              const gradId = medLower === 'tirzepatide' ? 'url(#colorTirzepatide)' 
-                : medLower === 'retatrutide' ? 'url(#colorRetatrutide)' 
+              const colorObj = medColors[medLower] || { stroke: '#1d5aa6', fill: '#1d5aa6' };
+              const gradId = medLower === 'tirzepatide' ? 'url(#colorTirzepatide)'
+                : medLower === 'retatrutide' ? 'url(#colorRetatrutide)'
                 : 'url(#colorSemaglutide)';
 
               return (
-                <Area 
+                <Area
                   key={med}
-                  type="monotone" 
-                  dataKey={medLower} 
+                  type="monotone"
+                  dataKey={medLower}
                   name={med}
-                  stroke={colorObj.stroke} 
-                  strokeWidth={2} 
+                  stroke={colorObj.stroke}
+                  strokeWidth={2}
                   strokeDasharray={medDash[medLower]}
-                  fillOpacity={1} 
+                  fillOpacity={1}
                   fill={gradId}
                   dot={false}
                   activeDot={{ r: 5, fill: colorObj.stroke, stroke: '#fff', strokeWidth: 2 }}
@@ -144,16 +144,16 @@ export function MedicationLevelChart({ className = '', onOpenSources }: Props) {
 
       {/* TIMEFRAME SELECTOR TABS AT BOTTOM */}
       <div className="mt-6 flex justify-center sm:justify-end">
-        <div className="flex bg-[#F8F9FC] p-1 rounded-[14px] border border-[#E5E7EB] text-xs font-medium gap-1">
+        <div className="flex bg-canvas p-1 rounded-[14px] border border-line text-xs font-medium gap-1">
           {(['2 weeks', '1 month', '3 months', 'All time'] as const).map((t) => (
             <button
               key={t}
               aria-pressed={pkTimeline === t}
               onClick={() => setPkTimeline(t)}
               className={`px-3.5 py-1.5 rounded-[10px] transition-all cursor-pointer ${
-                pkTimeline === t 
-                  ? 'bg-white text-[#111827] shadow-xs font-semibold' 
-                  : 'text-muted hover:text-[#111827]'
+                pkTimeline === t
+                  ? 'bg-white text-ink shadow-xs font-semibold'
+                  : 'text-muted hover:text-ink'
               }`}
             >
               {t}

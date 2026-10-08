@@ -29,14 +29,14 @@ export function CalendarView() {
     <div className="space-y-6">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-[#111827]">Calendar Log</h1>
+          <h1 className="text-3xl font-semibold tracking-tight text-ink">Calendar Log</h1>
           <p className="text-muted text-sm mt-0.5">View your doses, weight logs, and symptoms on a monthly grid</p>
         </div>
-        <div className="flex items-center gap-3 bg-white p-1.5 rounded-[14px] border border-[#E5E7EB] shadow-xs">
+        <div className="flex items-center gap-3 bg-white p-1.5 rounded-[14px] border border-line shadow-xs">
           <Button variant="outline" size="icon" onClick={prevMonth} aria-label="Previous month" className="rounded-[10px] border-0 h-8 w-8">
             <ChevronLeft className="w-4 h-4 text-muted" />
           </Button>
-          <span className="font-semibold text-sm min-w-[110px] text-center text-[#111827]">
+          <span className="font-semibold text-sm min-w-[110px] text-center text-ink">
             {format(currentDate, "MMMM yyyy")}
           </span>
           <Button variant="outline" size="icon" onClick={nextMonth} aria-label="Next month" className="rounded-[10px] border-0 h-8 w-8">
@@ -45,7 +45,7 @@ export function CalendarView() {
         </div>
       </header>
 
-      <Card className="rounded-[24px] border-[#E5E7EB] bg-white shadow-xs">
+      <Card className="rounded-[24px] border-line bg-white shadow-xs">
         <CardContent className="p-6">
           <div className="grid grid-cols-7 gap-px mb-3">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
@@ -70,15 +70,15 @@ export function CalendarView() {
               return (
                 <div 
                   key={day.toISOString()} 
-                  className={`min-h-[85px] p-2.5 border rounded-[16px] flex flex-col gap-1 transition-all hover:bg-[#F8F9FC] cursor-pointer ${isToday ? 'border-[#6D4AFF] bg-[#F3F0FF]/30' : 'border-[#E5E7EB] bg-white'}`}
+                  className={`min-h-[85px] p-2.5 border rounded-[16px] flex flex-col gap-1 transition-all hover:bg-canvas cursor-pointer ${isToday ? 'border-brand bg-brand-soft/30' : 'border-line bg-white'}`}
                 >
-                  <span className={`text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full ${isToday ? 'bg-[#6D4AFF] text-white' : 'text-muted'}`}>
+                  <span className={`text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full ${isToday ? 'bg-brand text-white' : 'text-muted'}`}>
                     {format(day, dateFormat)}
                   </span>
                   
                   <div className="flex flex-col gap-1 mt-1">
                     {dayDose && (
-                      <div className="flex items-center gap-1 text-[10px] bg-[#F3F0FF] text-[#6D4AFF] px-2 py-0.5 rounded-[6px] font-semibold truncate">
+                      <div className="flex items-center gap-1 text-[10px] bg-brand-soft text-brand px-2 py-0.5 rounded-[6px] font-semibold truncate">
                         <Syringe className="w-3 h-3 shrink-0" />
                         <span className="truncate">{dayDose.amountMg}mg</span>
                       </div>

@@ -12,7 +12,7 @@ import { doctorReportEnabled } from '../lib/features';
 import { useDailyLogs } from '../store/dailyLogs';
 import { isoToLocalDateString } from '../lib/dates';
 
-const card = 'bg-white p-6 rounded-[24px] border border-[#E5E7EB] shadow-xs print:shadow-none';
+const card = 'bg-white p-6 rounded-[24px] border border-line shadow-xs print:shadow-none';
 
 function periodLabel(range: PeriodRange): string {
   return range.kind === 'monthly'
@@ -45,19 +45,19 @@ export function Reports() {
     <div className="space-y-6">
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-[#111827]">Reports</h1>
+          <h1 className="text-3xl font-semibold tracking-tight text-ink">Reports</h1>
           <p className="text-sm text-muted mt-0.5">A plain summary of what you logged in a week or a month.</p>
         </div>
         <div className="flex items-center gap-3 flex-wrap print:hidden">
-          <div className="flex bg-[#F8F9FC] p-1 rounded-[14px] border border-[#E5E7EB]" role="group" aria-label="Report length">
+          <div className="flex bg-canvas p-1 rounded-[14px] border border-line" role="group" aria-label="Report length">
             {(['weekly', 'monthly'] as ReportKind[]).map((k) => (
               <button key={k} type="button" aria-pressed={kind === k} onClick={() => changeKind(k)}
-                className={`px-4 py-1.5 text-xs font-semibold rounded-[10px] capitalize transition-all ${kind === k ? 'bg-white text-[#111827] shadow-xs' : 'text-muted hover:text-[#111827]'}`}>
+                className={`px-4 py-1.5 text-xs font-semibold rounded-[10px] capitalize transition-all ${kind === k ? 'bg-white text-ink shadow-xs' : 'text-muted hover:text-ink'}`}>
                 {k}
               </button>
             ))}
           </div>
-          <button type="button" onClick={() => window.print()} className="inline-flex items-center gap-2 px-4 py-2 rounded-[14px] border border-[#E5E7EB] bg-white text-xs font-semibold text-[#111827] hover:bg-[#F8F9FC]">
+          <button type="button" onClick={() => window.print()} className="inline-flex items-center gap-2 px-4 py-2 rounded-[14px] border border-line bg-white text-xs font-semibold text-ink hover:bg-canvas">
             <Printer className="w-4 h-4 text-muted" aria-hidden="true" /> Print / save PDF
           </button>
         </div>
@@ -70,12 +70,12 @@ export function Reports() {
 
       <div className="flex items-center justify-between gap-3">
         <button type="button" onClick={() => setRange(shiftPeriod(range, -1))} aria-label={`Previous ${kind === 'weekly' ? 'week' : 'month'}`}
-          className="w-9 h-9 rounded-full border border-[#E5E7EB] bg-white flex items-center justify-center hover:bg-[#F8F9FC] print:hidden">
+          className="w-9 h-9 rounded-full border border-line bg-white flex items-center justify-center hover:bg-canvas print:hidden">
           <ChevronLeft className="w-4 h-4" aria-hidden="true" />
         </button>
-        <h2 className="text-lg font-semibold text-[#111827] text-center" aria-live="polite">{periodLabel(range)}</h2>
+        <h2 className="text-lg font-semibold text-ink text-center" aria-live="polite">{periodLabel(range)}</h2>
         <button type="button" onClick={() => setRange(nextRange)} disabled={!canGoNext} aria-label={`Next ${kind === 'weekly' ? 'week' : 'month'}`}
-          className="w-9 h-9 rounded-full border border-[#E5E7EB] bg-white flex items-center justify-center hover:bg-[#F8F9FC] disabled:opacity-40 disabled:cursor-not-allowed print:hidden">
+          className="w-9 h-9 rounded-full border border-line bg-white flex items-center justify-center hover:bg-canvas disabled:opacity-40 disabled:cursor-not-allowed print:hidden">
           <ChevronRight className="w-4 h-4" aria-hidden="true" />
         </button>
       </div>
@@ -83,13 +83,13 @@ export function Reports() {
       {report.isEmpty && dailyRows.length === 0 ? (
         <div className={card}>
           <p className="text-sm text-muted">
-            Nothing was logged in this {kind === 'weekly' ? 'week' : 'month'}. Use the arrows to look at another period, or <Link to="/" className="text-[#6D4AFF] font-semibold hover:underline">log something today</Link>.
+            Nothing was logged in this {kind === 'weekly' ? 'week' : 'month'}. Use the arrows to look at another period, or <Link to="/" className="text-brand font-semibold hover:underline">log something today</Link>.
           </p>
         </div>
       ) : (
         <>
           <section aria-labelledby="rep-weight" className={card}>
-            <div className="flex items-center gap-2 mb-4"><Scale className="w-4 h-4 text-positive" aria-hidden="true" /><h3 id="rep-weight" className="text-sm font-semibold text-[#111827]">Weight</h3></div>
+            <div className="flex items-center gap-2 mb-4"><Scale className="w-4 h-4 text-positive" aria-hidden="true" /><h3 id="rep-weight" className="text-sm font-semibold text-ink">Weight</h3></div>
             {report.weights.entries.length === 0 ? (
               <p className="text-xs text-muted">No weigh-ins in this period.</p>
             ) : (
@@ -118,21 +118,21 @@ export function Reports() {
           </section>
 
           <section aria-labelledby="rep-doses" className={card}>
-            <div className="flex items-center gap-2 mb-4"><Syringe className="w-4 h-4 text-[#6D4AFF]" aria-hidden="true" /><h3 id="rep-doses" className="text-sm font-semibold text-[#111827]">Doses</h3></div>
+            <div className="flex items-center gap-2 mb-4"><Syringe className="w-4 h-4 text-brand" aria-hidden="true" /><h3 id="rep-doses" className="text-sm font-semibold text-ink">Doses</h3></div>
             {report.doses.entries.length === 0 ? (
               <p className="text-xs text-muted">No doses logged in this period.</p>
             ) : (
               <>
                 <ul className="space-y-2 text-sm">
                   {report.doses.entries.map((d) => (
-                    <li key={d.id} className="flex justify-between p-3 rounded-[14px] bg-[#F8F9FC] border border-[#E5E7EB]">
-                      <span className="font-medium text-[#111827]">{d.amountMg} mg {d.medication}</span>
+                    <li key={d.id} className="flex justify-between p-3 rounded-[14px] bg-canvas border border-line">
+                      <span className="font-medium text-ink">{d.amountMg} mg {d.medication}</span>
                       <span className="text-xs text-muted">{format(new Date(d.date), 'EEE, MMM d · h:mm a')} · {d.site}</span>
                     </li>
                   ))}
                 </ul>
                 {report.doses.changedFrom && (
-                  <p className="text-xs text-[#344054] mt-3">
+                  <p className="text-xs text-ink-2 mt-3">
                     Dose change: your previous logged dose was {report.doses.changedFrom.amountMg} mg {report.doses.changedFrom.medication}.
                   </p>
                 )}
@@ -141,7 +141,7 @@ export function Reports() {
           </section>
 
           <section aria-labelledby="rep-symptoms" className={card}>
-            <div className="flex items-center gap-2 mb-4"><HeartPulse className="w-4 h-4 text-danger" aria-hidden="true" /><h3 id="rep-symptoms" className="text-sm font-semibold text-[#111827]">Symptoms</h3></div>
+            <div className="flex items-center gap-2 mb-4"><HeartPulse className="w-4 h-4 text-danger" aria-hidden="true" /><h3 id="rep-symptoms" className="text-sm font-semibold text-ink">Symptoms</h3></div>
             {report.symptoms.daysLogged === 0 ? (
               <p className="text-xs text-muted">No symptom logs in this period.</p>
             ) : report.symptoms.items.length === 0 ? (
@@ -151,8 +151,8 @@ export function Reports() {
                 <p className="text-[11px] text-subtle mb-2">{report.symptoms.daysLogged} {report.symptoms.daysLogged === 1 ? 'day' : 'days'} logged</p>
                 <ul className="space-y-2 text-sm">
                   {report.symptoms.items.map((i) => (
-                    <li key={i.key} className="flex justify-between p-3 rounded-[14px] bg-[#F8F9FC] border border-[#E5E7EB]">
-                      <span className="font-medium text-[#111827]">{i.label}</span>
+                    <li key={i.key} className="flex justify-between p-3 rounded-[14px] bg-canvas border border-line">
+                      <span className="font-medium text-ink">{i.label}</span>
                       <span className="text-xs text-muted">{severityLabel(i.peak)} at worst · {i.daysPresent} {i.daysPresent === 1 ? 'day' : 'days'}</span>
                     </li>
                   ))}

@@ -59,7 +59,7 @@ function WeightForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
             onChange={(e) => setValue(e.target.value)}
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? `${uid}-w-err` : undefined}
-            className="w-full px-4 py-3 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-lg font-semibold focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+            className="w-full px-4 py-3 rounded-[16px] border border-line bg-canvas text-ink text-lg font-semibold focus:ring-2 focus:ring-emerald-700 focus:outline-none"
           />
           <span className="absolute right-4 top-3.5 text-sm font-semibold text-subtle" aria-hidden="true">{unit}</span>
         </div>
@@ -76,13 +76,13 @@ function WeightForm({ onClose, onSuccess }: Omit<Props, 'isOpen'>) {
           onChange={(e) => setDate(e.target.value)}
           aria-invalid={dateError ? true : undefined}
           aria-describedby={dateError ? `${uid}-d-err` : undefined}
-          className="w-full px-3.5 py-2.5 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-sm font-medium focus:ring-2 focus:ring-emerald-700 focus:outline-none"
+          className="w-full px-3.5 py-2.5 rounded-[16px] border border-line bg-canvas text-ink text-sm font-medium focus:ring-2 focus:ring-emerald-700 focus:outline-none"
         />
         {dateError && <p id={`${uid}-d-err`} role="alert" className="text-xs text-danger mt-1">{dateError}</p>}
       </div>
 
       <div className="pt-2 flex gap-3">
-        <button type="button" onClick={onClose} className="flex-1 py-3 px-4 rounded-[16px] border border-[#E5E7EB] text-[#344054] font-semibold text-sm hover:bg-[#F8F9FC] transition-colors">
+        <button type="button" onClick={onClose} className="flex-1 py-3 px-4 rounded-[16px] border border-line text-ink-2 font-semibold text-sm hover:bg-canvas transition-colors">
           Cancel
         </button>
         <button type="submit" className="flex-1 py-3 px-4 rounded-[16px] bg-[#15803D] text-white font-semibold text-sm hover:bg-[#166534] transition-colors shadow-md shadow-emerald-200 flex items-center justify-center gap-2">

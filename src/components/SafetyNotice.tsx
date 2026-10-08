@@ -38,7 +38,7 @@ export function SafetyNotice({ variant = 'full', medication, className = '', sho
       <p className={`text-[11px] text-muted leading-relaxed ${className}`} data-testid="safety-compact">
         <ShieldAlert className="inline w-3 h-3 mr-1 -mt-0.5 text-subtle" aria-hidden="true" />
         Not medical advice. Severe or lasting belly pain, repeated vomiting, an allergic reaction or thoughts of self-harm need urgent care. {EXAMPLES_NOT_EXHAUSTIVE}{' '}
-        {showHelpLink && <Link to="/health#safety" className="text-[#6D4AFF] font-semibold hover:underline">When to get help</Link>}
+        {showHelpLink && <Link to="/health#safety" className="text-brand font-semibold hover:underline">When to get help</Link>}
       </p>
     );
   }

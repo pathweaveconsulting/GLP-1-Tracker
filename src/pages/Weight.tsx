@@ -3,6 +3,7 @@ import { useStore } from '../store/useStore';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { WeightLossProgressChart } from '../components/WeightLossProgressChart';
+import { WeightInjectionsChart } from '../components/WeightInjectionsChart';
 import { format } from 'date-fns';
 import { TrendingDown, TrendingUp, Plus, Upload, Trash2, ListFilter, Compass } from 'lucide-react';
 import { LogWeightModal } from '../components/modals/LogWeightModal';
@@ -61,23 +62,23 @@ export function Weight() {
     <div className="space-y-6">
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-[#111827]">Weight Journey</h1>
+          <h1 className="text-3xl font-semibold tracking-tight text-ink">Weight Journey</h1>
           <p className="text-muted text-sm mt-0.5">{settings.targetWeight > 0 ? `Goal weight: ${formatWeight(settings.targetWeight, unit)}` : 'No goal weight set yet'}</p>
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
           {/* View Tab Selector */}
-          <div className="flex bg-[#F8F9FC] p-1 rounded-[14px] border border-[#E5E7EB] shadow-xs">
+          <div className="flex bg-canvas p-1 rounded-[14px] border border-line shadow-xs">
             <button
               aria-pressed={activeTab === 'journey'}
               onClick={() => setActiveTab('journey')}
               className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-[10px] transition-all ${
                 activeTab === 'journey'
-                  ? 'bg-white text-[#111827] shadow-xs'
-                  : 'text-muted hover:text-[#111827]'
+                  ? 'bg-white text-ink shadow-xs'
+                  : 'text-muted hover:text-ink'
               }`}
             >
-              <Compass className="w-3.5 h-3.5 text-[#6D4AFF]" />
+              <Compass className="w-3.5 h-3.5 text-brand" />
               <span>Weight Journey Dashboard</span>
             </button>
             <button
@@ -85,8 +86,8 @@ export function Weight() {
               onClick={() => setActiveTab('table')}
               className={`flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-[10px] transition-all ${
                 activeTab === 'table'
-                  ? 'bg-white text-[#111827] shadow-xs'
-                  : 'text-muted hover:text-[#111827]'
+                  ? 'bg-white text-ink shadow-xs'
+                  : 'text-muted hover:text-ink'
               }`}
             >
               <ListFilter className="w-3.5 h-3.5 text-muted" />
@@ -95,7 +96,7 @@ export function Weight() {
           </div>
 
           <div className="flex gap-2">
-            <Button variant="outline" size="icon" aria-label="Import weights from CSV" onClick={() => fileRef.current?.click()} className="rounded-[14px] border-[#E5E7EB]">
+            <Button variant="outline" size="icon" aria-label="Import weights from CSV" onClick={() => fileRef.current?.click()} className="rounded-[14px] border-line">
               <Upload className="w-4 h-4 text-muted" aria-hidden="true" />
             </Button>
             <input ref={fileRef} type="file" accept=".csv,text/csv" aria-label="Choose a CSV file of weights" className="sr-only" tabIndex={-1} onChange={handleImportFile} />
@@ -120,41 +121,41 @@ export function Weight() {
         <>
           {/* KPI Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card className="rounded-[16px] border-[#E5E7EB] shadow-xs">
+            <Card className="rounded-[16px] border-line shadow-xs">
               <CardContent className="p-4 flex flex-col gap-1">
                 <span className="text-xs font-semibold text-muted mb-1">Current Weight</span>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-semibold tracking-tighter text-[#111827]">{formatWeight(latestWeight, unit, { unit: false })}</span>
+                  <span className="text-3xl font-semibold tracking-tighter text-ink">{formatWeight(latestWeight, unit, { unit: false })}</span>
                   <span className="text-xs font-semibold text-muted">{unit}</span>
                 </div>
               </CardContent>
             </Card>
             
-            <Card className="rounded-[16px] border-[#E5E7EB] shadow-xs">
+            <Card className="rounded-[16px] border-line shadow-xs">
               <CardContent className="p-4 flex flex-col gap-1">
                 <span className="text-xs font-semibold text-muted mb-1">Change since start</span>
                 <div className="flex items-baseline gap-1">
-                  <span className={`text-3xl font-semibold tracking-tighter ${change != null && change < 0 ? 'text-positive' : 'text-[#111827]'}`}>{formatWeightChange(change, unit, { unit: false })}</span>
+                  <span className={`text-3xl font-semibold tracking-tighter ${change != null && change < 0 ? 'text-positive' : 'text-ink'}`}>{formatWeightChange(change, unit, { unit: false })}</span>
                   <span className="text-xs font-semibold text-muted">{unit}</span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="rounded-[16px] border-[#E5E7EB] shadow-xs">
+            <Card className="rounded-[16px] border-line shadow-xs">
               <CardContent className="p-4 flex flex-col gap-1">
                 <span className="text-xs font-semibold text-muted mb-1">% Change</span>
                 <div className="flex items-baseline gap-1">
-                  <span className={`text-3xl font-semibold tracking-tighter ${percentChange != null && percentChange < 0 ? 'text-positive' : 'text-[#111827]'}`}>{percentChange == null ? '–' : `${percentChange > 0 ? '+' : ''}${percentChange.toFixed(1)}`}</span>
+                  <span className={`text-3xl font-semibold tracking-tighter ${percentChange != null && percentChange < 0 ? 'text-positive' : 'text-ink'}`}>{percentChange == null ? '–' : `${percentChange > 0 ? '+' : ''}${percentChange.toFixed(1)}`}</span>
                   <span className="text-xs font-semibold text-muted">%</span>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="rounded-[16px] border-[#E5E7EB] shadow-xs">
+            <Card className="rounded-[16px] border-line shadow-xs">
               <CardContent className="p-4 flex flex-col gap-1">
                 <span className="text-xs font-semibold text-muted mb-1">To Goal</span>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-semibold tracking-tighter text-[#111827]">{formatWeight(goalRemaining, unit, { unit: false })}</span>
+                  <span className="text-3xl font-semibold tracking-tighter text-ink">{formatWeight(goalRemaining, unit, { unit: false })}</span>
                   <span className="text-xs font-semibold text-muted">{unit}</span>
                 </div>
               </CardContent>
@@ -162,14 +163,15 @@ export function Weight() {
           </div>
 
           <WeightLossProgressChart />
+          <WeightInjectionsChart />
 
-          <Card className="rounded-[24px] border-[#E5E7EB] shadow-xs p-2">
+          <Card className="rounded-[24px] border-line shadow-xs p-2">
             <CardHeader>
-              <CardTitle className="text-base font-semibold text-[#111827]">Log History ({sortedWeights.length})</CardTitle>
+              <CardTitle className="text-base font-semibold text-ink">Log History ({sortedWeights.length})</CardTitle>
             </CardHeader>
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
-                <thead className="text-xs text-subtle bg-[#F8F9FC]/80 border-y border-[#E5E7EB]">
+                <thead className="text-xs text-subtle bg-canvas/80 border-y border-line">
                   <tr>
                     <th className="px-6 py-3 font-semibold">Date</th>
                     <th className="px-6 py-3 font-semibold">Weight</th>
@@ -184,9 +186,9 @@ export function Weight() {
                     const isLoss = delta < 0;
                     
                     return (
-                      <tr key={w.id} className="hover:bg-[#F8F9FC]/60 transition-colors">
-                        <td className="px-6 py-4 font-medium text-[#111827]">{format(new Date(w.date), 'MMM d, yyyy')}</td>
-                        <td className="px-6 py-4 font-semibold text-[#111827]">{formatWeight(w.weightLbs, unit)}</td>
+                      <tr key={w.id} className="hover:bg-canvas/60 transition-colors">
+                        <td className="px-6 py-4 font-medium text-ink">{format(new Date(w.date), 'MMM d, yyyy')}</td>
+                        <td className="px-6 py-4 font-semibold text-ink">{formatWeight(w.weightLbs, unit)}</td>
                         <td className="px-6 py-4 font-semibold">
                           {Math.abs(delta) > 0.0001 ? (
                             <span className={`inline-flex items-center gap-1 ${isLoss ? 'text-positive' : 'text-danger'}`}>

@@ -1,6 +1,7 @@
 import React, { useId, useRef } from 'react';
 import { useDialog } from '../../hooks/useDialog';
 import { useBackdropClose } from '../../hooks/useBackdropClose';
+import { buttonClass } from '../ds/Button';
 
 interface Props {
   open: boolean;
@@ -26,7 +27,7 @@ export function ConfirmDialog({ open, title, description, confirmLabel, cancelLa
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" {...backdrop}>
+    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-ink/45 sm:items-center sm:p-4" {...backdrop}>
       <div
         ref={panelRef}
         role="alertdialog"
@@ -34,23 +35,23 @@ export function ConfirmDialog({ open, title, description, confirmLabel, cancelLa
         aria-labelledby={titleId}
         aria-describedby={descId}
         onClick={(e) => e.stopPropagation()}
-        className="bg-white w-full max-w-md rounded-[24px] p-6 shadow-2xl border border-[#E5E7EB]"
+        className="w-full max-w-md rounded-t-[18px] border border-line bg-surface p-5 shadow-2xl sm:rounded-[var(--radius-panel)] sm:p-6"
       >
-        <h2 id={titleId} className="text-lg font-semibold text-[#111827]">{title}</h2>
-        <div id={descId} className="mt-2 text-sm text-muted leading-relaxed">{description}</div>
-        <div className="mt-6 flex gap-3">
+        <h2 id={titleId} className="text-lg font-semibold leading-7 text-ink">{title}</h2>
+        <div id={descId} className="mt-2 text-sm leading-6 text-muted">{description}</div>
+        <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button
             ref={cancelRef}
             type="button"
             onClick={onCancel}
-            className="flex-1 py-2.5 px-4 rounded-[16px] border border-[#E5E7EB] text-[#344054] font-semibold text-sm hover:bg-[#F8F9FC] transition-colors"
+            className={buttonClass('secondary')}
           >
             {cancelLabel}
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className={`flex-1 py-2.5 px-4 rounded-[16px] text-white font-semibold text-sm transition-colors ${destructive ? 'bg-rose-600 hover:bg-rose-700' : 'bg-slate-900 hover:bg-slate-800'}`}
+            className={buttonClass(destructive ? 'danger' : 'primary')}
           >
             {confirmLabel}
           </button>

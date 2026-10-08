@@ -110,26 +110,26 @@ export function Settings() {
   };
 
   const stat = (label: string, value: string) => (
-    <div className="bg-[#F8F9FC] p-4 rounded-[16px] border border-[#E5E7EB]">
+    <div className="bg-canvas p-4 rounded-[16px] border border-line">
       <dt className="text-xs font-medium text-muted block mb-1">{label}</dt>
-      <dd className="text-sm font-semibold text-[#111827]">{value}</dd>
+      <dd className="text-sm font-semibold text-ink">{value}</dd>
     </div>
   );
 
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-3xl font-semibold tracking-tight text-[#111827]">Settings & Privacy</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-ink">Settings & Privacy</h1>
         <p className="text-sm text-muted mt-0.5">Manage your profile, goals, and local health data</p>
       </header>
 
-      <Card className="rounded-[24px] border-[#E5E7EB] bg-white shadow-xs p-2">
+      <Card className="rounded-[24px] border-line bg-white shadow-xs p-2">
         <CardHeader className="flex flex-row items-center justify-between">
           <div className="flex items-center gap-2">
-            <User className="w-5 h-5 text-[#6D4AFF]" aria-hidden="true" />
-            <h2 className="text-base font-semibold text-[#111827]">Profile & Medication Setup</h2>
+            <User className="w-5 h-5 text-brand" aria-hidden="true" />
+            <h2 className="text-base font-semibold text-ink">Profile & Medication Setup</h2>
           </div>
-          <Button onClick={() => setIsEditProfileOpen(true)} variant="outline" size="sm" className="rounded-[14px] border-[#E5E7EB] text-xs font-semibold text-[#111827]">
+          <Button onClick={() => setIsEditProfileOpen(true)} variant="outline" size="sm" className="rounded-[14px] border-line text-xs font-semibold text-ink">
             Edit Profile
           </Button>
         </CardHeader>
@@ -143,11 +143,11 @@ export function Settings() {
         </CardContent>
       </Card>
 
-      <Card className="rounded-[24px] border-[#E5E7EB] bg-white shadow-xs p-2">
+      <Card className="rounded-[24px] border-line bg-white shadow-xs p-2">
         <CardHeader>
           <div className="flex items-center gap-2">
             <Shield className="w-5 h-5 text-positive" aria-hidden="true" />
-            <h2 className="text-base font-semibold text-[#111827]">Privacy & your data</h2>
+            <h2 className="text-base font-semibold text-ink">Privacy & your data</h2>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -163,13 +163,13 @@ export function Settings() {
           {effects.length > 0 && <p className="text-xs text-muted">Earlier versions filled unanswered symptom ratings with None. Older ratings are preserved because we cannot tell which ones you chose. New logs save only your selections.</p>}
           <div id="backup" className="space-y-2 pt-2">
             <p id="csv-privacy" className="text-xs text-muted">CSV exports are unencrypted. Anyone with the file can read it; use an encrypted JSON backup for private recovery.</p>
-            <Button aria-describedby="csv-privacy" onClick={handleExportCSV} variant="outline" className="w-full justify-start gap-2.5 rounded-[14px] border-[#E5E7EB] text-[#111827] font-semibold text-xs py-3">
+            <Button aria-describedby="csv-privacy" onClick={handleExportCSV} variant="outline" className="w-full justify-start gap-2.5 rounded-[14px] border-line text-ink font-semibold text-xs py-3">
               <Download className="w-4 h-4 text-muted" aria-hidden="true" /> Export everything as CSV
             </Button>
-            <Button onClick={handleExportJSON} variant="outline" className="w-full justify-start gap-2.5 rounded-[14px] border-[#E5E7EB] text-[#111827] font-semibold text-xs py-3">
+            <Button onClick={handleExportJSON} variant="outline" className="w-full justify-start gap-2.5 rounded-[14px] border-line text-ink font-semibold text-xs py-3">
               <FileJson className="w-4 h-4 text-muted" aria-hidden="true" /> Download a backup (JSON)
             </Button>
-            {backupStarted && <div className="p-3 rounded-[12px] border border-[#E5E7EB] text-xs text-muted">
+            {backupStarted && <div className="p-3 rounded-[12px] border border-line text-xs text-muted">
               <p>The app cannot tell whether the browser saved your file. Check your downloads and keep the JSON file somewhere private before confirming.</p>
               <Button type="button" variant="outline" className="mt-2" onClick={async () => {
                 if (await confirmBackupSaved()) {
@@ -178,7 +178,7 @@ export function Settings() {
                 } else showToast('This browser could not save your confirmation. Backup reminders will continue.');
               }}>I saved my backup file</Button>
             </div>}
-            <Button onClick={() => fileRef.current?.click()} variant="outline" className="w-full justify-start gap-2.5 rounded-[14px] border-[#E5E7EB] text-[#111827] font-semibold text-xs py-3">
+            <Button onClick={() => fileRef.current?.click()} variant="outline" className="w-full justify-start gap-2.5 rounded-[14px] border-line text-ink font-semibold text-xs py-3">
               <Upload className="w-4 h-4 text-muted" aria-hidden="true" /> Restore from a backup
             </Button>
             <input ref={fileRef} type="file" accept="application/json,.json" aria-label="Choose a backup file to restore" className="sr-only" tabIndex={-1} onChange={handleRestoreFile} />
@@ -209,7 +209,7 @@ export function Settings() {
         }}>
           <label className="flex gap-2 text-sm"><input type="checkbox" checked={backupRecovery} disabled={decrypting} onChange={e => { setBackupRecovery(e.target.checked); setBackupSecret(''); }} />Use the backup’s recovery key</label>
           <label htmlFor="backup-secret" className="block text-sm font-semibold">{backupRecovery ? 'Backup recovery key' : 'Backup passphrase'}</label>
-          <input id="backup-secret" type="password" autoComplete="off" required maxLength={1024} disabled={decrypting} value={backupSecret} onChange={e => setBackupSecret(e.target.value)} className="w-full p-3 border border-[#D0D5DD] rounded-xl" />
+          <input id="backup-secret" type="password" autoComplete="off" required maxLength={1024} disabled={decrypting} value={backupSecret} onChange={e => setBackupSecret(e.target.value)} className="w-full p-3 border border-line-strong rounded-xl" />
           <Button type="submit" disabled={decrypting}>{decrypting ? 'Decrypting…' : 'Check backup'}</Button>
           {backupUnlockError && <p role="alert" className="text-sm text-danger">{backupUnlockError}</p>}
         </form>
@@ -252,7 +252,7 @@ export function Settings() {
       <Modal open={restoring} onClose={() => {}} title="Restoring encrypted backup"><p role="status">Wait until encrypted saving finishes before editing records or closing this tab.</p></Modal>
 
       <Modal open={!!restoreErrors} onClose={() => setRestoreErrors(null)} title="This backup can’t be restored" subtitle="Nothing was changed.">
-        <ul role="alert" className="list-disc pl-5 space-y-1 text-xs text-[#344054]">
+        <ul role="alert" className="list-disc pl-5 space-y-1 text-xs text-ink-2">
           {restoreErrors?.map((m, i) => <li key={i}>{m}</li>)}
         </ul>
         <div className="mt-5 flex justify-end">

@@ -20,7 +20,7 @@ export function DoctorRecords({ doses, weights, effects, settings, range }: { do
   const inside = <T extends {date: string},>(entries: T[]) => entries.filter(e => { const t = new Date(e.date).getTime(); return t >= range.start.getTime() && t <= range.end.getTime(); }).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   const w = inside(weights), d = inside(doses), e = inside(effects);
   const unit = getWeightUnit(settings);
-  return <section aria-labelledby="doctor-records" className="bg-white p-6 rounded-[24px] border border-[#E5E7EB] space-y-5 doctor-records">
+  return <section aria-labelledby="doctor-records" className="bg-white p-6 rounded-[24px] border border-line space-y-5 doctor-records">
     <h2 id="doctor-records" className="text-lg font-semibold">Records to discuss with your clinician</h2>
     <p className="text-sm text-muted">Self-reported entries for the selected period. Missing entries do not mean no symptoms or no doses. This report does not verify a prescription or recommend treatment.</p>
     <p className="text-xs text-muted">Dates and times use this browser’s timezone: {Intl.DateTimeFormat().resolvedOptions().timeZone}. Medication names describe what was logged; the exact product, route and prescription need clinician verification.</p>

@@ -14,7 +14,7 @@ interface Props {
 }
 
 const ACTIVE: Record<Severity, string> = {
-  none: 'bg-[#E5E7EB] border-slate-400 text-[#111827]',
+  none: 'bg-line border-slate-400 text-ink',
   mild: 'bg-amber-100 border-amber-400 text-amber-900',
   moderate: 'bg-orange-100 border-orange-400 text-orange-900',
   severe: 'bg-rose-100 border-rose-500 text-rose-900',
@@ -24,7 +24,7 @@ function SeveritySelector({ label, value, onChange }: { label: string; value: Se
   const id = useId();
   return (
     <div className="space-y-1" role="group" aria-labelledby={id}>
-      <span id={id} className="block text-xs font-semibold text-[#344054]">{label}</span>
+      <span id={id} className="block text-xs font-semibold text-ink-2">{label}</span>
       <div className="grid grid-cols-4 gap-1.5">
         {SEVERITIES.map((s) => (
           <button
@@ -32,7 +32,7 @@ function SeveritySelector({ label, value, onChange }: { label: string; value: Se
             type="button"
             aria-pressed={value === s}
             onClick={() => onChange(s)}
-            className={`py-1.5 text-xs font-semibold rounded-lg border transition-all ${value === s ? ACTIVE[s] : 'border-[#E5E7EB] text-muted hover:bg-[#F8F9FC]'}`}
+            className={`py-1.5 text-xs font-semibold rounded-lg border transition-all ${value === s ? ACTIVE[s] : 'border-line text-muted hover:bg-canvas'}`}
           >
             {severityLabel(s)}
           </button>
@@ -103,7 +103,7 @@ function EffectsForm({ onClose, onSuccess, effect }: Omit<Props, 'isOpen'>) {
           value={date}
           onChange={(e) => setDate(e.target.value)}
           aria-invalid={dateError ? true : undefined}
-          className="w-full px-3.5 py-2.5 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-sm font-medium focus:ring-2 focus:ring-amber-700 focus:outline-none"
+          className="w-full px-3.5 py-2.5 rounded-[16px] border border-line bg-canvas text-ink text-sm font-medium focus:ring-2 focus:ring-amber-700 focus:outline-none"
         />
         {dateError && <p role="alert" className="text-xs text-danger mt-1">{dateError}</p>}
       </div>
@@ -139,11 +139,11 @@ function EffectsForm({ onClose, onSuccess, effect }: Omit<Props, 'isOpen'>) {
 
       <div>
         <label htmlFor={`${uid}-notes`} className="block text-xs font-semibold text-muted mb-1.5">Notes & reflections</label>
-        <textarea id={`${uid}-notes`} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Energy, meals, water intake…" className="w-full px-3.5 py-2 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-sm focus:ring-2 focus:ring-amber-700 focus:outline-none" />
+        <textarea id={`${uid}-notes`} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Energy, meals, water intake…" className="w-full px-3.5 py-2 rounded-[16px] border border-line bg-canvas text-ink text-sm focus:ring-2 focus:ring-amber-700 focus:outline-none" />
       </div>
 
       <div className="pt-2 flex gap-3">
-        <button type="button" onClick={onClose} className="flex-1 py-3 px-4 rounded-[16px] border border-[#E5E7EB] text-[#344054] font-semibold text-sm hover:bg-[#F8F9FC] transition-colors">Cancel</button>
+        <button type="button" onClick={onClose} className="flex-1 py-3 px-4 rounded-[16px] border border-line text-ink-2 font-semibold text-sm hover:bg-canvas transition-colors">Cancel</button>
         <button type="submit" className="flex-1 py-3 px-4 rounded-[16px] bg-amber-700 text-white font-semibold text-sm hover:bg-amber-800 transition-colors shadow-md shadow-amber-200 flex items-center justify-center gap-2">
           <Check className="w-4 h-4" aria-hidden="true" /> Save Log
         </button>

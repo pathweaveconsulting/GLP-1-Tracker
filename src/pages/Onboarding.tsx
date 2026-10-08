@@ -9,7 +9,7 @@ import type { Medication } from '../types';
 import { convertTyped, displayToLbs, lbsToDisplay, lbsToInput, type WeightUnit } from '../lib/units';
 
 const inputCls =
-  'w-full px-3.5 py-2.5 rounded-[16px] border border-[#E5E7EB] bg-[#F8F9FC] text-[#111827] text-sm font-medium focus:ring-2 focus:ring-purple-500 focus:outline-none';
+  'w-full px-3.5 py-2.5 rounded-[16px] border border-line bg-canvas text-ink text-sm font-medium focus:ring-2 focus:ring-brand focus:outline-none';
 const labelCls = 'block text-xs font-semibold text-muted mb-1.5';
 
 function FieldError({ id, message }: { id: string; message?: string }) {
@@ -103,8 +103,8 @@ export function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FC] text-[#111827] font-sans antialiased flex items-start md:items-center justify-center p-4">
-      <main className="w-full max-w-xl bg-white rounded-[24px] border border-[#E5E7EB] shadow-xs p-6 md:p-8 my-6">
+    <div className="min-h-screen bg-canvas text-ink font-sans antialiased flex items-start md:items-center justify-center p-4">
+      <main className="w-full max-w-xl bg-white rounded-[24px] border border-line shadow-xs p-6 md:p-8 my-6">
         <h1 className="text-2xl font-semibold tracking-tight">{welcomeBack ? 'Welcome back. Let’s confirm your details.' : 'Welcome. Let’s set up your journey.'}</h1>
         <p className="text-sm text-muted mt-1.5 leading-relaxed">
           {welcomeBack
@@ -113,7 +113,7 @@ export function Onboarding() {
         </p>
 
         <ol aria-label="Setup progress" className="flex gap-3 text-xs text-muted mt-4">
-          {['Medication and weight', 'Height and start date', 'Review and safety'].map((name, index) => <li key={name} aria-current={step === index ? 'step' : undefined} className={step === index ? 'font-semibold text-[#111827]' : ''}>{index + 1}. {name}</li>)}
+          {['Medication and weight', 'Height and start date', 'Review and safety'].map((name, index) => <li key={name} aria-current={step === index ? 'step' : undefined} className={step === index ? 'font-semibold text-ink' : ''}>{index + 1}. {name}</li>)}
         </ol>
         <h2 ref={headingRef} tabIndex={-1} className="mt-4 text-lg font-semibold focus:outline-none">Step {step + 1} of 3: {['Your medication and weight', 'Your height and start date', 'Review before starting'][step]}</h2>
         <form ref={formRef} onSubmit={submit} noValidate className="mt-6 space-y-4">
@@ -144,7 +144,7 @@ export function Onboarding() {
                   type="button"
                   aria-pressed={form.unit === u}
                   onClick={() => setUnit(u)}
-                  className={`px-4 py-2 rounded-[14px] text-sm font-semibold border transition-colors ${form.unit === u ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-[#344054] border-[#E5E7EB] hover:bg-[#F8F9FC]'}`}
+                  className={`px-4 py-2 rounded-[14px] text-sm font-semibold border transition-colors ${form.unit === u ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-ink-2 border-line hover:bg-canvas'}`}
                 >
                   {u}
                 </button>
@@ -246,14 +246,14 @@ export function Onboarding() {
           <SafetyNotice variant="full" medication={form.medication || undefined} />
 
           <div>
-            <label className="flex items-start gap-2.5 text-sm text-[#344054]">
+            <label className="flex items-start gap-2.5 text-sm text-ink-2">
               <input
                 type="checkbox"
                 checked={acknowledged}
                 aria-invalid={ackError ? true : undefined}
                 onChange={(e) => setAcknowledged(e.target.checked)}
                 aria-describedby={ackError ? id('ack-err') : undefined}
-                className="mt-0.5 h-5 w-5 rounded border-[#D0D5DD] focus-visible:ring-2 focus-visible:ring-[#6D4AFF]"
+                className="mt-0.5 h-5 w-5 rounded border-line-strong focus-visible:ring-2 focus-visible:ring-brand"
               />
               <span>I understand this app does not give medical advice and I will follow my clinician's instructions.</span>
             </label>
@@ -262,10 +262,10 @@ export function Onboarding() {
 
           </>}
           {step < 2 && <SafetyNotice variant="compact" showHelpLink={false} medication={form.medication || undefined} />}
-          {step > 0 && <button type="button" className="w-full min-h-11 rounded-xl border p-3 text-sm font-semibold focus-visible:ring-2 focus-visible:ring-[#6D4AFF]" onClick={() => { setStep(step - 1); setErrors({}); }}>Back</button>}
+          {step > 0 && <button type="button" className="w-full min-h-11 rounded-xl border p-3 text-sm font-semibold focus-visible:ring-2 focus-visible:ring-brand" onClick={() => { setStep(step - 1); setErrors({}); }}>Back</button>}
           <button
             type="submit"
-            className="w-full py-3 px-4 rounded-[16px] bg-slate-900 text-white font-semibold text-sm hover:bg-slate-800 transition-colors focus-visible:ring-2 focus-visible:ring-[#6D4AFF]"
+            className="w-full py-3 px-4 rounded-[16px] bg-slate-900 text-white font-semibold text-sm hover:bg-slate-800 transition-colors focus-visible:ring-2 focus-visible:ring-brand"
           >
             {step === 2 ? 'Start my journey' : 'Continue'}
           </button>

@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Info } from 'lucide-react';
-import { 
-  ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid 
+import {
+  ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid
 } from 'recharts';
 import { format, subDays, subMonths, subYears } from 'date-fns';
 import { useStore } from '../store/useStore';
@@ -17,8 +17,8 @@ interface Props {
 // Dose color badge resolver
 function getDoseBadgeColor(amountMg: number): { bg: string; text: string; dotColor: string } {
   if (amountMg <= 2.5) return { bg: '#64748b', text: '#ffffff', dotColor: '#64748b' };
-  if (amountMg <= 3.5) return { bg: '#8b5cf6', text: '#ffffff', dotColor: '#8b5cf6' };
-  if (amountMg <= 5.0) return { bg: '#7c3aed', text: '#ffffff', dotColor: '#7c3aed' };
+  if (amountMg <= 3.5) return { bg: '#1d5aa6', text: '#ffffff', dotColor: '#1d5aa6' };
+  if (amountMg <= 5.0) return { bg: '#164a8a', text: '#ffffff', dotColor: '#164a8a' };
   if (amountMg <= 6.0) return { bg: '#0d9488', text: '#ffffff', dotColor: '#0d9488' };
   if (amountMg <= 7.5) return { bg: '#f43f5e', text: '#ffffff', dotColor: '#f43f5e' };
   if (amountMg <= 10.0) return { bg: '#059669', text: '#ffffff', dotColor: '#059669' };
@@ -136,16 +136,16 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
     return (
       <g key={`shot-dot-${props.index}`}>
         {/* Connection line & Pulsing shot dot on weight line */}
-        <circle 
-          cx={cx} 
-          cy={cy} 
-          r={5} 
-          fill={badgeInfo.dotColor} 
-          stroke="#ffffff" 
+        <circle
+          cx={cx}
+          cy={cy}
+          r={5}
+          fill={badgeInfo.dotColor}
+          stroke="#ffffff"
           strokeWidth={2}
           className="shadow-xs"
         />
-        
+
         {/* Pill Badge floating above the dot */}
         <g transform={`translate(${cx - rectWidth / 2}, ${cy - 28})`}>
           <rect
@@ -175,15 +175,15 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
   };
 
   return (
-    <div className={`bg-white rounded-[24px] p-6 shadow-xs border border-[#E5E7EB] ${className}`}>
+    <div className={`bg-white rounded-[24px] p-6 shadow-xs border border-line ${className}`}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h3 className="text-xl font-semibold text-[#111827] tracking-tight">View progress</h3>
+          <h3 className="text-xl font-semibold text-ink tracking-tight">View progress</h3>
           <div className="flex items-center gap-2 mt-0.5">
-            <h4 className="text-lg font-semibold text-[#111827]">Weight</h4>
+            <h4 className="text-lg font-semibold text-ink">Weight</h4>
             {chartData.length > 0 && (
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-[#F1F5F9] text-muted">
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-sunken text-muted">
                 Latest: {chartData[chartData.length - 1].weight} {chartData[0]?.unitLabel}
               </span>
             )}
@@ -211,8 +211,8 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
             onClick={() => setShowShots(!showShots)}
             className={`px-4 py-1.5 rounded-[16px] text-xs font-semibold transition-all cursor-pointer shadow-xs flex items-center gap-1.5 ${
               showShots
-                ? 'bg-[#582967] text-white hover:bg-[#4a2257]'
-                : 'bg-[#F1F5F9] text-[#344054] hover:bg-[#E5E7EB] border border-[#E5E7EB]'
+                ? 'bg-brand text-white hover:bg-brand-strong'
+                : 'bg-sunken text-ink-2 hover:bg-line border border-line'
             }`}
           >
             {showShots ? 'Hide shots' : 'Show shots'}
@@ -223,7 +223,7 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
               type="button"
               onClick={onOpenInfo}
               aria-label="Weight and shot correlation details"
-              className="text-subtle hover:text-[#6D4AFF] transition-colors p-1.5 rounded-full hover:bg-[#F1F5F9] cursor-pointer"
+              className="text-subtle hover:text-brand transition-colors p-1.5 rounded-full hover:bg-sunken cursor-pointer"
             >
               <Info className="w-4 h-4" aria-hidden="true" />
             </button>
@@ -239,18 +239,18 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData} margin={{ top: 35, right: 20, left: -10, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-            <XAxis 
-              dataKey="dateStr" 
-              axisLine={false} 
-              tickLine={false} 
-              tick={{ fontSize: 11, fill: '#475569', fontWeight: 500 }} 
+            <XAxis
+              dataKey="dateStr"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 11, fill: '#475569', fontWeight: 500 }}
               dy={10}
               minTickGap={25}
             />
-            <YAxis 
-              domain={yDomain} 
-              axisLine={false} 
-              tickLine={false} 
+            <YAxis
+              domain={yDomain}
+              axisLine={false}
+              tickLine={false}
               tick={{ fontSize: 11, fill: '#475569', fontWeight: 500 }}
               tickFormatter={(val) => `${val} ${unit}`}
             />
@@ -267,8 +267,8 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
                 if (p.hasDose) {
                   return [
                     <div>
-                      <div className="font-semibold text-[#111827]">{weightStr}</div>
-                      <div className="text-xs text-[#6D4AFF] font-semibold mt-1 flex items-center gap-1">
+                      <div className="font-semibold text-ink">{weightStr}</div>
+                      <div className="text-xs text-brand font-semibold mt-1 flex items-center gap-1">
                         💉 Shot logged: {p.doseAmountMg} mg ({p.medication}) {p.site ? `• ${p.site}` : ''}
                       </div>
                     </div>,
@@ -291,9 +291,9 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
       </div>
 
       {/* MINI TIMELINE NAVIGATOR / MINIMAP BAR (Matching image design) */}
-      <div className="mt-2 w-full h-4 bg-[#E5E7EB]/70 rounded-full overflow-hidden relative">
-        <div 
-          className="h-full bg-[#582967]/30 transition-all duration-300 rounded-full"
+      <div className="mt-2 w-full h-4 bg-line/70 rounded-full overflow-hidden relative">
+        <div
+          className="h-full bg-brand/30 transition-all duration-300 rounded-full"
           style={{
             width: timeframe === '2 weeks' ? '20%' : timeframe === '1 month' ? '35%' : timeframe === '3 months' ? '55%' : timeframe === '6 months' ? '75%' : timeframe === '1 year' ? '90%' : '100%',
             marginLeft: timeframe === '2 weeks' ? '80%' : timeframe === '1 month' ? '65%' : timeframe === '3 months' ? '45%' : timeframe === '6 months' ? '25%' : timeframe === '1 year' ? '10%' : '0%'
@@ -303,16 +303,16 @@ export function WeightLossProgressChart({ className = '', onOpenInfo }: Props) {
 
       {/* TIMEFRAME SELECTOR TABS AT BOTTOM (2 weeks, 1 month, 3 months, 6 months, 1 year, All time) */}
       <div className="mt-6 flex justify-center overflow-x-auto pb-1">
-        <div className="flex bg-[#F1F5F9]/90 p-1.5 rounded-[16px] border border-[#E5E7EB]/80 text-xs font-semibold gap-1">
+        <div className="flex bg-sunken/90 p-1.5 rounded-[16px] border border-line/80 text-xs font-semibold gap-1">
           {(['2 weeks', '1 month', '3 months', '6 months', '1 year', 'All time'] as const).map((t) => (
             <button
               key={t}
               aria-pressed={timeframe === t}
               onClick={() => setTimeframe(t)}
               className={`px-4 py-2 rounded-[16px] transition-all cursor-pointer whitespace-nowrap ${
-                timeframe === t 
-                  ? 'bg-[#582967] text-white shadow-xs' 
-                  : 'text-muted hover:text-[#111827] hover:bg-[#E5E7EB]/50'
+                timeframe === t
+                  ? 'bg-brand text-white shadow-xs'
+                  : 'text-muted hover:text-ink hover:bg-line/50'
               }`}
             >
               {t}

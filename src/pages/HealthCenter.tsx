@@ -35,12 +35,12 @@ export function HealthCenter() {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-3xl font-semibold tracking-tight text-[#111827]">Health Overview</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-ink">Health Overview</h1>
         <p className="text-muted text-sm mt-0.5">What your own logs say right now. Anything we can't support with enough data shows a dash.</p>
       </header>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <Card className="bg-[#111827] text-white rounded-[20px] border-0 shadow-xs">
+        <Card className="bg-ink text-white rounded-[20px] border-0 shadow-xs">
           <CardContent className="p-5 flex flex-col justify-between h-full min-h-[140px]">
             <div className="flex justify-between items-start">
               <Clock className="w-5 h-5 text-slate-400" aria-hidden="true" />
@@ -55,7 +55,7 @@ export function HealthCenter() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-[20px] border-[#E5E7EB] bg-white shadow-xs">
+        <Card className="rounded-[20px] border-line bg-white shadow-xs">
           <CardContent className="p-5 flex flex-col justify-between h-full min-h-[140px]">
             <div className="flex justify-between items-start mb-4">
               <Zap className="w-5 h-5 text-caution" aria-hidden="true" />
@@ -68,7 +68,7 @@ export function HealthCenter() {
               ) : next.lastDose ? (
                 <>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-semibold tracking-tight text-[#111827]">{pk.currentLevel}</span>
+                    <span className="text-2xl font-semibold tracking-tight text-ink">{pk.currentLevel}</span>
                     <span className="text-xs font-normal text-muted">mg</span>
                   </div>
                   <p className="text-[11px] text-subtle mt-1">Simplified model, not a blood test</p>
@@ -80,7 +80,7 @@ export function HealthCenter() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-[20px] border-[#E5E7EB] bg-white shadow-xs">
+        <Card className="rounded-[20px] border-line bg-white shadow-xs">
           <CardContent className="p-5 flex flex-col justify-between h-full min-h-[140px]">
             <div className="flex justify-between items-start mb-4">
               <TrendingDown className="w-5 h-5 text-positive" aria-hidden="true" />
@@ -88,7 +88,7 @@ export function HealthCenter() {
             <div>
               <span className="text-xs font-medium text-muted block mb-1">Recent weekly trend</span>
               <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-semibold tracking-tight text-[#111827]">{rate ? formatWeightChange(rate.lbsPerWeek, unit, { unit: false }) : '–'}</span>
+                <span className="text-2xl font-semibold tracking-tight text-ink">{rate ? formatWeightChange(rate.lbsPerWeek, unit, { unit: false }) : '–'}</span>
                 <span className="text-xs font-normal text-muted">{unit}/wk</span>
               </div>
               <p className="text-[11px] text-subtle mt-1">{rate ? `From ${rate.points} weigh-ins over ${rate.spanDays} days` : NEEDS_MORE_WEIGHT_DATA}</p>
@@ -96,23 +96,23 @@ export function HealthCenter() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-[20px] border-[#E5E7EB] bg-white shadow-xs">
+        <Card className="rounded-[20px] border-line bg-white shadow-xs">
           <CardContent className="p-5 flex flex-col justify-between h-full min-h-[140px]">
             <div className="flex justify-between items-start mb-4">
-              <Target className="w-5 h-5 text-[#6D4AFF]" aria-hidden="true" />
+              <Target className="w-5 h-5 text-brand" aria-hidden="true" />
             </div>
             <div>
               <span className="text-xs font-medium text-muted block mb-1">Goal projection</span>
               {projection.status === 'projected' ? (
                 <>
-                  <p className="text-sm font-semibold text-[#111827] leading-tight">Around {format(projection.date, 'MMM yyyy')}</p>
+                  <p className="text-sm font-semibold text-ink leading-tight">Around {format(projection.date, 'MMM yyyy')}</p>
                   <p className="text-[11px] text-subtle mt-1">If your recent pace continues. Real life varies.</p>
                 </>
               ) : projection.status === 'reached' ? (
-                <p className="text-sm font-semibold text-[#111827] leading-tight">You've reached your goal weight</p>
+                <p className="text-sm font-semibold text-ink leading-tight">You've reached your goal weight</p>
               ) : (
                 <>
-                  <p className="text-sm font-semibold text-[#111827] leading-tight">–</p>
+                  <p className="text-sm font-semibold text-ink leading-tight">–</p>
                   <p className="text-[11px] text-subtle mt-1">{projection.reason}</p>
                 </>
               )}
@@ -146,16 +146,16 @@ export function HealthCenter() {
         </Card>
       </div>
 
-      <Card className="rounded-[24px] border-[#E5E7EB] bg-white shadow-xs">
+      <Card className="rounded-[24px] border-line bg-white shadow-xs">
         <CardContent className="p-6 flex gap-4 items-start">
-          <div className="p-3 bg-[#F8F9FC] rounded-[14px]">
+          <div className="p-3 bg-canvas rounded-[14px]">
             <HeartPulse className="w-5 h-5 text-muted" aria-hidden="true" />
           </div>
           <div>
-            <h2 className="font-semibold text-base text-[#111827]">Symptoms you've logged this week</h2>
+            <h2 className="font-semibold text-base text-ink">Symptoms you've logged this week</h2>
             {symptoms.daysLogged === 0 ? (
               <p className="text-xs text-muted mt-1 font-normal leading-relaxed">
-                You haven't logged symptoms in the last 7 days, so we can't say how the week has gone. <Link to="/effects" className="text-[#6D4AFF] font-semibold hover:underline">Log how you feel</Link>
+                You haven't logged symptoms in the last 7 days, so we can't say how the week has gone. <Link to="/effects" className="text-brand font-semibold hover:underline">Log how you feel</Link>
               </p>
             ) : symptoms.items.length === 0 ? (
               <p className="text-xs text-muted mt-1 font-normal leading-relaxed">You logged {symptoms.daysLogged} {symptoms.daysLogged === 1 ? 'day' : 'days'} this week with no positive symptom ratings recorded. Unanswered symptoms remain unrecorded.</p>
